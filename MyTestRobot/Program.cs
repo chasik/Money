@@ -16,7 +16,7 @@ namespace MyTestRobot
         static void Main(string[] args)
         {
             SqlConnection connection = new SqlConnection("Data Source=WIN-K69N1L1NJDB;Initial Catalog=smartcom;User ID=sa;Password=WaNo11998811mssql;Asynchronous Processing=True;ConnectRetryInterval=5");
-            connection.Open();
+            //connection.Open();
             SmartCom sc = new SmartCom("mx.ittrade.ru", 8443, "BP12800", "8GVZ7Z");
             Console.WriteLine(sc.Login);
             sc.SmartC.Connected += () => { Console.WriteLine("CONNECTED3!!!!"); sc.SmartC.GetSymbols(); };

@@ -1,0 +1,13 @@
+﻿<Window x:Class="WpfRobot.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="381" Width="629">
+    <Grid>
+        <TextBox x:Name="LoginBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="BP12800" VerticalAlignment="Top" Width="120"/>
+        <PasswordBox x:Name="PassBox" HorizontalAlignment="Left" Margin="191,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.4,-0.2" Width="115" Password="8GVZ7Z" Height="23"/>
+        <Button Content="Button" HorizontalAlignment="Left" Height="23" Margin="490,10,0,0" VerticalAlignment="Top" Width="122" Click="Button_Click"/>
+        <TextBlock x:Name="Memo" HorizontalAlignment="Left" Height="213" Margin="10,52,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="601"/>
+        <Label x:Name="Label1" Content="Label" HorizontalAlignment="Left" Margin="20,295,0,0" VerticalAlignment="Top" Width="573"/>
+
+    </Grid>
+</Window>
