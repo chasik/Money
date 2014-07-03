@@ -28,6 +28,7 @@ namespace SmartComClass
 
         public void ConnectDataSource()
         {
+            //SmartC.ConfigureClient("asyncSocketConnectionMode=no");
             SmartC.connect(ServerIp, ServerPort, Login, Password);
         }
     }
