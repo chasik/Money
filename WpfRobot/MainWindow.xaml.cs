@@ -36,7 +36,7 @@ namespace WpfRobot
             sc = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
             sc.SmartC.Connected     += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConected);
             sc.SmartC.AddPortfolio  += new SmartCOM3Lib._IStClient_AddPortfolioEventHandler(this.AddPortfolio);
-            sc.SmartC.AddSymbol += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
+            sc.SmartC.AddSymbol     += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
 
             sc.ConnectDataSource();
             
