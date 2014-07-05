@@ -47,7 +47,7 @@ namespace WpfRobot
             sc.SmartC.GetSymbols();
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate() {
-                    Memo.Text = "Connected!!!";
+                    Label1.Content = "Connected!!!";
                 }
             );
         }
@@ -64,13 +64,30 @@ namespace WpfRobot
 
         private void AddSymbol(int row, int nrows, string symbol, string short_name, string long_name, string type, int decimals, int lot_size, double punkt, double step, string sec_ext_id, string sec_exch_name, DateTime expiry_date, double days_before_expiry, double strike)
         {
+            if (symbol.ToUpper().Contains("RTS-9.14_FT")) 
+            {
+                sc.SmartC.ListenBidAsks(symbol);
+                sc.SmartC.UpdateBidAsk += SmartC_UpdateBidAsk;
+            }
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate() { 
                     Label2.Content = row.ToString() + " " + nrows.ToString();
-                    if (symbol.ToUpper().Contains("-9.14_FT"))
+                    if (symbol.ToLower().Contains("9.14_ft"))
                         ComboBox1.Items.Add(symbol + "\t\t" + short_name + "\t\t" + long_name);
                 }
             );
         }
+
+        void SmartC_UpdateBidAsk(string symbol, int row, int nrows, double bid, double bidsize, double ask, double asksize)
+        {
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Send,
+                (ThreadStart)delegate()
+            {
+                Label2.Content = symbol + " -- bid: " + bid.ToString() + " -- bidSize: " + bidsize.ToString() + " -- ask: " + ask.ToString() + " -- askSize: " + asksize.ToString();
+            }
+            );
+
+        }
+
     }
 }

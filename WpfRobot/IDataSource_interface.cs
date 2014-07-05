@@ -9,7 +9,7 @@ namespace DataSources
     public interface IDataSource
     {
         string ServerIp { get; set; }
-        short ServerPort { get; set; }
+        ushort ServerPort { get; set; }
         string Login { get; set; }
         string Password { get; set; }
 
