@@ -70,6 +70,7 @@
     </ApplicationDefinition>
     <Compile Include="GlassOfQuotations.cs" />
     <Compile Include="IGlassOfQuotations.cs" />
+    <Compile Include="QuotesThread.cs" />
     <Compile Include="SmartComClass.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -25,21 +25,38 @@ namespace WpfRobot
     /// </summary>
     public partial class MainWindow : Window
     {
-        SmartCom sc = null;
+
+        SmartCom sc = null, sc1 = null;
+        private List<QuotesThread> _quotesThreads = new List<QuotesThread>();
+
         public MainWindow()
         {
             InitializeComponent();
+            InstrumentsList.Items.Add("RTS-9.14_FT");
+            InstrumentsList.Items.Add("Si-9.14_FT");
+            InstrumentsList.Items.Add("GOLD-9.14_FT");
+            InstrumentsList.Items.Add("SBRF-9.14_FT");
+            InstrumentsList.Items.Add("GAZR-9.14_FT");
+            InstrumentsList.Items.Add("LKOH-9.14_FT");
         }
-
+        public void StartThreadsButton_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (string s in InstrumentsList.Items)
+            {
+                var q = new QuotesThread(s, "BP12800", "8GVZ7Z");
+                _quotesThreads.Add(q);
+            }
+        }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             sc = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
+            sc1 = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
             sc.SmartC.Connected     += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConected);
+            sc.SmartC.Disconnected  += new SmartCOM3Lib._IStClient_DisconnectedEventHandler(this.ShowDisconnected);
             sc.SmartC.AddPortfolio  += new SmartCOM3Lib._IStClient_AddPortfolioEventHandler(this.AddPortfolio);
             sc.SmartC.AddSymbol     += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
 
             sc.ConnectDataSource();
-            
         }
 
         private void ShowConected() {
@@ -50,6 +67,11 @@ namespace WpfRobot
                     Label1.Content = "Connected!!!";
                 }
             );
+        }
+
+        private void ShowDisconnected(string _reason) {
+            MessageBox.Show("Отключение: " + _reason);
+
         }
 
         private void AddPortfolio(int row, int nrows, string portfolioName, string portfolioExch, StPortfolioStatus portfolioStatus)
