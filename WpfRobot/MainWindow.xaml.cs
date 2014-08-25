@@ -32,6 +32,7 @@ namespace WpfRobot
         public MainWindow()
         {
             InitializeComponent();
+
             InstrumentsList.Items.Add("RTS-9.14_FT");
             InstrumentsList.Items.Add("Si-9.14_FT");
             InstrumentsList.Items.Add("GOLD-9.14_FT");
@@ -43,15 +44,17 @@ namespace WpfRobot
         {
             foreach (string s in InstrumentsList.Items)
             {
-                var q = new QuotesThread(s, "BP12800", "8GVZ7Z");
+                var q = new QuotesThread(this, s, "BP12800", "8GVZ7Z");
+                
                 _quotesThreads.Add(q);
+                //break;
             }
         }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             sc = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
             sc1 = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
-            sc.SmartC.Connected     += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConected);
+            sc.SmartC.Connected     += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConnected);
             sc.SmartC.Disconnected  += new SmartCOM3Lib._IStClient_DisconnectedEventHandler(this.ShowDisconnected);
             sc.SmartC.AddPortfolio  += new SmartCOM3Lib._IStClient_AddPortfolioEventHandler(this.AddPortfolio);
             sc.SmartC.AddSymbol     += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
@@ -59,11 +62,11 @@ namespace WpfRobot
             sc.ConnectDataSource();
         }
 
-        private void ShowConected() {
+        public void ShowConnected() {
             sc.SmartC.GetPrortfolioList();
             sc.SmartC.GetSymbols();
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
-                (ThreadStart)delegate() {
+                (ThreadStart) delegate() {
                     Label1.Content = "Connected!!!";
                 }
             );
@@ -81,7 +84,6 @@ namespace WpfRobot
                     Label1.Content = "Инструмент: " + portfolioName;
                 }
             );
-
         }
 
         private void AddSymbol(int row, int nrows, string symbol, string short_name, string long_name, string type, int decimals, int lot_size, double punkt, double step, string sec_ext_id, string sec_exch_name, DateTime expiry_date, double days_before_expiry, double strike)
@@ -109,6 +111,14 @@ namespace WpfRobot
             }
             );
 
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            foreach(QuotesThread qt in _quotesThreads)
+            {
+                textBox1.AppendText("-- " + qt.Instrument);
+            }
         }
 
     }
