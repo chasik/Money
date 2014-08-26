@@ -18,6 +18,12 @@ namespace WpfRobot
         private string instrument = "";
         private string login = "";
         private string password = "";
+        private bool instrumentIsFound = false;
+
+        private string nameTableTicks = "";
+        private string nameTableBidAsk = "";
+        private string nameTabelQuotes = "";
+
         private SmartCom smartCom;
         private SqlConnection sqlconn;
         private DataTable dtable;
@@ -29,6 +35,7 @@ namespace WpfRobot
         public QuotesThread(MainWindow _mw, string _instrument, string _login, string _password) 
         {
             SmartWindow = _mw;
+
             string connectionStr = "user id=sa;password=WaNo11998811mssql;server=localhost;database=smartcom";
             sqlconn = new SqlConnection(connectionStr);
             sqlconn.Open();
@@ -40,21 +47,20 @@ namespace WpfRobot
             //}
             //sr.Close();
 
-            instrument = _instrument;
+            instrument = _instrument.ToUpper();
             login = _login;
             password = _password;
 
             smartCom = new SmartCom("mx.ittrade.ru", 8443, login, password);
             smartCom.SmartC.Connected       += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConnected);
             smartCom.SmartC.Disconnected    += new SmartCOM3Lib._IStClient_DisconnectedEventHandler(this.ShowDisconnected);
-            smartCom.SmartC.AddPortfolio    += new SmartCOM3Lib._IStClient_AddPortfolioEventHandler(this.AddPortfolio);
             smartCom.SmartC.AddSymbol       += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
             smartCom.ConnectDataSource();
         }
 
+
         private void ShowConnected()
         {
-            smartCom.SmartC.GetPrortfolioList();
             smartCom.SmartC.GetSymbols();
             SmartWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
@@ -69,22 +75,16 @@ namespace WpfRobot
             MessageBox.Show("Отключение: " + _reason);
         }
 
-        private void AddPortfolio(int row, int nrows, string portfolioName, string portfolioExch, StPortfolioStatus portfolioStatus)
-        {
-            SmartWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
-                (ThreadStart)delegate()
-                {
-                    SmartWindow.textBox1.AppendText("Инструмент: " + portfolioName + "\n");
-                }
-            );
-        }
-
         private void AddSymbol(int row, int nrows, string symbol, string short_name, string long_name, string type, int decimals, int lot_size, double punkt, double step, string sec_ext_id, string sec_exch_name, DateTime expiry_date, double days_before_expiry, double strike)
         {
-            if (symbol.ToUpper().Contains(instrument))
+            if (symbol.ToUpper().Contains(instrument) && !instrumentIsFound)
             {
-                smartCom.SmartC.ListenBidAsks(symbol);
+                instrumentIsFound = true;
                 smartCom.SmartC.UpdateBidAsk += SmartC_UpdateBidAsk;
+                smartCom.SmartC.ListenBidAsks(symbol);
+                smartCom.SmartC.AddTick += SmartC_AddTick;
+                smartCom.SmartC.ListenTicks(symbol);
+                StartQuotesToBD(short_name, long_name, type, decimals, lot_size, punkt, step, sec_ext_id, sec_exch_name, expiry_date, days_before_expiry, strike);
             }
         }
 
@@ -98,5 +98,78 @@ namespace WpfRobot
             );
         }
 
+        private void SmartC_AddTick(string symbol, DateTime datetime, double price, double volume, string tradeno, StOrder_Action action)
+        {
+            SmartWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate()
+                {
+                    SmartWindow.textBox1.AppendText("" + symbol + "\n");
+                }
+            );
+        }
+
+        private void CheckTables(string[] _arr)
+        {
+            foreach(string s in _arr){
+
+            }
+        }
+
+        private void StartQuotesToBD(string short_name, string long_name, string type, int decimals, int lot_size, double punkt, double step, string sec_ext_id, string sec_exch_name, DateTime expiry_date, double days_before_expiry, double strike)
+        {
+            // проверяем, использовался ли ранее инструмент - если да - обновляем дату записи данных, иначе - создаем запись в instruments
+            if (new SqlCommand("SELECT idinstrument FROM instruments WHERE name = '" + instrument + "'", sqlconn).ExecuteScalar() == null)
+                new SqlCommand(@"INSERT INTO instruments (name, shortname, longname, codetype, decimals, lotsize, punkt, step, secextid, secexchname, expirydate, strike, datecre, datelast) 
+                                    VALUES ('" + instrument + "', '" + short_name + "', '" + long_name + "', '" + type + "', " + decimals.ToString().Replace(',', '.')
+                                               + ", " + lot_size.ToString().Replace(',', '.') + ", " + punkt.ToString().Replace(',', '.') + ", " + step.ToString().Replace(',', '.')
+                                               + ", '" + sec_ext_id + "', '" + sec_exch_name + "', '" + expiry_date.ToString()
+                                               + "', '" + strike.ToString().Replace(',', '.') + "', GETDATE(), GETDATE());", sqlconn).ExecuteNonQuery();
+            else
+            {
+                new SqlCommand("UPDATE instruments SET datelast = GETDATE() WHERE name = '" + instrument + "';", sqlconn).ExecuteNonQuery();
+            }
+
+            // проверка, создавались ли уже таблицы по данному инструменту за текущую дату - если нет - создаем соответсвующую
+            CheckTables(new string[] {"ticks"});
+        }
+
     }
 }
+
+//
+// создание таблиц
+//
+/*create table instruments(
+	idinstrument int not null identity(1,1),
+	name varchar(50) not null,
+	shortname varchar(50),
+	longname varchar(100),
+	codetype varchar(100),
+	decimals int,
+	lotsize int,
+	punkt real,
+	step real,
+	secextid varchar(100),
+	secexchname varchar(100),
+	expirydate datetime,
+	strike real,
+	datecre datetime,
+	datelast datetime
+)
+ 
+ create table alltables (
+	idtable int not null identity(1,1),
+	name varchar(100),
+	idinstrument int,
+	typetable int,
+	datecre date
+)
+
+create table typetable(
+	idtypetable int not null identity(1,1),
+	name varchar(30)
+)
+ 
+ insert into typetable (name) values ('ticks')
+ 
+ */
