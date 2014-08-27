@@ -52,6 +52,7 @@ namespace WpfRobot
         }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            (sender as Button).IsEnabled = false;
             sc = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
             sc1 = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
             sc.SmartC.Connected     += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConnected);

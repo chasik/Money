@@ -16,19 +16,23 @@ namespace WpfRobot
     class QuotesThread 
     {
         private string instrument = "";
+        private int _idinstrument = 0;
         private string login = "";
         private string password = "";
         private bool instrumentIsFound = false;
 
-        private string nameTableTicks = "";
-        private string nameTableBidAsk = "";
-        private string nameTabelQuotes = "";
+        Dictionary<string, string> tablesnames = new Dictionary<string, string>() { 
+            {"ticks", ""},
+            {"bidask", ""}, 
+            {"quotes", ""}
+        };
 
         private SmartCom smartCom;
         private SqlConnection sqlconn;
         private DataTable dtable;
 
         public string Instrument { get { return instrument; } set { instrument = value; } }
+        public int IdInstrument { get { return _idinstrument; } set { _idinstrument = value; } }
 
         public MainWindow SmartWindow;
 
@@ -110,8 +114,38 @@ namespace WpfRobot
 
         private void CheckTables(string[] _arr)
         {
-            foreach(string s in _arr){
+            _idinstrument = int.Parse(new SqlCommand(@"SELECT idinstrument FROM instruments WHERE name = '" + instrument + "'", sqlconn).ExecuteScalar().ToString());
 
+            foreach(string typetablename in _arr){
+                object atabob = new SqlCommand(@"SELECT i.name + '_' + cast(convert(date, a.datecre) as varchar) + '_' + t.name FROM alltables a 
+                                        JOIN typetable t ON a.idtypetable = t.idtypetable AND t.name = '" + typetablename + @"' AND convert(date, a.datecre) = convert(date, GETDATE())
+                                        JOIN instruments i ON i.idinstrument = a.idinstrument AND i.idinstrument = " + IdInstrument.ToString()
+                    , sqlconn).ExecuteScalar();
+                if (atabob == null)
+                {
+                    string idtypetable = new SqlCommand("SELECT idtypetable FROM typetable WHERE name = '" + typetablename + "'", sqlconn).ExecuteScalar().ToString();
+                    new SqlCommand(@"INSERT INTO alltables (idinstrument, idtypetable, datecre) 
+                                        VALUES (" + _idinstrument.ToString() + @", " + idtypetable + ", GETDATE())"
+                        
+                        , sqlconn).ExecuteNonQuery();
+                    string cretabq = "";
+                    switch (typetablename)
+                    {
+                        case "ticks":
+                            break;
+                        case "bidask":
+                            break;
+                        case "quotes":
+                            break;
+                        default:
+                            MessageBox.Show("Не могу определить тип таблицы!");
+                            break;
+                    }
+                }
+                else
+                {
+                    tablesnames[typetablename] = atabob.ToString();
+                }
             }
         }
 
@@ -119,18 +153,20 @@ namespace WpfRobot
         {
             // проверяем, использовался ли ранее инструмент - если да - обновляем дату записи данных, иначе - создаем запись в instruments
             if (new SqlCommand("SELECT idinstrument FROM instruments WHERE name = '" + instrument + "'", sqlconn).ExecuteScalar() == null)
+            {
                 new SqlCommand(@"INSERT INTO instruments (name, shortname, longname, codetype, decimals, lotsize, punkt, step, secextid, secexchname, expirydate, strike, datecre, datelast) 
                                     VALUES ('" + instrument + "', '" + short_name + "', '" + long_name + "', '" + type + "', " + decimals.ToString().Replace(',', '.')
                                                + ", " + lot_size.ToString().Replace(',', '.') + ", " + punkt.ToString().Replace(',', '.') + ", " + step.ToString().Replace(',', '.')
                                                + ", '" + sec_ext_id + "', '" + sec_exch_name + "', '" + expiry_date.ToString()
                                                + "', '" + strike.ToString().Replace(',', '.') + "', GETDATE(), GETDATE());", sqlconn).ExecuteNonQuery();
+            }
             else
             {
                 new SqlCommand("UPDATE instruments SET datelast = GETDATE() WHERE name = '" + instrument + "';", sqlconn).ExecuteNonQuery();
             }
 
             // проверка, создавались ли уже таблицы по данному инструменту за текущую дату - если нет - создаем соответсвующую
-            CheckTables(new string[] {"ticks"});
+            CheckTables(new string[] {"ticks", "bidask", "quotes"});
         }
 
     }
@@ -139,6 +175,7 @@ namespace WpfRobot
 //
 // создание таблиц
 //
+//DBCC CHECKIDENT (alltables,RESEED, 0)
 /*create table instruments(
 	idinstrument int not null identity(1,1),
 	name varchar(50) not null,
