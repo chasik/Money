@@ -33,6 +33,7 @@ namespace WpfRobot
         {
             InitializeComponent();
 
+            InstrumentsList.Items.Add("MICEX");
             InstrumentsList.Items.Add("RTS-9.14_FT");
             InstrumentsList.Items.Add("Si-9.14_FT");
             InstrumentsList.Items.Add("GOLD-9.14_FT");
@@ -54,7 +55,6 @@ namespace WpfRobot
         {
             (sender as Button).IsEnabled = false;
             sc = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
-            sc1 = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
             sc.SmartC.Connected     += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConnected);
             sc.SmartC.Disconnected  += new SmartCOM3Lib._IStClient_DisconnectedEventHandler(this.ShowDisconnected);
             sc.SmartC.AddPortfolio  += new SmartCOM3Lib._IStClient_AddPortfolioEventHandler(this.AddPortfolio);
