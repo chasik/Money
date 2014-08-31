@@ -1,6 +1,7 @@
-﻿<Window x:Name="SmartWindow" x:Class="WpfRobot.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:dxga="http://schemas.devexpress.com/winfx/2008/xaml/gauges" x:Name="SmartWindow" x:Class="WpfRobot.MainWindow"
         Title="MainWindow" Height="501.352" Width="944">
     <Grid>
         <Grid.RowDefinitions>

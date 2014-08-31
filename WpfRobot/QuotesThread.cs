@@ -75,7 +75,8 @@ namespace WpfRobot
 
         private void ShowDisconnected(string _reason)
         {
-            MessageBox.Show("Отключение: " + _reason);
+            MessageBox.Show("Отключение. Причина: " + _reason);
+            smartCom.ConnectDataSource();
         }
 
         private void AddSymbol(int row, int nrows, string symbol, string short_name, string long_name, string type, int decimals, int lot_size, double punkt, double step, string sec_ext_id, string sec_exch_name, DateTime expiry_date, double days_before_expiry, double strike)
