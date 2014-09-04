@@ -53,6 +53,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AdditionalTypes.cs" />
+    <Compile Include="IDataSource.cs" />
+    <Compile Include="QuotesFromBD.cs" />
+    <Compile Include="QuotesFromSmartCom.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
