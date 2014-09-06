@@ -18,14 +18,14 @@ namespace MyMoney
         public DataTable dtInstruments { get; set; }
         public DataTable dtAllTables { get; set; }
         public Dictionary<string, int> dictInstruments;
-        public Dictionary<string, string> dictAllTables;
+        public Dictionary<string, tableInfo> dictAllTables;
         public string connectionstr = "user id=sa;password=WaNo11998811mssql;server=localhost;database=smartcom;MultipleActiveResultSets=true";
         public QuotesFromBD() 
         {
             dtInstruments = new DataTable();
             dtAllTables = new DataTable();
             dictInstruments = new Dictionary<string, int>();
-            dictAllTables = new Dictionary<string, string>();
+            dictAllTables = new Dictionary<string, tableInfo>();
         }
 
         public void ConnectToDataSource()
@@ -82,11 +82,30 @@ namespace MyMoney
                 {
                     Regex r = new Regex(@"((\d+)\.(\d+)\.(\d+))");
                     MatchCollection mc = r.Matches(item["shortdate"].ToString().Remove(10));
-                    string kname = item["name"].ToString() + "_" + mc[0].Groups[4] + "-" + mc[0].Groups[3] + "-" + mc[0].Groups[2];
-                    if (!dictAllTables.ContainsKey(kname))
-                        dictAllTables.Add(kname, item["shortdate"].ToString());
+                    string sname = item["name"].ToString() + "_" + mc[0].Groups[4] + "-" + mc[0].Groups[3] + "-" + mc[0].Groups[2];
+                    string lname = sname + "_" + item["typetname"].ToString();
+                    if (!dictAllTables.ContainsKey(lname))
+                    {
+                        tableInfo ti = new tableInfo();
+                        ti.tableType = item["typetname"].ToString();
+                        ti.shortName = sname;
+                        ti.fullName = lname;
+                        ti.dateTable = item["shortdate"].ToString().Remove(10);
+                        ti.dayNum = int.Parse(mc[0].Groups[4].ToString());
+                        ti.monthNum = int.Parse(mc[0].Groups[3].ToString());
+                        ti.yearNum = int.Parse(mc[0].Groups[2].ToString());
+                        ti.isntrumentName = item["name"].ToString();
+                        dictAllTables.Add(lname, ti);
+                    }
                 }
             }
+        }
+
+        public int GetCountRecrodInTable(string _nameTable)
+        {
+            sqlcommand.CommandText = "SELECT count(*) FROM [" + _nameTable + "];";
+
+            return (int)sqlcommand.ExecuteScalar();
         }
     }
 }

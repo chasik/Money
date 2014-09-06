@@ -32,6 +32,7 @@ namespace MyMoney
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            listBox1.Items.Clear();
             dsource = new QuotesFromBD();
             dsource.OnConnected         += new ConnectedHandler(ConnectedEvent);
             dsource.OnGetInstruments    += new GetInstrumentsHandler(GetInstrumentsEvent);
@@ -73,6 +74,7 @@ namespace MyMoney
 
         private void listBox1_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            textBoxTable.Clear();
             object item = (sender as ListBox).SelectedItem;
             if (item == null || dsourceDB == null || dsourceDB.dictInstruments == null)
                 return;
@@ -80,9 +82,32 @@ namespace MyMoney
             listBox2.Items.Clear();
             foreach (string k in dsourceDB.dictAllTables.Keys)
             {
-                string st1 = dsourceDB.dictAllTables[k].ToString().Remove(10);
-                if (!listBox2.Items.Contains(st1))
-                    listBox2.Items.Add(st1 + "\t[" + k + "]");
+                string st1 = dsourceDB.dictAllTables[k].dateTable;
+                bool newDate = true;
+                foreach (string s in listBox2.Items)
+                {
+                    if (s.Contains(st1))
+                    {
+                        newDate = false;
+                        break;
+                    }
+                }
+                if (newDate)
+                    listBox2.Items.Add(st1 + "\t[" + dsourceDB.dictAllTables[k].shortName + "]");
+            }
+        }
+
+        private void listBox2_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            textBoxTable.Clear();
+            object item = (sender as ListBox).SelectedItem;
+            if (item == null || dsourceDB == null || dsourceDB.dictInstruments == null)
+                return;
+            foreach(string k in dsourceDB.dictAllTables.Keys)
+            {
+                if (item.ToString().Contains(dsourceDB.dictAllTables[k].shortName)){
+                    textBoxTable.AppendText(k + "\t" + dsourceDB.GetCountRecrodInTable(k).ToString() + "\r\n");
+                }
             }
         }
     }
