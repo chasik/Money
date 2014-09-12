@@ -33,9 +33,16 @@ namespace MyMoney
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             listBox1.Items.Clear();
-            dsource = new QuotesFromBD();
-            dsource.OnConnected         += new ConnectedHandler(ConnectedEvent);
-            dsource.OnGetInstruments    += new GetInstrumentsHandler(GetInstrumentsEvent);
+            if (checkBox1.IsChecked == false)
+            {
+                dsource = new QuotesFromBD();
+                dsource.OnConnected += new ConnectedHandler(ConnectedEvent);
+                dsource.OnGetInstruments += new GetInstrumentsHandler(GetInstrumentsEvent);
+            }
+            else
+            {
+                dsource = new QuotesFromSmartCom(textBox1.Text, passBox1.Password);
+            }
             dsource.ConnectToDataSource();
         }
 

@@ -7,10 +7,10 @@
             <ColumnDefinition Width="6*"/>
             <ColumnDefinition Width="1751*"/>
         </Grid.ColumnDefinitions>
-        <Button x:Name="button1" Content="Подключиться к BD" HorizontalAlignment="Left" Margin="1,10,0,0" VerticalAlignment="Top" Width="231" Click="Button_Click" Height="50" Grid.Column="1"/>
+        <Button x:Name="button1" Content="Подключиться к BD" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="222" Click="Button_Click" Height="50" Grid.Column="1"/>
         <ListBox x:Name="listBox1" Margin="1,65,0,327" HorizontalAlignment="Left" Width="231" MouseLeftButtonUp="listBox1_MouseLeftButtonUp" Grid.Column="1"/>
         <ListBox x:Name="listBox2" Margin="1,0,0,10" HorizontalAlignment="Left" Width="231" MouseLeftButtonUp="listBox2_MouseLeftButtonUp" Height="312" VerticalAlignment="Bottom" FontSize="10" FontFamily="Tekton Pro" Grid.Column="1"/>
-        <GroupBox Header="Таблицы" Margin="237,10,0,62" Grid.Column="1" HorizontalAlignment="Left" Width="369">
+        <GroupBox Header="Таблицы" Margin="237,65,0,62" Grid.Column="1" HorizontalAlignment="Left" Width="369">
             <TextBox x:Name="textBoxTable" HorizontalAlignment="Left" Height="133" TextWrapping="Wrap" VerticalAlignment="Top" Width="356" Margin="0,0,-2,0"/>
         </GroupBox>
         <Button Content="Запуск" Margin="363,0,0,10" Height="47" VerticalAlignment="Bottom" Grid.Column="1" HorizontalAlignment="Left" Width="243"/>
@@ -21,6 +21,9 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <TextBox x:Name="textBox1" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="237,10,0,0" TextWrapping="Wrap" Text="BP12800" VerticalAlignment="Top" Width="120"/>
+        <CheckBox x:Name="checkBox1" Content="Подключение к серверу" Grid.Column="1" HorizontalAlignment="Left" Margin="237,47,0,0" VerticalAlignment="Top" Width="347"/>
+        <PasswordBox x:Name="passBox1" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="439,10,0,0" VerticalAlignment="Top" Width="167" Password="8GVZ7Z"/>
 
     </Grid>
 </Window>
