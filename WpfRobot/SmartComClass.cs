@@ -28,7 +28,8 @@ namespace SmartComClass
 
         public void ConnectDataSource()
         {
-            //SmartC.ConfigureClient("asyncSocketConnectionMode=no");
+            SmartC.ConfigureClient("logLevel=1");
+            SmartC.ConfigureServer("logLevel=1;pingTimeOut=5");
             SmartC.connect(ServerIp, ServerPort, Login, Password);
         }
     }

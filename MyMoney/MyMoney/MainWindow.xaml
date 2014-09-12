@@ -1,15 +1,26 @@
 ﻿<Window x:Name="MyWindow" x:Class="MyMoney.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="464" Width="1112">
+        Title="MainWindow" Height="628" Width="1765">
     <Grid>
-        <Button x:Name="button1" Content="Подключиться к BD" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="127" Click="Button_Click" Height="50"/>
-        <ListBox x:Name="listBox1" Margin="142,10,0,10" HorizontalAlignment="Left" Width="210" MouseLeftButtonUp="listBox1_MouseLeftButtonUp"/>
-        <ListBox x:Name="listBox2" Margin="373,10,0,10" HorizontalAlignment="Left" Width="286" MouseLeftButtonUp="listBox2_MouseLeftButtonUp"/>
-        <GroupBox Header="Таблицы" Margin="664,10,10,64">
-            <TextBox x:Name="textBoxTable" HorizontalAlignment="Left" Height="133" TextWrapping="Wrap" VerticalAlignment="Top" Width="420" Margin="0,0,-2,0"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="6*"/>
+            <ColumnDefinition Width="1751*"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="button1" Content="Подключиться к BD" HorizontalAlignment="Left" Margin="1,10,0,0" VerticalAlignment="Top" Width="231" Click="Button_Click" Height="50" Grid.Column="1"/>
+        <ListBox x:Name="listBox1" Margin="1,65,0,327" HorizontalAlignment="Left" Width="231" MouseLeftButtonUp="listBox1_MouseLeftButtonUp" Grid.Column="1"/>
+        <ListBox x:Name="listBox2" Margin="1,0,0,10" HorizontalAlignment="Left" Width="231" MouseLeftButtonUp="listBox2_MouseLeftButtonUp" Height="312" VerticalAlignment="Bottom" FontSize="10" FontFamily="Tekton Pro" Grid.Column="1"/>
+        <GroupBox Header="Таблицы" Margin="237,10,0,62" Grid.Column="1" HorizontalAlignment="Left" Width="369">
+            <TextBox x:Name="textBoxTable" HorizontalAlignment="Left" Height="133" TextWrapping="Wrap" VerticalAlignment="Top" Width="356" Margin="0,0,-2,0"/>
         </GroupBox>
-        <Button Content="Запуск" Margin="949,375,10,7"/>
+        <Button Content="Запуск" Margin="363,0,0,10" Height="47" VerticalAlignment="Bottom" Grid.Column="1" HorizontalAlignment="Left" Width="243"/>
+        <ListView x:Name="listView1" Grid.Column="1" Margin="0,10,896,10" HorizontalAlignment="Right" Width="244">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn/>
+                </GridView>
+            </ListView.View>
+        </ListView>
 
     </Grid>
 </Window>
