@@ -34,12 +34,12 @@ namespace WpfRobot
             InitializeComponent();
 
             InstrumentsList.Items.Add("MICEX");
-            InstrumentsList.Items.Add("RTS-9.14_FT");
-            InstrumentsList.Items.Add("Si-9.14_FT");
-            InstrumentsList.Items.Add("GOLD-9.14_FT");
-            InstrumentsList.Items.Add("SBRF-9.14_FT");
-            InstrumentsList.Items.Add("GAZR-9.14_FT");
-            InstrumentsList.Items.Add("LKOH-9.14_FT");
+            InstrumentsList.Items.Add("RTS-12.14_FT");
+            InstrumentsList.Items.Add("Si-12.14_FT");
+            InstrumentsList.Items.Add("GOLD-12.14_FT");
+            InstrumentsList.Items.Add("SBRF-12.14_FT");
+            InstrumentsList.Items.Add("GAZR-12.14_FT");
+            InstrumentsList.Items.Add("LKOH-12.14_FT");
         }
         public void StartThreadsButton_Click(object sender, RoutedEventArgs e)
         {

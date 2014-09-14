@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Data;
 
+
 namespace MyMoney
 {
     /// <summary>
