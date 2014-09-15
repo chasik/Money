@@ -9,6 +9,7 @@ namespace MyMoney
 {
     public delegate void ConnectedHandler(string message);
     public delegate void GetInstrumentsHandler();
+    public delegate void ThreadStarted(string message);
     public interface IDataSource
     {
         DataTable dtInstruments {get;set;}
@@ -18,5 +19,6 @@ namespace MyMoney
         void ThreadInstruments();
         event ConnectedHandler OnConnected;
         event GetInstrumentsHandler OnGetInstruments;
+
     }
 }

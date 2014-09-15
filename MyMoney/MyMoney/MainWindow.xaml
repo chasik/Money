@@ -10,11 +10,8 @@
         <Button x:Name="button1" Content="Подключиться к BD" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="222" Click="Button_Click" Height="50" Grid.Column="1"/>
         <ListBox x:Name="listBox1" Margin="1,65,0,327" HorizontalAlignment="Left" Width="231" MouseLeftButtonUp="listBox1_MouseLeftButtonUp" Grid.Column="1"/>
         <ListBox x:Name="listBox2" Margin="1,0,0,10" HorizontalAlignment="Left" Width="231" MouseLeftButtonUp="listBox2_MouseLeftButtonUp" Height="312" VerticalAlignment="Bottom" FontSize="10" FontFamily="Tekton Pro" Grid.Column="1"/>
-        <GroupBox Header="Таблицы" Margin="237,65,0,62" Grid.Column="1" HorizontalAlignment="Left" Width="369">
-            <TextBox x:Name="textBoxTable" HorizontalAlignment="Left" Height="133" TextWrapping="Wrap" VerticalAlignment="Top" Width="356" Margin="0,0,-2,0"/>
-        </GroupBox>
-        <Button Content="Запуск" Margin="363,0,0,10" Height="47" VerticalAlignment="Bottom" Grid.Column="1" HorizontalAlignment="Left" Width="243"/>
-        <ListView x:Name="listView1" Grid.Column="1" Margin="0,10,896,10" HorizontalAlignment="Right" Width="244">
+        <Button Content="Запуск" Margin="363,0,0,10" Height="47" VerticalAlignment="Bottom" Grid.Column="1" HorizontalAlignment="Left" Width="243" Click="Button_Click_1"/>
+        <ListView x:Name="listView1" Grid.Column="1" Margin="611,10,0,10" HorizontalAlignment="Left" Width="244">
             <ListView.View>
                 <GridView>
                     <GridViewColumn/>
@@ -24,6 +21,30 @@
         <TextBox x:Name="textBox1" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="237,10,0,0" TextWrapping="Wrap" Text="BP12800" VerticalAlignment="Top" Width="120"/>
         <CheckBox x:Name="checkBox1" Content="Подключение к серверу" Grid.Column="1" HorizontalAlignment="Left" Margin="237,47,0,0" VerticalAlignment="Top" Width="347"/>
         <PasswordBox x:Name="passBox1" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="439,10,0,0" VerticalAlignment="Top" Width="167" Password="8GVZ7Z"/>
+        <TextBox x:Name="textBoxTable" Grid.Column="1" HorizontalAlignment="Left" Margin="237,68,0,0" TextWrapping="Wrap" Width="369" Height="67" VerticalAlignment="Top"/>
+        <TextBox x:Name="tbThreadCount" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="539,140,0,0" TextWrapping="Wrap" Text="6" VerticalAlignment="Top" Width="67"/>
+        <Label Content="Потоков:" Grid.Column="1" HorizontalAlignment="Left" Margin="474,140,0,0" VerticalAlignment="Top" Width="60" Height="23"/>
+        <Label Content="Не учитывать если больше среднего (в ... раз):" Grid.Column="1" HorizontalAlignment="Left" Margin="237,168,0,0" VerticalAlignment="Top" Width="369"/>
+        <TextBox x:Name="tbAverageStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="317,199,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbAverageFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="419,199,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="70"/>
+        <Label Content="Profit:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,225,0,0" VerticalAlignment="Top" Width="82"/>
+        <TextBox x:Name="tbProfitStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="317,227,0,0" TextWrapping="Wrap" Text="100" VerticalAlignment="Top" Width="70"/>
+        <Label Content="Loss:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,254,0,0" VerticalAlignment="Top" Width="82"/>
+        <TextBox x:Name="tbProfitFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="419,227,0,0" TextWrapping="Wrap" Text="100" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbLossStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="317,254,0,0" TextWrapping="Wrap" Text="100" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbLossFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="419,254,0,0" TextWrapping="Wrap" Text="100" VerticalAlignment="Top" Width="70"/>
+        <Label Content="Indicator:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,284,0,0" VerticalAlignment="Top" Width="82"/>
+        <TextBox x:Name="tbIndicatorStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="317,284,0,0" TextWrapping="Wrap" Text="20" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbIndicatorFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="419,284,0,0" TextWrapping="Wrap" Text="35" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbAverageStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="524,199,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbProfitStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="524,227,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbLossStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="524,254,0,0" TextWrapping="Wrap" Text="10" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbIndicatorStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="524,284,0,0" TextWrapping="Wrap" Text="5" VerticalAlignment="Top" Width="70"/>
+        <Label Content="Усредняться:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,310,0,0" VerticalAlignment="Top" Width="82"/>
+        <TextBox x:Name="tbMartingStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="317,310,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbMartingFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="419,310,0,0" TextWrapping="Wrap" Text="2" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="tbMartingStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="524,310,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="70"/>
+        <TextBox x:Name="textBox2" Grid.Column="1" HorizontalAlignment="Left" Margin="237,341,0,62" TextWrapping="Wrap" Text="TextBox" Width="369"/>
 
     </Grid>
 </Window>

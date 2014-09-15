@@ -129,13 +129,13 @@ while @@FETCH_STATUS = 0
 				if (@priceTick &gt; @maxbid) set @maxbid = @priceTick + 30;
 				if (@priceEnterLong = 0 AND @priceEnterShort = 0)
 					begin
-						if ( @indicatoraverage3 &gt; 25)
-						--if (@indicator &gt; 20)
+						--if ( @indicatoraverage3 &gt; 25)
+						if (@indicator &gt; 20)
 							begin set @priceEnterLong = @priceTick; set @dtEnter = @dt; 
 								set @profitLimitTemp = @profitLimit; set @lossLimitTemp = @lossLimit; set @lotCount = 1; set @valIndEnter = @indicatoraverage3;
 							end;
-						else if (@indicatoraverage3 &lt; -25)
-						--else if (@indicator &lt; -20)
+						--else if (@indicatoraverage3 &lt; -25)
+						else if (@indicator &lt; -20)
 							begin set @priceEnterShort = @priceTick; set @dtEnter = @dt; 
 								set @profitLimitTemp = @profitLimit; set @lossLimitTemp = @lossLimit; set @lotCount = 1; set @valIndEnter = @indicatoraverage3;
 							end;
@@ -402,6 +402,7 @@ order by d
           <Conditions isList="true" count="0" />
           <ConstantLines isList="true" count="0" />
           <CustomStyleName />
+          <Enabled>False</Enabled>
           <Filters isList="true" count="0" />
           <Legend Ref="36" type="Stimulsoft.Report.Chart.StiLegend" isKey="true">
             <BorderColor>105, 105, 105</BorderColor>
@@ -702,6 +703,7 @@ this.Chart2_Area.YAxis = new Stimulsoft.Report.Chart.StiYLeftAxis(new Stimulsoft
           <ConstantLines isList="true" count="0" />
           <CustomStyleName />
           <DataRelationName isNull="true" />
+          <Enabled>False</Enabled>
           <Filters isList="true" count="1">
             <value>,IsNotNull,_x0039__x002F_14_x002F_2014,_x0039__x002F_14_x002F_2014,DateTime</value>
           </Filters>
@@ -1260,10 +1262,10 @@ if (data1.priceEnterShort == 0)
     <value>Stimulsoft.Report.Dll</value>
   </ReferencedAssemblies>
   <ReportAlias>Report</ReportAlias>
-  <ReportChanged>9/15/2014 12:07:55 AM</ReportChanged>
+  <ReportChanged>9/15/2014 10:16:22 AM</ReportChanged>
   <ReportCreated>8/29/2014 10:58:20 PM</ReportCreated>
-  <ReportFile>C:\Users\ich\Documents\GitHub\Money\анализ котировок очет.mrt</ReportFile>
-  <ReportGuid>45b0733278b44071ae48efb173b5eb3e</ReportGuid>
+  <ReportFile>C:\Users\W\Documents\GitHub\Money\visual report quotes.mrt</ReportFile>
+  <ReportGuid>ae4b8f1458a945dfbe18aeefbffb6243</ReportGuid>
   <ReportName>Report</ReportName>
   <ReportUnit>Centimeters</ReportUnit>
   <ReportVersion>2014.1.1900</ReportVersion>
