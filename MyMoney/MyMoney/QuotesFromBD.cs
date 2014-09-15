@@ -53,7 +53,6 @@ namespace MyMoney
             sqlconn.Open();
             if (OnConnected != null)
                 OnConnected("Соединение с базой данных установлено");
-            Thread.Sleep(100000);
         }
 
         public void GetAllInstruments(){
@@ -142,6 +141,36 @@ namespace MyMoney
 
         private void DicspatcherThread()
         {
+            string connectionString = "user id=sa;password=WaNo11998811mssql;server=localhost;database=smartcom;MultipleActiveResultSets=true";
+            SqlConnection connectionTh = new SqlConnection(connectionString);
+            connectionTh.Open();
+
+            SqlCommand sqlcom = new SqlCommand();
+            sqlcom.Connection = connectionTh;
+            sqlcom.CommandTimeout = 300;
+            sqlcom.CommandText = @"
+                SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
+	            FROM [RTS-9.14_FT_2014-09-11_bidask] rts 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+
+	            UNION ALL
+
+                SELECT dtserver, null as price, null as volume, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
+	            FROM [RTS-9.14_FT_2014-09-11_quotes] rts2 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+
+  	            UNION ALL
+
+                SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
+	            FROM [RTS-9.14_FT_2014-09-11_ticks] rft
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+
+            	ORDER BY dtserver ASC;
+            ";
+
+            DataTable dt = new DataTable();
+            dt.Load(sqlcom.ExecuteReader());
+
             while (parametrsList.Count > 0)
             {
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
@@ -162,24 +191,13 @@ namespace MyMoney
                     listThreads.Remove(t);
                 }
                 listThreadsForDelete.Clear();
-                //Thread.Sleep(3000);
             }
 
         }
 
         private void OneThreadTester(object p)
         {
-            int i = 0;
-            while ( i < 1000000)
-            {
-                i++;
-            }
-            if (OnThreadTesterStart != null)
-                OnThreadTesterStart((p as ParametrsForTestObj).paramS.averageValue.ToString()
-                        + " - " + (p as ParametrsForTestObj).paramS.indicatorValue.ToString()
-                        + " - " + (p as ParametrsForTestObj).paramS.profitValue.ToString()
-                        + " - " + (p as ParametrsForTestObj).paramS.lossValue.ToString()
-                        + " - " + (p as ParametrsForTestObj).paramS.martingValue.ToString());
+
         }
     }
 }

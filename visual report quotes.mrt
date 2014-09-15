@@ -82,7 +82,7 @@ declare @ttemp table(p integer, v integer)
 declare curs cursor for
 select 
 	dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
-	from [RTS-9.14_FT_2014-09-03_bidask] rts 
+	from [RTS-9.14_FT_2014-09-12_bidask] rts 
 	where (convert(time, dtserver, 108) &gt; timefromparts(@hourStart, @minuteStart, 0, 0, 0)) 
 		and (convert(time, dtserver, 108) &lt; timefromparts(@hourFinish, @minuteFinish, 0, 0, 0)) 
 
@@ -90,7 +90,7 @@ select
 
 select 
 	dtserver, null as price, null as volume, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
-	from [RTS-9.14_FT_2014-09-03_quotes] rts2 
+	from [RTS-9.14_FT_2014-09-12_quotes] rts2 
 	where (convert(time, dtserver, 108) &gt; timefromparts(@hourStart, @minuteStart, 0, 0, 0)) 
 		and (convert(time, dtserver, 108) &lt; timefromparts(@hourFinish, @minuteFinish, 0, 0, 0)) 
 
@@ -98,7 +98,7 @@ select
 
 SELECT
 	dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
-	FROM [RTS-9.14_FT_2014-09-03_ticks] rft
+	FROM [RTS-9.14_FT_2014-09-12_ticks] rft
 	where (convert(time, dtserver, 108) &gt; timefromparts(@hourStart, @minuteStart, 0, 0, 0)) 
 		and (convert(time, dtserver, 108) &lt; timefromparts(@hourFinish, @minuteFinish, 0, 0, 0)) 
 
@@ -129,13 +129,15 @@ while @@FETCH_STATUS = 0
 				if (@priceTick &gt; @maxbid) set @maxbid = @priceTick + 30;
 				if (@priceEnterLong = 0 AND @priceEnterShort = 0)
 					begin
-						--if ( @indicatoraverage3 &gt; 25)
-						if (@indicator &gt; 20)
+						if (@indicatoraverage3 &gt; 25)
+						--if (@indicatoraverage2 &gt; 20)
+						--if (@indicator &gt; 20)
 							begin set @priceEnterLong = @priceTick; set @dtEnter = @dt; 
 								set @profitLimitTemp = @profitLimit; set @lossLimitTemp = @lossLimit; set @lotCount = 1; set @valIndEnter = @indicatoraverage3;
 							end;
-						--else if (@indicatoraverage3 &lt; -25)
-						else if (@indicator &lt; -20)
+						else if (@indicatoraverage3 &lt; -25)
+						--if (@indicatoraverage2 &lt; -20)
+						--else if (@indicator &lt; -20)
 							begin set @priceEnterShort = @priceTick; set @dtEnter = @dt; 
 								set @profitLimitTemp = @profitLimit; set @lossLimitTemp = @lossLimit; set @lotCount = 1; set @valIndEnter = @indicatoraverage3;
 							end;
@@ -1262,10 +1264,10 @@ if (data1.priceEnterShort == 0)
     <value>Stimulsoft.Report.Dll</value>
   </ReferencedAssemblies>
   <ReportAlias>Report</ReportAlias>
-  <ReportChanged>9/15/2014 10:16:22 AM</ReportChanged>
+  <ReportChanged>9/15/2014 10:59:25 PM</ReportChanged>
   <ReportCreated>8/29/2014 10:58:20 PM</ReportCreated>
-  <ReportFile>C:\Users\W\Documents\GitHub\Money\visual report quotes.mrt</ReportFile>
-  <ReportGuid>ae4b8f1458a945dfbe18aeefbffb6243</ReportGuid>
+  <ReportFile>C:\Users\ich\Documents\GitHub\Money\visual report quotes.mrt</ReportFile>
+  <ReportGuid>5af5021a7f724594b4e55ad9a0b1618a</ReportGuid>
   <ReportName>Report</ReportName>
   <ReportUnit>Centimeters</ReportUnit>
   <ReportVersion>2014.1.1900</ReportVersion>
