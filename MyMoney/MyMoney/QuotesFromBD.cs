@@ -101,9 +101,9 @@ namespace MyMoney
                         ti.shortName = sname;
                         ti.fullName = lname;
                         ti.dateTable = item["shortdate"].ToString().Remove(10);
-                        ti.dayNum = int.Parse(mc[0].Groups[4].ToString());
+                        ti.dayNum = int.Parse(mc[0].Groups[2].ToString());
                         ti.monthNum = int.Parse(mc[0].Groups[3].ToString());
-                        ti.yearNum = int.Parse(mc[0].Groups[2].ToString());
+                        ti.yearNum = int.Parse(mc[0].Groups[4].ToString());
                         ti.isntrumentName = item["name"].ToString();
                         dictAllTables.Add(lname, ti);
                     }

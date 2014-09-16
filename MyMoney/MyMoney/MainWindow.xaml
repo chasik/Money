@@ -9,7 +9,7 @@
         </Grid.ColumnDefinitions>
         <Button x:Name="button1" Content="Подключиться к BD" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="222" Click="Button_Click" Height="50" Grid.Column="1"/>
         <ListBox x:Name="listBox1" Margin="1,65,0,327" HorizontalAlignment="Left" Width="231" MouseLeftButtonUp="listBox1_MouseLeftButtonUp" Grid.Column="1"/>
-        <ListBox x:Name="listBox2" Margin="1,0,0,10" HorizontalAlignment="Left" Width="231" MouseLeftButtonUp="listBox2_MouseLeftButtonUp" Height="312" VerticalAlignment="Bottom" FontSize="10" FontFamily="Tekton Pro" Grid.Column="1"/>
+        <ListBox x:Name="listBox2" Margin="1,0,0,10" HorizontalAlignment="Left" Width="231" Height="312" VerticalAlignment="Bottom" FontSize="10" FontFamily="Tekton Pro" Grid.Column="1" SelectionChanged="listBox2_SelectionChanged"/>
         <Button Content="Запуск" Margin="363,0,0,10" Height="47" VerticalAlignment="Bottom" Grid.Column="1" HorizontalAlignment="Left" Width="243" Click="Button_Click_1"/>
         <ListView x:Name="listView1" Grid.Column="1" Margin="611,10,0,10" HorizontalAlignment="Left" Width="244">
             <ListView.View>

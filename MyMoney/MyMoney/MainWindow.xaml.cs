@@ -106,7 +106,7 @@ namespace MyMoney
             }
         }
 
-        private void listBox2_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void listBox2_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             textBoxTable.Clear();
             object item = (sender as ListBox).SelectedItem;
@@ -146,5 +146,6 @@ namespace MyMoney
                textBox2.AppendText("Запущен: " + _m + "\r\n");
            });
         }
+
     }
 }
