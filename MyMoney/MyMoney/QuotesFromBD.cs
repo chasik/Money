@@ -13,7 +13,7 @@ namespace MyMoney
     public class QuotesFromBD : IDataSource
     {
         private object lockObj = new Object();
-        public int countThreads = 4;
+        public int countThreads = 5;
         private List<Thread> listThreads;
         private SqlConnection sqlconn;
         private SqlCommand sqlcommand = new SqlCommand();
@@ -29,7 +29,9 @@ namespace MyMoney
         public Dictionary<string, diapasonTestParam> dicDiapasonParams;
 
         public delegate void ChangeProgressEvent(int minval, int maxval, int val, string mes = "", bool showProgress = true);
+        public delegate void FinishOneThread(ParametrsForTest paramTh, ResultOneThread resTh);
 
+        public event FinishOneThread OnFinishOneThread;
         public event ChangeProgressEvent OnChangeProgress;
 
         public event ConnectedHandler OnConnected;
@@ -130,17 +132,20 @@ namespace MyMoney
             parametrsList.Clear();
             selectedSessionList.ForEach((string selectedIsntr) =>
             {
-                for (int i1 = dicDiapasonParams["averageValue"].start; i1 <= dicDiapasonParams["averageValue"].finish; i1 = i1 + dicDiapasonParams["averageValue"].step)
+                for (int i0 = dicDiapasonParams["glassHeight"].start; i0 <= dicDiapasonParams["glassHeight"].finish; i0 = i0 + dicDiapasonParams["glassHeight"].step)
                 {
-                    for (int i2 = dicDiapasonParams["profitValue"].start; i2 <= dicDiapasonParams["profitValue"].finish; i2 = i2 + dicDiapasonParams["profitValue"].step)
+                    for (int i1 = dicDiapasonParams["averageValue"].start; i1 <= dicDiapasonParams["averageValue"].finish; i1 = i1 + dicDiapasonParams["averageValue"].step)
                     {
-                        for (int i3 = dicDiapasonParams["lossValue"].start; i3 <= dicDiapasonParams["lossValue"].finish; i3 = i3 + dicDiapasonParams["lossValue"].step)
+                        for (int i2 = dicDiapasonParams["profitValue"].start; i2 <= dicDiapasonParams["profitValue"].finish; i2 = i2 + dicDiapasonParams["profitValue"].step)
                         {
-                            for (int i4 = dicDiapasonParams["indicatorValue"].start; i4 <= dicDiapasonParams["indicatorValue"].finish; i4 = i4 + dicDiapasonParams["indicatorValue"].step)
+                            for (int i3 = dicDiapasonParams["lossValue"].start; i3 <= dicDiapasonParams["lossValue"].finish; i3 = i3 + dicDiapasonParams["lossValue"].step)
                             {
-                                for (int i5 = dicDiapasonParams["martingValue"].start; i5 <= dicDiapasonParams["martingValue"].finish; i5 = i5 + dicDiapasonParams["martingValue"].step)
+                                for (int i4 = dicDiapasonParams["indicatorValue"].start; i4 <= dicDiapasonParams["indicatorValue"].finish; i4 = i4 + dicDiapasonParams["indicatorValue"].step)
                                 {
-                                    parametrsList.Add(new ParametrsForTest(selectedIsntr, i1, i2, i3, i4, i5));
+                                    for (int i5 = dicDiapasonParams["martingValue"].start; i5 <= dicDiapasonParams["martingValue"].finish; i5 = i5 + dicDiapasonParams["martingValue"].step)
+                                    {
+                                        parametrsList.Add(new ParametrsForTest(selectedIsntr, i0, i1, i2, i3, i4, i5));
+                                    }
                                 }
                             }
                         }
@@ -168,19 +173,19 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(11, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
 
 	            UNION ALL
 
                 SELECT dtserver, null as price, null as volume, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_quotes] rts2 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(11, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
 
   	            UNION ALL
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(11, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -197,6 +202,7 @@ namespace MyMoney
                 {
                     ParametrsForTest pt = parametrsList.First();
                     listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
+                    listThreads.Last().IsBackground = true;
                     listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables[pt.shortName].Copy()));
                     parametrsList.Remove(pt);
                     if (OnChangeProgress != null)
@@ -219,6 +225,7 @@ namespace MyMoney
 
         private void OneThreadTester(object p)
         {
+            ResultOneThread resTh = new ResultOneThread();
             List<int> oldGlassValue = new List<int>();
             Dictionary<int, int> glass = new Dictionary<int, int>();
             int priceEnterLong = 0, priceEnterShort = 0;
@@ -235,9 +242,43 @@ namespace MyMoney
                     pricetick = (int?) dr.Field<float?>("priceTick");
                     actiontick = dr.Field<byte?>("idaction");
                     if (actiontick == 1)
+                    {
                         ask = pricetick;
+                        if (priceEnterShort != 0)
+                        {
+                            if (priceEnterShort - paramTh.profitValue >= ask)
+                            {
+                                resTh.countProfitDeal++;
+                                resTh.profit += priceEnterShort - (int)ask;
+                                priceEnterShort = 0;
+                            }
+                            else if (priceEnterShort + paramTh.lossValue <= ask)
+                            {
+                                resTh.countLossDeal++;
+                                resTh.loss += (int)ask - priceEnterShort;
+                                priceEnterShort = 0;
+                            }
+                        }
+                    }
                     else if (actiontick == 2)
+                    {
                         bid = pricetick;
+                        if (priceEnterLong != 0)
+                        {
+                            if (priceEnterLong + paramTh.profitValue <= bid)
+                            {
+                                resTh.countProfitDeal++;
+                                resTh.profit += (int)bid - priceEnterLong;
+                                priceEnterLong = 0;
+                            }
+                            else if (priceEnterLong - paramTh.lossValue >= bid)
+                            {
+                                resTh.countLossDeal++;
+                                resTh.loss += priceEnterLong - (int)bid;
+                                priceEnterLong = 0;
+                            }
+                        }
+                    }
                 }
                 // изменение в стакане
                 else if (!dr.IsNull("price"))
@@ -278,7 +319,15 @@ namespace MyMoney
                                     sumshort += glass[pkey];
                                 }
                             }
-                            int indicator = (int) (sumlong - sumshort) * 100 / (sumlong + sumshort);
+                            int indicator = (sumlong + sumshort) != 0 ? (int) (sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
+                            if (indicator >= paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
+                            {
+                                priceEnterLong = (int) ask;
+                            }
+                            else if (indicator <= -paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
+                            {
+                                priceEnterShort = (int) bid;
+                            }
                         }
                     }
 
@@ -289,6 +338,14 @@ namespace MyMoney
                     ask = (int?) dr.Field<float?>("ask");
                 }
             }
+
+            lock (lockObj)
+            {
+                resTh.profitFactor = (float)resTh.profit / (float)resTh.loss;
+                if (OnFinishOneThread != null)
+                    OnFinishOneThread(paramTh, resTh);
+            }
         }
+
     }
 }

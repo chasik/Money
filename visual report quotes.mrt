@@ -129,13 +129,13 @@ while @@FETCH_STATUS = 0
 				if (@priceTick &gt; @maxbid) set @maxbid = @priceTick + 30;
 				if (@priceEnterLong = 0 AND @priceEnterShort = 0)
 					begin
-						if (@indicatoraverage3 &gt; 25)
+						if (@indicatoraverage3 &gt; 24)
 						--if (@indicatoraverage2 &gt; 20)
 						--if (@indicator &gt; 20)
 							begin set @priceEnterLong = @priceTick; set @dtEnter = @dt; 
 								set @profitLimitTemp = @profitLimit; set @lossLimitTemp = @lossLimit; set @lotCount = 1; set @valIndEnter = @indicatoraverage3;
 							end;
-						else if (@indicatoraverage3 &lt; -25)
+						else if (@indicatoraverage3 &lt; -24)
 						--if (@indicatoraverage2 &lt; -20)
 						--else if (@indicator &lt; -20)
 							begin set @priceEnterShort = @priceTick; set @dtEnter = @dt; 
@@ -251,19 +251,19 @@ while @@FETCH_STATUS = 0
 		if (@timer &lt;&gt; @timerold AND (select count(*) from @t) &gt; 80)
 			begin
 				set @timerold = @timer;
-				select @i1 = sum(v), @c1 = count(*) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 300
-				select @i2 = sum(v), @c2 = count(*) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 300
+				select @i1 = sum(v), @c1 = count(*) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 320
+				select @i2 = sum(v), @c2 = count(*) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 320
 
 				set @average = (@i1 + @i2) / (@c1 + @c2)
 
-				select @iaverage1 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 300 and v &lt; @average * 2
-				select @iaverage2 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 300 and v &lt; @average * 2
+				select @iaverage1 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 320 and v &lt; @average * 2
+				select @iaverage2 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 320 and v &lt; @average * 2
 
-				select @iaverage3 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 300 and v &lt; @average * 3
-				select @iaverage4 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 300 and v &lt; @average * 3
+				select @iaverage3 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 320 and v &lt; @average * 3
+				select @iaverage4 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 320 and v &lt; @average * 3
 
-				select @iaverage5 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 300 and v &lt; @average * 4
-				select @iaverage6 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 300 and v &lt; @average * 4
+				select @iaverage5 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 320 and v &lt; @average * 4
+				select @iaverage6 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 320 and v &lt; @average * 4
 
 				set @indicator = (@i1 - @i2) * 100 / (@i1 + @i2)
 				set @indicatoraverage = (@iaverage1 - @iaverage2) * 100 / (@iaverage1 + @iaverage2)
@@ -1303,10 +1303,10 @@ if (data1.priceEnterShort == 0)
     <value>Stimulsoft.Report.Dll</value>
   </ReferencedAssemblies>
   <ReportAlias>Report</ReportAlias>
-  <ReportChanged>9/17/2014 7:45:40 PM</ReportChanged>
+  <ReportChanged>9/17/2014 9:22:12 PM</ReportChanged>
   <ReportCreated>8/29/2014 10:58:20 PM</ReportCreated>
   <ReportFile>C:\Users\ich\Documents\GitHub\Money\visual report quotes.mrt</ReportFile>
-  <ReportGuid>6241a87fb3214b589127459c27ff9b88</ReportGuid>
+  <ReportGuid>3419008854df402e90321fd8ffe45bc7</ReportGuid>
   <ReportName>Report</ReportName>
   <ReportUnit>Centimeters</ReportUnit>
   <ReportVersion>2014.1.1900</ReportVersion>

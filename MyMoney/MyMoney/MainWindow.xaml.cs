@@ -24,6 +24,7 @@ namespace MyMoney
     /// </summary>
     public partial class MainWindow : Window
     {
+        float maxPF = 0;
         private IDataSource dsource;
         private QuotesFromBD dsourceDB;
         public MainWindow()
@@ -41,12 +42,32 @@ namespace MyMoney
                 dsource.OnGetInstruments += new GetInstrumentsHandler(GetInstrumentsEvent);
                 (dsource as QuotesFromBD).OnThreadTesterStart += new ThreadStarted(ThreadTesterStarted);
                 (dsource as QuotesFromBD).OnChangeProgress += MainWindow_OnChangeProgress;
+                (dsource as QuotesFromBD).OnFinishOneThread += MainWindow_OnFinishOneThread;
             }
             else
             {
                 dsource = new QuotesFromSmartCom(textBox1.Text, passBox1.Password);
             }
             dsource.ConnectToDataSource();
+        }
+
+        void MainWindow_OnFinishOneThread(ParametrsForTest paramTh, ResultOneThread resTh)
+        {
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate()
+                    {
+                        if (resTh.profitFactor > maxPF)
+                        {
+                            textBox2.AppendText(
+                                "profitF: " + resTh.profitFactor.ToString() + "  -  "
+                                + resTh.countProfitDeal.ToString() + " (" + resTh.profit.ToString() + ")"
+                                + " - " + resTh.countLossDeal.ToString() + " (-" + resTh.loss.ToString() + ")"
+                                + " - av: " + paramTh.averageValue.ToString()
+                                + " - sname: " + paramTh.shortName + "\r\n");
+                            maxPF = resTh.profitFactor;
+                        }
+                    }
+                );
         }
 
         void MainWindow_OnChangeProgress(int minval, int maxval, int val, string mes = "", bool showProgress = true)
@@ -156,6 +177,7 @@ namespace MyMoney
                     }
                 }
                 dsourceDB.dicDiapasonParams.Clear();
+                dsourceDB.dicDiapasonParams.Add("glassHeight", new diapasonTestParam(tbGlassStart.Text, tbGlassFinish.Text, tbGlassStep.Text));
                 dsourceDB.dicDiapasonParams.Add("averageValue", new diapasonTestParam(tbAverageStart.Text, tbAverageFinish.Text, tbAverageStep.Text));
                 dsourceDB.dicDiapasonParams.Add("profitValue", new diapasonTestParam(tbProfitStart.Text, tbProfitFinish.Text, tbProfitStep.Text));
                 dsourceDB.dicDiapasonParams.Add("lossValue", new diapasonTestParam(tbLossStart.Text, tbLossFinish.Text, tbLossStep.Text));
