@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,14 +37,16 @@ namespace MyMoney
     }
     public struct ParametrsForTest
     {
-        public ParametrsForTest(float _i1, int _i2, int _i3, int _i4, int _i5)
+        public ParametrsForTest(string _shortName, float _i1, int _i2, int _i3, int _i4, int _i5)
         {
+            shortName = _shortName;
             averageValue = _i1;
             profitValue = _i2;
             lossValue = _i3;
             indicatorValue = _i4;
             martingValue = _i5;
         }
+        public string shortName;
         public float averageValue; // отношение среднего по стакану к каждой позиции (если более averageValue - в рассчет не берется)
         public int profitValue; // значение профита
         public int lossValue; // значение убытка
@@ -53,10 +56,12 @@ namespace MyMoney
 
     public class ParametrsForTestObj
     {
-        public ParametrsForTestObj(ParametrsForTest _p)
+        public ParametrsForTestObj(ParametrsForTest _p, DataTable _dt)
         {
             paramS = _p;
+            dataTableCopy = _dt;
         }
         public ParametrsForTest paramS;
+        public DataTable dataTableCopy;
     }
 }

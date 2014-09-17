@@ -13,7 +13,7 @@ namespace MyMoney
     public class QuotesFromBD : IDataSource
     {
         private object lockObj = new Object();
-        public int countThreads = 6;
+        public int countThreads = 4;
         private List<Thread> listThreads;
         private SqlConnection sqlconn;
         private SqlCommand sqlcommand = new SqlCommand();
@@ -21,10 +21,16 @@ namespace MyMoney
         public DataTable dtAllTables { get; set; }
         public Dictionary<string, int> dictInstruments;
         public Dictionary<string, tableInfo> dictAllTables;
+        public Dictionary<string, DataTable> dicSelectedDataTables;
+        public List<string> selectedSessionList;
         public string connectionstr = "user id=sa;password=WaNo11998811mssql;server=localhost;database=smartcom;MultipleActiveResultSets=true";
 
         private List<ParametrsForTest> parametrsList;
         public Dictionary<string, diapasonTestParam> dicDiapasonParams;
+
+        public delegate void ChangeProgressEvent(int minval, int maxval, int val, string mes = "", bool showProgress = true);
+
+        public event ChangeProgressEvent OnChangeProgress;
 
         public event ConnectedHandler OnConnected;
 
@@ -37,6 +43,8 @@ namespace MyMoney
             dtAllTables = new DataTable();
             dictInstruments = new Dictionary<string, int>();
             dictAllTables = new Dictionary<string, tableInfo>();
+            dicSelectedDataTables = new Dictionary<string, DataTable>();
+            selectedSessionList = new List<string>();
             dicDiapasonParams = new Dictionary<string, diapasonTestParam>();
             parametrsList = new List<ParametrsForTest>();
             listThreads = new List<Thread>();
@@ -120,22 +128,26 @@ namespace MyMoney
         public void StartTester()
         {
             parametrsList.Clear();
-            for (int i1 = dicDiapasonParams["averageValue"].start; i1 <= dicDiapasonParams["averageValue"].finish; i1 = i1 + dicDiapasonParams["averageValue"].step)
-			{
-                for (int i2 = dicDiapasonParams["profitValue"].start; i2 <= dicDiapasonParams["profitValue"].finish; i2 = i2 + dicDiapasonParams["profitValue"].step)
+            selectedSessionList.ForEach((string selectedIsntr) =>
+            {
+                for (int i1 = dicDiapasonParams["averageValue"].start; i1 <= dicDiapasonParams["averageValue"].finish; i1 = i1 + dicDiapasonParams["averageValue"].step)
                 {
-                    for (int i3 = dicDiapasonParams["lossValue"].start; i3 <= dicDiapasonParams["lossValue"].finish; i3 = i3 + dicDiapasonParams["lossValue"].step)
+                    for (int i2 = dicDiapasonParams["profitValue"].start; i2 <= dicDiapasonParams["profitValue"].finish; i2 = i2 + dicDiapasonParams["profitValue"].step)
                     {
-                        for (int i4 = dicDiapasonParams["indicatorValue"].start; i4 <= dicDiapasonParams["indicatorValue"].finish; i4 = i4 + dicDiapasonParams["indicatorValue"].step)
+                        for (int i3 = dicDiapasonParams["lossValue"].start; i3 <= dicDiapasonParams["lossValue"].finish; i3 = i3 + dicDiapasonParams["lossValue"].step)
                         {
-                            for (int i5 = dicDiapasonParams["martingValue"].start; i5 <= dicDiapasonParams["martingValue"].finish; i5 = i5 + dicDiapasonParams["martingValue"].step)
+                            for (int i4 = dicDiapasonParams["indicatorValue"].start; i4 <= dicDiapasonParams["indicatorValue"].finish; i4 = i4 + dicDiapasonParams["indicatorValue"].step)
                             {
-                                parametrsList.Add(new ParametrsForTest(i1, i2, i3, i4, i5));
+                                for (int i5 = dicDiapasonParams["martingValue"].start; i5 <= dicDiapasonParams["martingValue"].finish; i5 = i5 + dicDiapasonParams["martingValue"].step)
+                                {
+                                    parametrsList.Add(new ParametrsForTest(selectedIsntr, i1, i2, i3, i4, i5));
+                                }
                             }
                         }
                     }
                 }
-			}
+            }
+            );
             new Thread(new ThreadStart(DicspatcherThread)).Start();
         }
 
@@ -144,41 +156,51 @@ namespace MyMoney
             string connectionString = "user id=sa;password=WaNo11998811mssql;server=localhost;database=smartcom;MultipleActiveResultSets=true";
             SqlConnection connectionTh = new SqlConnection(connectionString);
             connectionTh.Open();
-
-            SqlCommand sqlcom = new SqlCommand();
-            sqlcom.Connection = connectionTh;
-            sqlcom.CommandTimeout = 300;
-            sqlcom.CommandText = @"
+            //загрузка данных в datatable для всех выбранных дат
+            int stepProgress = 1;
+            selectedSessionList.ForEach((string tabNam) =>
+            {
+                if (OnChangeProgress != null)
+                    OnChangeProgress(0, selectedSessionList.Count, stepProgress++);
+                SqlCommand sqlcom = new SqlCommand();
+                sqlcom.Connection = connectionTh;
+                sqlcom.CommandTimeout = 300;
+                sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
-	            FROM [RTS-9.14_FT_2014-09-11_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+	            FROM [" + tabNam + @"_bidask] rts 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(11, 0, 0, 0, 0)) 
 
 	            UNION ALL
 
                 SELECT dtserver, null as price, null as volume, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
-	            FROM [RTS-9.14_FT_2014-09-11_quotes] rts2 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+	            FROM [" + tabNam + @"_quotes] rts2 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(11, 0, 0, 0, 0)) 
 
   	            UNION ALL
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
-	            FROM [RTS-9.14_FT_2014-09-11_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+	            FROM [" + tabNam + @"_ticks] rft
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(11, 0, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
-
-            DataTable dt = new DataTable();
-            dt.Load(sqlcom.ExecuteReader());
-
+                DataTable dt = new DataTable();
+                dt.Load(sqlcom.ExecuteReader());
+                dicSelectedDataTables.Add(tabNam, dt);
+            });
+            if (OnChangeProgress != null)
+                OnChangeProgress(0, 0, 0, "", false);
+            int plStartCount = parametrsList.Count;
             while (parametrsList.Count > 0)
             {
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt = parametrsList.First();
                     listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
-                    listThreads.Last().Start(new ParametrsForTestObj(pt));
+                    listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables[pt.shortName].Copy()));
                     parametrsList.Remove(pt);
+                    if (OnChangeProgress != null)
+                        OnChangeProgress(0, plStartCount, plStartCount - parametrsList.Count);
                 }
                 List<Thread> listThreadsForDelete = new List<Thread>();
                 foreach (Thread t in listThreads)
@@ -197,7 +219,76 @@ namespace MyMoney
 
         private void OneThreadTester(object p)
         {
+            List<int> oldGlassValue = new List<int>();
+            Dictionary<int, int> glass = new Dictionary<int, int>();
+            int priceEnterLong = 0, priceEnterShort = 0;
+            int? bid = 0, ask = 0;
+            int? pricetick = 0;
+            byte? actiontick = 0;
+            DataTable dt = (p as ParametrsForTestObj).dataTableCopy;
+            ParametrsForTest paramTh = (p as ParametrsForTestObj).paramS;
+            foreach (DataRow dr in dt.Rows)
+            {
+                // совершена сделка
+                if (!dr.IsNull("priceTick"))
+                {
+                    pricetick = (int?) dr.Field<float?>("priceTick");
+                    actiontick = dr.Field<byte?>("idaction");
+                    if (actiontick == 1)
+                        ask = pricetick;
+                    else if (actiontick == 2)
+                        bid = pricetick;
+                }
+                // изменение в стакане
+                else if (!dr.IsNull("price"))
+                {
+                    int updatepricegl = (int)dr.Field<float?>("price");
+                    int updatevolumegl = (int)dr.Field<float?>("volume");
+                    if (!glass.ContainsKey(updatepricegl))
+                        glass.Add(updatepricegl, updatevolumegl);
+                    else
+                    {
+                        glass[updatepricegl] = updatevolumegl;
+                        if (glass.Count > 40)
+                        {
+                            int sumGlass = 0;
+                            oldGlassValue.Clear();
+                            foreach (int pkey in glass.Keys)
+                            {
+                                if (pkey > ask + 300 || pkey < bid - 300)
+                                    oldGlassValue.Add(pkey);
+                                else if (pkey >= ask || pkey <= bid)
+                                    sumGlass += glass[pkey];
+                            }
+                            // удаляем из стакана значения, выпадающие за пределы глубины стакана
+                            oldGlassValue.ForEach((int i) => {
+                                glass.Remove(i);
+                            });
+                            // среднее значение по стакану
+                            int averageGlass = (int)sumGlass / 60;
+                            int sumlong = 0, sumshort = 0;
+                            foreach (int pkey in glass.Keys)
+                            {
+                                if (pkey >= ask && glass[pkey] < averageGlass * paramTh.averageValue)
+                                {
+                                    sumlong += glass[pkey];
+                                }
+                                else if (pkey <= bid && glass[pkey] < averageGlass * paramTh.averageValue)
+                                {
+                                    sumshort += glass[pkey];
+                                }
+                            }
+                            int indicator = (int) (sumlong - sumshort) * 100 / (sumlong + sumshort);
+                        }
+                    }
 
+                }
+                else if (!dr.IsNull("bid"))
+                {
+                    bid = (int?) dr.Field<float?>("bid");
+                    ask = (int?) dr.Field<float?>("ask");
+                }
+            }
         }
     }
 }

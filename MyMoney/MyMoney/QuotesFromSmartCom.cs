@@ -36,11 +36,11 @@ namespace MyMoney
         void scom_Connected()
         {
             MessageBox.Show("Connected!!!");
-            scom.ListenBidAsks("RTS-9.14_FT");
+            scom.ListenBidAsks("RTS-12.14_FT");
             scom.UpdateBidAsk += scom_UpdateBidAsk;
-            scom.ListenQuotes("RTS-9.14_FT");
+            scom.ListenQuotes("RTS-12.14_FT");
             scom.UpdateQuote += scom_UpdateQuote;
-            scom.ListenTicks("RTS-9.14_FT");
+            scom.ListenTicks("RTS-12.14_FT");
             scom.AddTick += scom_AddTick;
         }
 

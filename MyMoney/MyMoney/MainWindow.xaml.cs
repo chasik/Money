@@ -40,12 +40,26 @@ namespace MyMoney
                 dsource.OnConnected += new ConnectedHandler(ConnectedEvent);
                 dsource.OnGetInstruments += new GetInstrumentsHandler(GetInstrumentsEvent);
                 (dsource as QuotesFromBD).OnThreadTesterStart += new ThreadStarted(ThreadTesterStarted);
+                (dsource as QuotesFromBD).OnChangeProgress += MainWindow_OnChangeProgress;
             }
             else
             {
                 dsource = new QuotesFromSmartCom(textBox1.Text, passBox1.Password);
             }
             dsource.ConnectToDataSource();
+        }
+
+        void MainWindow_OnChangeProgress(int minval, int maxval, int val, string mes = "", bool showProgress = true)
+        {
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate()
+                {
+                    pbar1.Minimum = minval;
+                    pbar1.Maximum = maxval;
+                    pbar1.Value = val;
+                    pbar2.IsIndeterminate = showProgress;
+                    progressLabel.Content = val.ToString() + " / " + maxval.ToString();
+                });
         }
 
         private void ConnectedEvent(string mess) 
@@ -129,6 +143,18 @@ namespace MyMoney
             // если это подключение к бд
             if (dsource is QuotesFromBD)
             {
+                dsourceDB.selectedSessionList.Clear();
+                foreach (string s in listBox2.SelectedItems)
+                {
+                    foreach (string k in dsourceDB.dictAllTables.Keys)
+                    {
+                        if (s.Contains(dsourceDB.dictAllTables[k].shortName))
+                        {
+                            dsourceDB.selectedSessionList.Add(dsourceDB.dictAllTables[k].shortName);
+                            break;
+                        }
+                    }
+                }
                 dsourceDB.dicDiapasonParams.Clear();
                 dsourceDB.dicDiapasonParams.Add("averageValue", new diapasonTestParam(tbAverageStart.Text, tbAverageFinish.Text, tbAverageStep.Text));
                 dsourceDB.dicDiapasonParams.Add("profitValue", new diapasonTestParam(tbProfitStart.Text, tbProfitFinish.Text, tbProfitStep.Text));

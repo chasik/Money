@@ -31,14 +31,14 @@
           <value>timeclose,System.String</value>
           <value>valIndEnter,System.Int32</value>
         </Columns>
-        <CommandTimeout>240</CommandTimeout>
+        <CommandTimeout>480</CommandTimeout>
         <Dictionary isRef="1" />
         <Name>data1</Name>
         <NameInSource>Local Home</NameInSource>
         <Parameters isList="true" count="0" />
         <SqlCommand>declare @hourStart integer, @hourFinish integer, @minuteStart integer, @minuteFinish integer;
-set @hourStart = 10; set @minuteStart = 10;
-set @hourFinish = 22; set @minuteFinish = 55;
+set @hourStart = 10; set @minuteStart = 0;
+set @hourFinish = 23; set @minuteFinish = 55;
 
 declare @priceEnterLong integer, @priceEnterShort integer;
 declare @priceExit integer;
@@ -82,7 +82,7 @@ declare @ttemp table(p integer, v integer)
 declare curs cursor for
 select 
 	dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
-	from [RTS-9.14_FT_2014-09-12_bidask] rts 
+	from [RTS-12.14_FT_2014-09-17_bidask] rts 
 	where (convert(time, dtserver, 108) &gt; timefromparts(@hourStart, @minuteStart, 0, 0, 0)) 
 		and (convert(time, dtserver, 108) &lt; timefromparts(@hourFinish, @minuteFinish, 0, 0, 0)) 
 
@@ -90,7 +90,7 @@ select
 
 select 
 	dtserver, null as price, null as volume, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
-	from [RTS-9.14_FT_2014-09-12_quotes] rts2 
+	from [RTS-12.14_FT_2014-09-17_quotes] rts2 
 	where (convert(time, dtserver, 108) &gt; timefromparts(@hourStart, @minuteStart, 0, 0, 0)) 
 		and (convert(time, dtserver, 108) &lt; timefromparts(@hourFinish, @minuteFinish, 0, 0, 0)) 
 
@@ -98,7 +98,7 @@ select
 
 SELECT
 	dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
-	FROM [RTS-9.14_FT_2014-09-12_ticks] rft
+	FROM [RTS-12.14_FT_2014-09-17_ticks] rft
 	where (convert(time, dtserver, 108) &gt; timefromparts(@hourStart, @minuteStart, 0, 0, 0)) 
 		and (convert(time, dtserver, 108) &lt; timefromparts(@hourFinish, @minuteFinish, 0, 0, 0)) 
 
@@ -160,6 +160,12 @@ while @@FETCH_STATUS = 0
 										set @lossLimitTemp = 200; set @profitLimitTemp = 150;
 										set @priceEnterLong = @priceTick + 100; set @valIndEnter = @indicatoraverage3;
 									end;
+--									else if (@lotCount = 3)
+--									begin
+--set @lotCount = 4;
+--set @lossLimitTemp = 250; set @profitLimitTemp = 250;
+--set @priceEnterLong = @priceTick + 150; set @valIndEnter = @indicatoraverage3;
+--									end;
 									else
 									begin
 										set @priceExit = @priceTick;
@@ -192,6 +198,12 @@ while @@FETCH_STATUS = 0
 										set @lossLimitTemp = 200; set @profitLimitTemp = 150;
 										set @priceEnterShort = @priceTick - 100; set @valIndEnter = @indicatoraverage3;
 									end;
+--									else if (@lotCount = 3)
+--									begin
+--set @lotCount = 4;
+--set @lossLimitTemp = 250; set @profitLimitTemp = 250;
+--set @priceEnterShort = @priceTick - 150; set @valIndEnter = @indicatoraverage3;
+--									end;
 									else
 									begin
 										set @priceExit = @priceTick;
@@ -239,19 +251,19 @@ while @@FETCH_STATUS = 0
 		if (@timer &lt;&gt; @timerold AND (select count(*) from @t) &gt; 80)
 			begin
 				set @timerold = @timer;
-				select @i1 = sum(v), @c1 = count(*) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 500
-				select @i2 = sum(v), @c2 = count(*) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 500
+				select @i1 = sum(v), @c1 = count(*) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 300
+				select @i2 = sum(v), @c2 = count(*) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 300
 
 				set @average = (@i1 + @i2) / (@c1 + @c2)
 
-				select @iaverage1 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 500 and v &lt; @average * 2
-				select @iaverage2 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 500 and v &lt; @average * 2
+				select @iaverage1 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 300 and v &lt; @average * 2
+				select @iaverage2 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 300 and v &lt; @average * 2
 
-				select @iaverage3 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 500 and v &lt; @average * 3
-				select @iaverage4 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 500 and v &lt; @average * 3
+				select @iaverage3 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 300 and v &lt; @average * 3
+				select @iaverage4 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 300 and v &lt; @average * 3
 
-				select @iaverage5 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 500 and v &lt; @average * 4
-				select @iaverage6 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 500 and v &lt; @average * 4
+				select @iaverage5 = sum(v) from @t where p - @ask2 &gt; 0  and p - @ask2 &lt; 300 and v &lt; @average * 4
+				select @iaverage6 = sum(v) from @t where @bid2 - p &gt; 0  and @bid2 - p &lt; 300 and v &lt; @average * 4
 
 				set @indicator = (@i1 - @i2) * 100 / (@i1 + @i2)
 				set @indicatoraverage = (@iaverage1 - @iaverage2) * 100 / (@iaverage1 + @iaverage2)
@@ -287,11 +299,13 @@ order by d
     </DataSources>
     <Relations isList="true" count="0" />
     <Report isRef="0" />
-    <Variables isList="true" count="4">
+    <Variables isList="true" count="6">
       <value>,maxval,maxval,System.Int32,_x002D_1,False,False</value>
       <value>,minval,minval,System.Int32,_x0031_0000000,False,False</value>
       <value>,sumlong,sumlong,System.Single,_x0030_,False,False</value>
       <value>,sumshort,sumshort,System.Single,_x0030_,False,False</value>
+      <value>,sumLoss,sumLoss,System.Single,_x0030_,False,False</value>
+      <value>,sumProfit,sumProfit,System.Single,_x0030_,False,False</value>
     </Variables>
   </Dictionary>
   <EngineVersion>EngineV2</EngineVersion>
@@ -1044,11 +1058,19 @@ this.Chart2_Area.YAxis = new Stimulsoft.Report.Chart.StiYLeftAxis(new Stimulsoft
           <BeforePrintEvent>if (data1.priceEnterLong == 0)
 {
 	sumshort = sumshort + ((data1.priceEnterShort - data1.priceExit) * data1.lotCount);
+	if (data1.priceEnterShort - data1.priceExit &lt; 0)
+		sumLoss += Abs(data1.priceEnterShort - data1.priceExit)  * data1.lotCount;
+	else 
+		sumProfit += Abs(data1.priceEnterShort - data1.priceExit)  * data1.lotCount;
 }
 
 if (data1.priceEnterShort == 0)
 {
 	sumlong = sumlong + ((data1.priceExit - data1.priceEnterLong) * data1.lotCount);
+	if (data1.priceExit - data1.priceEnterLong &lt; 0)
+		sumLoss += Abs(data1.priceExit - data1.priceEnterLong) * data1.lotCount;
+	else 
+		sumProfit += Abs(data1.priceExit - data1.priceEnterLong) * data1.lotCount;
 }
 </BeforePrintEvent>
           <Brush>Transparent</Brush>
@@ -1201,12 +1223,12 @@ if (data1.priceEnterShort == 0)
         </DataBand1>
         <FooterBand1 Ref="167" type="FooterBand" isKey="true">
           <Brush>Transparent</Brush>
-          <ClientRectangle>0,1.8,19,0.8</ClientRectangle>
-          <Components isList="true" count="2">
+          <ClientRectangle>0,1.8,19,1.4</ClientRectangle>
+          <Components isList="true" count="3">
             <Text7 Ref="168" type="Text" isKey="true">
               <Border>All;Black;1;Solid;False;4;Black</Border>
               <Brush>Transparent</Brush>
-              <ClientRectangle>8.4,0,2.4,0.8</ClientRectangle>
+              <ClientRectangle>8.4,0,2.4,1.4</ClientRectangle>
               <Conditions isList="true" count="0" />
               <Font>Arial,12,Regular,Point,False,204</Font>
               <Margins>0,0,0,0</Margins>
@@ -1220,7 +1242,7 @@ if (data1.priceEnterShort == 0)
             <Text8 Ref="169" type="Text" isKey="true">
               <Border>All;Black;1;Solid;False;4;Black</Border>
               <Brush>Transparent</Brush>
-              <ClientRectangle>10.8,0,2.2,0.8</ClientRectangle>
+              <ClientRectangle>10.8,0,2.2,1.4</ClientRectangle>
               <Conditions isList="true" count="0" />
               <Font>Arial,12,Regular,Point,False,204</Font>
               <Guid>8340d1afed704893a396a7f993885ac0</Guid>
@@ -1232,6 +1254,23 @@ if (data1.priceEnterShort == 0)
               <TextBrush>Black</TextBrush>
               <Type>Expression</Type>
             </Text8>
+            <Text14 Ref="170" type="Text" isKey="true">
+              <Border>All;Black;1;Solid;False;4;Black</Border>
+              <Brush>Transparent</Brush>
+              <ClientRectangle>16.4,0,2.6,1.4</ClientRectangle>
+              <Conditions isList="true" count="0" />
+              <Font>Arial,12,Regular,Point,False,204</Font>
+              <Guid>a8aa0298146f4e318f49be33e7f4ddce</Guid>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text14</Name>
+              <Page isRef="156" />
+              <Parent isRef="167" />
+              <Text>{sumProfit / sumLoss}
+{sumProfit}
+{sumLoss}</Text>
+              <TextBrush>Black</TextBrush>
+              <Type>Expression</Type>
+            </Text14>
           </Components>
           <Conditions isList="true" count="0" />
           <Name>FooterBand1</Name>
@@ -1246,13 +1285,13 @@ if (data1.priceEnterShort == 0)
       <PageHeight>29.7</PageHeight>
       <PageWidth>21</PageWidth>
       <Report isRef="0" />
-      <Watermark Ref="170" type="Stimulsoft.Report.Components.StiWatermark" isKey="true">
+      <Watermark Ref="171" type="Stimulsoft.Report.Components.StiWatermark" isKey="true">
         <Font>Arial,100</Font>
         <TextBrush>[50:0:0:0]</TextBrush>
       </Watermark>
     </Page2>
   </Pages>
-  <PrinterSettings Ref="171" type="Stimulsoft.Report.Print.StiPrinterSettings" isKey="true" />
+  <PrinterSettings Ref="172" type="Stimulsoft.Report.Print.StiPrinterSettings" isKey="true" />
   <ReferencedAssemblies isList="true" count="8">
     <value>System.Dll</value>
     <value>System.Drawing.Dll</value>
@@ -1264,10 +1303,10 @@ if (data1.priceEnterShort == 0)
     <value>Stimulsoft.Report.Dll</value>
   </ReferencedAssemblies>
   <ReportAlias>Report</ReportAlias>
-  <ReportChanged>9/15/2014 10:59:25 PM</ReportChanged>
+  <ReportChanged>9/17/2014 7:45:40 PM</ReportChanged>
   <ReportCreated>8/29/2014 10:58:20 PM</ReportCreated>
   <ReportFile>C:\Users\ich\Documents\GitHub\Money\visual report quotes.mrt</ReportFile>
-  <ReportGuid>5af5021a7f724594b4e55ad9a0b1618a</ReportGuid>
+  <ReportGuid>6241a87fb3214b589127459c27ff9b88</ReportGuid>
   <ReportName>Report</ReportName>
   <ReportUnit>Centimeters</ReportUnit>
   <ReportVersion>2014.1.1900</ReportVersion>
@@ -1296,7 +1335,7 @@ namespace Reports
 </Script>
   <ScriptLanguage>CSharp</ScriptLanguage>
   <Styles isList="true" count="1">
-    <Стиль1 Ref="172" type="Stimulsoft.Report.StiChartStyle" isKey="true">
+    <Стиль1 Ref="173" type="Stimulsoft.Report.StiChartStyle" isKey="true">
       <BasicStyleColor>WhiteSmoke</BasicStyleColor>
       <Conditions isList="true" count="0" />
       <Description />
