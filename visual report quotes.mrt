@@ -38,7 +38,7 @@
         <Parameters isList="true" count="0" />
         <SqlCommand>declare @hourStart integer, @hourFinish integer, @minuteStart integer, @minuteFinish integer;
 set @hourStart = 10; set @minuteStart = 0;
-set @hourFinish = 23; set @minuteFinish = 55;
+set @hourFinish = 23; set @minuteFinish = 0;
 
 declare @priceEnterLong integer, @priceEnterShort integer;
 declare @priceExit integer;
@@ -82,7 +82,7 @@ declare @ttemp table(p integer, v integer)
 declare curs cursor for
 select 
 	dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
-	from [RTS-12.14_FT_2014-09-17_bidask] rts 
+	from [RTS-12.14_FT_2014-09-16_bidask] rts 
 	where (convert(time, dtserver, 108) &gt; timefromparts(@hourStart, @minuteStart, 0, 0, 0)) 
 		and (convert(time, dtserver, 108) &lt; timefromparts(@hourFinish, @minuteFinish, 0, 0, 0)) 
 
@@ -90,7 +90,7 @@ select
 
 select 
 	dtserver, null as price, null as volume, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
-	from [RTS-12.14_FT_2014-09-17_quotes] rts2 
+	from [RTS-12.14_FT_2014-09-16_quotes] rts2 
 	where (convert(time, dtserver, 108) &gt; timefromparts(@hourStart, @minuteStart, 0, 0, 0)) 
 		and (convert(time, dtserver, 108) &lt; timefromparts(@hourFinish, @minuteFinish, 0, 0, 0)) 
 
@@ -98,7 +98,7 @@ select
 
 SELECT
 	dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
-	FROM [RTS-12.14_FT_2014-09-17_ticks] rft
+	FROM [RTS-12.14_FT_2014-09-16_ticks] rft
 	where (convert(time, dtserver, 108) &gt; timefromparts(@hourStart, @minuteStart, 0, 0, 0)) 
 		and (convert(time, dtserver, 108) &lt; timefromparts(@hourFinish, @minuteFinish, 0, 0, 0)) 
 
@@ -154,12 +154,12 @@ while @@FETCH_STATUS = 0
 										set @lossLimitTemp = 150; set @profitLimitTemp = 100;
 										set @priceEnterLong = @priceTick + 50; set @valIndEnter = @indicatoraverage3;
 									end;
-									else if (@lotCount = 2)
-									begin
-										set @lotCount = 3;
-										set @lossLimitTemp = 200; set @profitLimitTemp = 150;
-										set @priceEnterLong = @priceTick + 100; set @valIndEnter = @indicatoraverage3;
-									end;
+--									else if (@lotCount = 2)
+--									begin
+--										set @lotCount = 3;
+--										set @lossLimitTemp = 200; set @profitLimitTemp = 150;
+--										set @priceEnterLong = @priceTick + 100; set @valIndEnter = @indicatoraverage3;
+--									end;
 --									else if (@lotCount = 3)
 --									begin
 --set @lotCount = 4;
@@ -192,12 +192,12 @@ while @@FETCH_STATUS = 0
 										set @lossLimitTemp = 150; set @profitLimitTemp = 100;
 										set @priceEnterShort = @priceTick - 50; set @valIndEnter = @indicatoraverage3;
 									end;
-									else if (@lotCount = 2)
-									begin
-										set @lotCount = 3;
-										set @lossLimitTemp = 200; set @profitLimitTemp = 150;
-										set @priceEnterShort = @priceTick - 100; set @valIndEnter = @indicatoraverage3;
-									end;
+--									else if (@lotCount = 2)
+--									begin
+--										set @lotCount = 3;
+--										set @lossLimitTemp = 200; set @profitLimitTemp = 150;
+--										set @priceEnterShort = @priceTick - 100; set @valIndEnter = @indicatoraverage3;
+--									end;
 --									else if (@lotCount = 3)
 --									begin
 --set @lotCount = 4;
@@ -1303,10 +1303,10 @@ if (data1.priceEnterShort == 0)
     <value>Stimulsoft.Report.Dll</value>
   </ReferencedAssemblies>
   <ReportAlias>Report</ReportAlias>
-  <ReportChanged>9/17/2014 9:22:12 PM</ReportChanged>
+  <ReportChanged>9/18/2014 1:45:07 PM</ReportChanged>
   <ReportCreated>8/29/2014 10:58:20 PM</ReportCreated>
-  <ReportFile>C:\Users\ich\Documents\GitHub\Money\visual report quotes.mrt</ReportFile>
-  <ReportGuid>3419008854df402e90321fd8ffe45bc7</ReportGuid>
+  <ReportFile>C:\Users\W\Documents\GitHub\Money\visual report quotes.mrt</ReportFile>
+  <ReportGuid>639bff8f6f594904907f5b30af54e93d</ReportGuid>
   <ReportName>Report</ReportName>
   <ReportUnit>Centimeters</ReportUnit>
   <ReportVersion>2014.1.1900</ReportVersion>

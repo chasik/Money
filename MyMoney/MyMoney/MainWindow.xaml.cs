@@ -15,6 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Data;
+using System.Collections.ObjectModel;
 
 
 namespace MyMoney
@@ -24,7 +25,7 @@ namespace MyMoney
     /// </summary>
     public partial class MainWindow : Window
     {
-        float maxPF = 0;
+        float maxPF = 0, maxMargin = 0;
         private IDataSource dsource;
         private QuotesFromBD dsourceDB;
         public MainWindow()
@@ -56,15 +57,24 @@ namespace MyMoney
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                     {
-                        if (resTh.profitFactor > maxPF)
+                        if (resTh.profitFactor > maxPF || resTh.profit - resTh.loss > maxMargin)
                         {
                             textBox2.AppendText(
-                                "profitF: " + resTh.profitFactor.ToString() + "  -  "
+                                "profitF: " + resTh.profitFactor.ToString() + " - "
+                                + "marg: " + (resTh.profit - resTh.loss).ToString() + "  -  "
                                 + resTh.countProfitDeal.ToString() + " (" + resTh.profit.ToString() + ")"
                                 + " - " + resTh.countLossDeal.ToString() + " (-" + resTh.loss.ToString() + ")"
                                 + " - av: " + paramTh.averageValue.ToString()
-                                + " - sname: " + paramTh.shortName + "\r\n");
-                            maxPF = resTh.profitFactor;
+                                + " - gh: " + paramTh.glassHeight.ToString()
+                                + " - pr: " + paramTh.profitValue.ToString()
+                                + " - IND: " + paramTh.indicatorValue.ToString()
+                                + " - ls: " + paramTh.lossValue.ToString() + "\r\n");
+                            if (resTh.profitFactor > maxPF)
+                                maxPF = resTh.profitFactor;
+                            if (resTh.profit - resTh.loss > maxMargin)
+                                maxMargin = resTh.profit - resTh.loss;
+                            //dgResult.http://social.msdn.microsoft.com/Forums/ru-RU/80da43cf-8eae-4aa1-8c4a-fa91d213ea98/wpf-datagrid-?forum=fordesktopru
+
                         }
                     }
                 );

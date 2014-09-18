@@ -13,7 +13,7 @@ namespace MyMoney
     public class QuotesFromBD : IDataSource
     {
         private object lockObj = new Object();
-        public int countThreads = 5;
+        public int countThreads = 11;
         private List<Thread> listThreads;
         private SqlConnection sqlconn;
         private SqlCommand sqlcommand = new SqlCommand();
@@ -134,11 +134,11 @@ namespace MyMoney
             {
                 for (int i0 = dicDiapasonParams["glassHeight"].start; i0 <= dicDiapasonParams["glassHeight"].finish; i0 = i0 + dicDiapasonParams["glassHeight"].step)
                 {
-                    for (int i1 = dicDiapasonParams["averageValue"].start; i1 <= dicDiapasonParams["averageValue"].finish; i1 = i1 + dicDiapasonParams["averageValue"].step)
+                    for (int i3 = dicDiapasonParams["lossValue"].start; i3 <= dicDiapasonParams["lossValue"].finish; i3 = i3 + dicDiapasonParams["lossValue"].step)
                     {
                         for (int i2 = dicDiapasonParams["profitValue"].start; i2 <= dicDiapasonParams["profitValue"].finish; i2 = i2 + dicDiapasonParams["profitValue"].step)
                         {
-                            for (int i3 = dicDiapasonParams["lossValue"].start; i3 <= dicDiapasonParams["lossValue"].finish; i3 = i3 + dicDiapasonParams["lossValue"].step)
+                            for (int i1 = dicDiapasonParams["averageValue"].start; i1 <= dicDiapasonParams["averageValue"].finish; i1 = i1 + dicDiapasonParams["averageValue"].step)
                             {
                                 for (int i4 = dicDiapasonParams["indicatorValue"].start; i4 <= dicDiapasonParams["indicatorValue"].finish; i4 = i4 + dicDiapasonParams["indicatorValue"].step)
                                 {
@@ -200,10 +200,10 @@ namespace MyMoney
             {
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
-                    ParametrsForTest pt = parametrsList.First();
+                    ParametrsForTest pt = parametrsList[new Random().Next(0, parametrsList.Count)];
                     listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
-                    listThreads.Last().IsBackground = true;
-                    listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables[pt.shortName].Copy()));
+                    //listThreads.Last().IsBackground = true;
+                    listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables[pt.shortName]));
                     parametrsList.Remove(pt);
                     if (OnChangeProgress != null)
                         OnChangeProgress(0, plStartCount, plStartCount - parametrsList.Count);
@@ -229,11 +229,14 @@ namespace MyMoney
             List<int> oldGlassValue = new List<int>();
             Dictionary<int, int> glass = new Dictionary<int, int>();
             int priceEnterLong = 0, priceEnterShort = 0;
+            int lotCount = 1;
             int? bid = 0, ask = 0;
             int? pricetick = 0;
             byte? actiontick = 0;
-            DataTable dt = (p as ParametrsForTestObj).dataTableCopy;
+            DataTable dt = (p as ParametrsForTestObj).dataTableCopy.Copy();
             ParametrsForTest paramTh = (p as ParametrsForTestObj).paramS;
+            int lossValueTemp = paramTh.lossValue;
+            int profitValueTemp = paramTh.profitValue;
             foreach (DataRow dr in dt.Rows)
             {
                 // совершена сделка
@@ -246,17 +249,30 @@ namespace MyMoney
                         ask = pricetick;
                         if (priceEnterShort != 0)
                         {
-                            if (priceEnterShort - paramTh.profitValue >= ask)
+                            // профит короткая
+                            if (priceEnterShort - profitValueTemp >= ask)
                             {
                                 resTh.countProfitDeal++;
-                                resTh.profit += priceEnterShort - (int)ask;
+                                resTh.profit += (priceEnterShort - (int)ask) * lotCount;
                                 priceEnterShort = 0;
                             }
-                            else if (priceEnterShort + paramTh.lossValue <= ask)
+                            // лосс короткая
+                            else if (priceEnterShort + lossValueTemp <= ask)
                             {
-                                resTh.countLossDeal++;
-                                resTh.loss += (int)ask - priceEnterShort;
-                                priceEnterShort = 0;
+                                if (lotCount == 1)
+                                {
+                                    lotCount = 2;
+                                    int delt = ((int)ask - priceEnterShort) / 2;
+                                    priceEnterShort = priceEnterShort + delt;
+                                    lossValueTemp = lossValueTemp + delt;
+                                }
+                                else
+                                {
+                                    resTh.countLossDeal++;
+                                    resTh.loss += ((int)ask - priceEnterShort) * lotCount;
+                                    priceEnterShort = 0;
+                                    lotCount = 1;
+                                }
                             }
                         }
                     }
@@ -265,17 +281,31 @@ namespace MyMoney
                         bid = pricetick;
                         if (priceEnterLong != 0)
                         {
-                            if (priceEnterLong + paramTh.profitValue <= bid)
+                            // профит длиная
+                            if (priceEnterLong + profitValueTemp <= bid)
                             {
                                 resTh.countProfitDeal++;
-                                resTh.profit += (int)bid - priceEnterLong;
+                                resTh.profit += ((int)bid - priceEnterLong) * lotCount;
                                 priceEnterLong = 0;
                             }
-                            else if (priceEnterLong - paramTh.lossValue >= bid)
+                            // лосс длиная
+                            else if (priceEnterLong - lossValueTemp >= bid)
                             {
-                                resTh.countLossDeal++;
-                                resTh.loss += priceEnterLong - (int)bid;
-                                priceEnterLong = 0;
+                                if (lotCount == 1)
+                                {
+                                    lotCount = 2;
+                                    int delt = (priceEnterLong - (int)bid) / 2;
+                                    priceEnterLong = priceEnterLong - delt;
+                                    lossValueTemp = lossValueTemp + delt;
+
+                                }
+                                else
+                                {
+                                    resTh.countLossDeal++;
+                                    resTh.loss += (priceEnterLong - (int)bid) * lotCount;
+                                    priceEnterLong = 0;
+                                    lotCount = 1;
+                                }
                             }
                         }
                     }
@@ -296,7 +326,7 @@ namespace MyMoney
                             oldGlassValue.Clear();
                             foreach (int pkey in glass.Keys)
                             {
-                                if (pkey > ask + 300 || pkey < bid - 300)
+                                if (pkey > ask + paramTh.glassHeight * 10 || pkey < bid - paramTh.glassHeight * 10)
                                     oldGlassValue.Add(pkey);
                                 else if (pkey >= ask || pkey <= bid)
                                     sumGlass += glass[pkey];
@@ -306,27 +336,29 @@ namespace MyMoney
                                 glass.Remove(i);
                             });
                             // среднее значение по стакану
-                            int averageGlass = (int)sumGlass / 60;
+                            int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                             int sumlong = 0, sumshort = 0;
                             foreach (int pkey in glass.Keys)
                             {
                                 if (pkey >= ask && glass[pkey] < averageGlass * paramTh.averageValue)
-                                {
                                     sumlong += glass[pkey];
-                                }
                                 else if (pkey <= bid && glass[pkey] < averageGlass * paramTh.averageValue)
-                                {
                                     sumshort += glass[pkey];
-                                }
                             }
                             int indicator = (sumlong + sumshort) != 0 ? (int) (sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
                             if (indicator >= paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
                             {
+                                lossValueTemp = paramTh.lossValue;
+                                profitValueTemp = paramTh.profitValue;
                                 priceEnterLong = (int) ask;
+                                lotCount = 1;
                             }
                             else if (indicator <= -paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
                             {
+                                lossValueTemp = paramTh.lossValue;
+                                profitValueTemp = paramTh.profitValue;
                                 priceEnterShort = (int) bid;
+                                lotCount = 1;
                             }
                         }
                     }
