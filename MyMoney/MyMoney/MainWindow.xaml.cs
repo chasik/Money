@@ -26,11 +26,29 @@ namespace MyMoney
     public partial class MainWindow : Window
     {
         float maxPF = 0, maxMargin = 0;
+        private ObservableCollection<ResultOneThread> allResults;
         private IDataSource dsource;
         private QuotesFromBD dsourceDB;
         public MainWindow()
         {
             InitializeComponent();
+            allResults = new ObservableCollection<ResultOneThread>();
+/*            DataGridTextColumn c1 = new DataGridTextColumn();
+            c1.Header = "profitFactor"; c1.Binding = new Binding("profitFactor"); c1.Width = 120;
+            DataGridTextColumn c2 = new DataGridTextColumn();
+            c2.Header = "profit"; c2.Binding = new Binding("profit"); c2.Width = 120;
+            DataGridTextColumn c3 = new DataGridTextColumn();
+            c3.Header = "loss"; c3.Binding = new Binding("loss"); c3.Width = 120;
+            DataGridTextColumn c4 = new DataGridTextColumn();
+            c4.Header = "countProfitDeal"; c4.Binding = new Binding("countProfitDeal"); c4.Width = 120;
+            DataGridTextColumn c5 = new DataGridTextColumn();
+            c5.Header = "countLossDeal"; c5.Binding = new Binding("countLossDeal"); c5.Width = 120;
+            dgResult.Columns.Add(c1);
+            dgResult.Columns.Add(c2);
+            dgResult.Columns.Add(c3);
+            dgResult.Columns.Add(c4);
+            dgResult.Columns.Add(c5);*/
+            dgResult.ItemsSource = allResults;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -52,29 +70,18 @@ namespace MyMoney
             dsource.ConnectToDataSource();
         }
 
-        void MainWindow_OnFinishOneThread(ParametrsForTest paramTh, ResultOneThread resTh)
+        void MainWindow_OnFinishOneThread(ResultOneThread resTh)
         {
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                     {
-                        if (resTh.profitFactor > maxPF || resTh.profit - resTh.loss > maxMargin)
+                        allResults.Add(resTh);
+                        if (resTh.profitFac > maxPF || resTh.profit - resTh.loss > maxMargin)
                         {
-                            textBox2.AppendText(
-                                "profitF: " + resTh.profitFactor.ToString() + " - "
-                                + "marg: " + (resTh.profit - resTh.loss).ToString() + "  -  "
-                                + resTh.countProfitDeal.ToString() + " (" + resTh.profit.ToString() + ")"
-                                + " - " + resTh.countLossDeal.ToString() + " (-" + resTh.loss.ToString() + ")"
-                                + " - av: " + paramTh.averageValue.ToString()
-                                + " - gh: " + paramTh.glassHeight.ToString()
-                                + " - pr: " + paramTh.profitValue.ToString()
-                                + " - IND: " + paramTh.indicatorValue.ToString()
-                                + " - ls: " + paramTh.lossValue.ToString() + "\r\n");
-                            if (resTh.profitFactor > maxPF)
-                                maxPF = resTh.profitFactor;
+                            if (resTh.profitFac > maxPF)
+                                maxPF = resTh.profitFac;
                             if (resTh.profit - resTh.loss > maxMargin)
                                 maxMargin = resTh.profit - resTh.loss;
-                            //dgResult.http://social.msdn.microsoft.com/Forums/ru-RU/80da43cf-8eae-4aa1-8c4a-fa91d213ea98/wpf-datagrid-?forum=fordesktopru
-
                         }
                     }
                 );
@@ -201,7 +208,6 @@ namespace MyMoney
             this.Dispatcher.BeginInvoke(DispatcherPriority.Send,
                (ThreadStart)delegate()
            {
-               textBox2.AppendText("Запущен: " + _m + "\r\n");
            });
         }
 

@@ -37,17 +37,19 @@ namespace MyMoney
     }
     public struct ParametrsForTest
     {
-        public ParametrsForTest(string _shortName, int _i0, float _i1, int _i2, int _i3, int _i4, int _i5)
+        public ParametrsForTest(int _id, List<string> _instruments, int _i0, float _i1, int _i2, int _i3, int _i4, int _i5)
         {
+            instruments = _instruments;
+            id = _id;
             glassHeight = _i0;
-            shortName = _shortName;
             averageValue = _i1;
             profitValue = _i2;
             lossValue = _i3;
             indicatorValue = _i4;
             martingValue = _i5;
         }
-        public string shortName;
+        public int id;
+        public List<string> instruments;
         public int glassHeight;
         public float averageValue; // отношение среднего по стакану к каждой позиции (если более averageValue - в рассчет не берется)
         public int profitValue; // значение профита
@@ -58,28 +60,36 @@ namespace MyMoney
 
     public class ParametrsForTestObj
     {
-        public ParametrsForTestObj(ParametrsForTest _p, DataTable _dt)
+        public ParametrsForTestObj(ParametrsForTest _p, Dictionary<string, DataTable> _dictionaryDT)
         {
             paramS = _p;
-            dataTableCopy = _dt;
+            dictionaryDT = _dictionaryDT;
         }
         public ParametrsForTest paramS;
-        public DataTable dataTableCopy;
+        public Dictionary<string, DataTable> dictionaryDT;
     }
 
     public class ResultOneThread
     {
         public ResultOneThread()
         {
-            countLossDeal = 0;
-            countProfitDeal = 0;
+            countLDeal = 0;
+            countPDeal = 0;
             profit = 0;
             loss = 0;
         }
-        public int countLossDeal;
-        public int countProfitDeal;
-        public int profit;
-        public int loss;
-        public float profitFactor;
+        public int idParam { get; set; }
+        public float profitFac { get; set; }
+        public int margin { get; set; }
+        public int profit { get; set; }
+        public int loss { get; set; }
+        public int countPDeal { get; set; }
+        public int countLDeal { get; set; }
+        public int glassH { get; set; }
+        public float averageVal { get; set; }
+        public int profLevel { get; set; }
+        public int lossLevel { get; set; }
+        public int indicVal { get; set; }
+        public int martinLevel { get; set; }
     }
 }
