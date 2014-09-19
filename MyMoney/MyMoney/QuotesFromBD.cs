@@ -13,7 +13,7 @@ namespace MyMoney
     public class QuotesFromBD : IDataSource
     {
         private object lockObj = new Object();
-        public int countThreads = 10;
+        public int countThreads = 5;
         private List<Thread> listThreads;
         private SqlConnection sqlconn;
         private SqlCommand sqlcommand = new SqlCommand();
@@ -266,12 +266,27 @@ namespace MyMoney
                                 // лосс короткая
                                 else if (priceEnterShort + lossValueTemp <= ask)
                                 {
-                                    if (lotCount == 1)
+                                    if (lotCount == 1 && paramTh.martingValue != 0)
                                     {
                                         lotCount = 2;
                                         int delt = ((int)ask - priceEnterShort) / 2;
                                         priceEnterShort = priceEnterShort + delt;
                                         lossValueTemp = lossValueTemp + delt;
+                                        profitValueTemp = profitValueTemp + delt;
+                                    }
+                                    else if (lotCount == 2 && (paramTh.martingValue != 0 && paramTh.martingValue != 1))
+                                    {
+                                        lotCount = 3;
+                                        int delt = ((int)ask - priceEnterShort) / 3;
+                                        priceEnterShort = priceEnterShort + delt;
+                                        profitValueTemp = profitValueTemp + delt;
+                                    }
+                                    else if (lotCount == 3 && (paramTh.martingValue == 3))
+                                    {
+                                        lotCount = 4;
+                                        int delt = ((int)ask - priceEnterShort) / 4;
+                                        priceEnterShort = priceEnterShort + delt;
+                                        profitValueTemp = profitValueTemp + delt;
                                     }
                                     else
                                     {
@@ -298,13 +313,27 @@ namespace MyMoney
                                 // лосс длиная
                                 else if (priceEnterLong - lossValueTemp >= bid)
                                 {
-                                    if (lotCount == 1)
+                                    if (lotCount == 1 && paramTh.martingValue != 0)
                                     {
                                         lotCount = 2;
                                         int delt = (priceEnterLong - (int)bid) / 2;
                                         priceEnterLong = priceEnterLong - delt;
                                         lossValueTemp = lossValueTemp + delt;
-
+                                        profitValueTemp = profitValueTemp + delt;
+                                    }
+                                    else if (lotCount == 2 && (paramTh.martingValue != 0 && paramTh.martingValue != 1))
+                                    {
+                                        lotCount = 3;
+                                        int delt = (priceEnterLong - (int)bid) / 3;
+                                        priceEnterLong = priceEnterLong - delt;
+                                        profitValueTemp = profitValueTemp + delt;
+                                    }
+                                    else if (lotCount == 3 && (paramTh.martingValue == 3))
+                                    {
+                                        lotCount = 4;
+                                        int delt = (priceEnterLong - (int)bid) / 4;
+                                        priceEnterLong = priceEnterLong - delt;
+                                        profitValueTemp = profitValueTemp + delt;
                                     }
                                     else
                                     {
@@ -379,6 +408,7 @@ namespace MyMoney
                     }
                     #endregion торговля
                 }
+
             }
             lock (lockObj)
             {
