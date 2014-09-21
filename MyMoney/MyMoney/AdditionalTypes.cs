@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace MyMoney
 {
+    public enum ActionDeal
+	{
+        sell = 1,
+        buy = 2
+	};
     public enum ResultConnectToDataSource
     {
     }
@@ -69,6 +74,82 @@ namespace MyMoney
         public Dictionary<string, DataTable> dictionaryDT;
     }
 
+    public class SubDealInfo
+    {
+        private float pexit;
+        private DateTime dtext;
+        public SubDealInfo()
+        {
+            lotsCount = 0;
+            priceEnter = 0;
+            priceExit = 0;
+        }
+
+        public SubDealInfo(DateTime _dt, int _lotCount, float _priceEnter, float _curPrice, float _delt, float _lossValueTemp = 0, float _profitValueTemp = 0)
+        {
+            dtEnter = _dt;
+            lotsCount = _lotCount;
+            priceEnter = _priceEnter;
+            currentPrice = _curPrice;
+            delt = _delt;
+            lossValueTemp = _lossValueTemp;
+            profitValueTemp = _profitValueTemp;
+        }
+
+        public void DoExit(DateTime _dt, float _pexit)
+        {
+            priceExit = _pexit;
+            dtExit = _dt;
+        }
+        public SubDealInfo parentDeal = null;
+        public DateTime dtEnter { get; set; }
+        public DateTime dtExit {
+            get { return dtext; }
+            set { dtDealLength = value.Subtract(dtEnter); dtext = value; }
+        }
+        public TimeSpan dtDealLength { get; set; }
+        public ActionDeal actiond { get; set; }
+        public int lotsCount { get; set; }
+        public float pointsCount { get; set; }
+        public float margin { get; set; }
+        public float delt { get; set; }
+        public float currentPrice { get; set; }
+        public float lossValueTemp { get; set; }
+        public float profitValueTemp { get; set; }
+        public float priceEnter { get; set; }
+        public float priceExit { 
+            get {
+                return pexit;
+            } 
+            set {
+                if (actiond == ActionDeal.sell)
+                {
+                    margin = (priceEnter - value) * lotsCount;
+                    pointsCount = priceEnter - value;
+                }
+                else if (actiond == ActionDeal.buy)
+                {
+                    margin = (value - priceEnter) * lotsCount;
+                    pointsCount = value - priceEnter;
+                }
+                pexit = value;
+            }
+        }
+    }
+
+    public class DealInfo : SubDealInfo
+    {
+        public DealInfo(ActionDeal _actiond, DateTime _dtEnter, int _lotsCount, float _pEnter, float _lossValueTemp = 0, float _profitValueTemp = 0)
+        {
+            actiond = _actiond;
+            dtEnter = _dtEnter;
+            lotsCount = _lotsCount;
+            priceEnter = _pEnter;
+            lossValueTemp = _lossValueTemp;
+            profitValueTemp = _profitValueTemp;
+        }
+        public List<SubDealInfo> lstSubDeal = new List<SubDealInfo>();
+    }
     public class ResultOneThread
     {
         public ResultOneThread()
@@ -78,6 +159,7 @@ namespace MyMoney
             profit = 0;
             loss = 0;
         }
+        public List<DealInfo> lstAllDeals = new List<DealInfo>();
         public string shortName { get; set; }
         public int idParam { get; set; }
         public float profitFac { get; set; }

@@ -251,6 +251,7 @@ namespace MyMoney
             {
                 ResultOneThread resThTemp = new ResultOneThread();
                 resThTemp.shortName = k;
+                DealInfo dealTemp = null;
                 DataTable dt = dictionaryDT[k].Copy();
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -271,43 +272,28 @@ namespace MyMoney
                                     resThTemp.countPDeal++;
                                     resThTemp.profit += (priceEnterShort - (int)ask) * lotCount;
                                     priceEnterShort = 0;
+                                    dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)ask);
+                                    resThTemp.lstAllDeals.Add(dealTemp);
                                 }
                                 // лосс короткая
                                 else if (priceEnterShort + lossValueTemp <= ask)
                                 {
-                                    if (lotCount == 1 && paramTh.martingValue != 0)
+                                    if (paramTh.martingValue >= lotCount)
                                     {
-                                        lotCount = 2;
-                                        int delt = ((int)ask - priceEnterShort) / 2;
-                                        priceEnterShort = priceEnterShort + delt;
-                                        lossValueTemp = lossValueTemp + delt;
+                                        lotCount += 1;
+                                        int delt = ((int)ask - priceEnterShort) / lotCount;
+                                        if (lotCount == 2)
+                                            lossValueTemp = lossValueTemp + delt;
                                         profitValueTemp = profitValueTemp + delt;
-                                    }
-                                    else if (lotCount == 2 && (paramTh.martingValue != 0 && paramTh.martingValue != 1))
-                                    {
-                                        lotCount = 3;
-                                        int delt = ((int)ask - priceEnterShort) / 3;
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, (float)lossValueTemp, (float)profitValueTemp));
                                         priceEnterShort = priceEnterShort + delt;
-                                        profitValueTemp = profitValueTemp + delt;
-                                    }
-                                    else if (lotCount == 3 && (paramTh.martingValue != 0 && paramTh.martingValue != 1 && paramTh.martingValue != 2))
-                                    {
-                                        lotCount = 4;
-                                        int delt = ((int)ask - priceEnterShort) / 4;
-                                        priceEnterShort = priceEnterShort + delt;
-                                        profitValueTemp = profitValueTemp + delt;
-                                    }
-                                    else if (lotCount == 4 && (paramTh.martingValue == 4))
-                                    {
-                                        lotCount = 5;
-                                        int delt = ((int)ask - priceEnterShort) / 5;
-                                        priceEnterShort = priceEnterShort + delt;
-                                        profitValueTemp = profitValueTemp + delt;
                                     }
                                     else
                                     {
                                         resThTemp.countLDeal++;
                                         resThTemp.loss += ((int)ask - priceEnterShort) * lotCount;
+                                        dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)ask);
+                                        resThTemp.lstAllDeals.Add(dealTemp);
                                         priceEnterShort = 0;
                                         lotCount = 1;
                                     }
@@ -325,43 +311,28 @@ namespace MyMoney
                                     resThTemp.countPDeal++;
                                     resThTemp.profit += ((int)bid - priceEnterLong) * lotCount;
                                     priceEnterLong = 0;
+                                    dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)bid);
+                                    resThTemp.lstAllDeals.Add(dealTemp);
                                 }
                                 // лосс длиная
                                 else if (priceEnterLong - lossValueTemp >= bid)
                                 {
-                                    if (lotCount == 1 && paramTh.martingValue != 0)
+                                    if (paramTh.martingValue >= lotCount)
                                     {
-                                        lotCount = 2;
-                                        int delt = (priceEnterLong - (int)bid) / 2;
-                                        priceEnterLong = priceEnterLong - delt;
-                                        lossValueTemp = lossValueTemp + delt;
+                                        lotCount += 1;
+                                        int delt = (priceEnterLong - (int)bid) / lotCount;
+                                        if (lotCount == 2)
+                                            lossValueTemp = lossValueTemp + delt;
                                         profitValueTemp = profitValueTemp + delt;
-                                    }
-                                    else if (lotCount == 2 && (paramTh.martingValue != 0 && paramTh.martingValue != 1))
-                                    {
-                                        lotCount = 3;
-                                        int delt = (priceEnterLong - (int)bid) / 3;
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, (float)lossValueTemp, (float)profitValueTemp));
                                         priceEnterLong = priceEnterLong - delt;
-                                        profitValueTemp = profitValueTemp + delt;
-                                    }
-                                    else if (lotCount == 3 && (paramTh.martingValue != 0 && paramTh.martingValue != 1 && paramTh.martingValue != 2))
-                                    {
-                                        lotCount = 4;
-                                        int delt = (priceEnterLong - (int)bid) / 4;
-                                        priceEnterLong = priceEnterLong - delt;
-                                        profitValueTemp = profitValueTemp + delt;
-                                    }
-                                    else if (lotCount == 4 && (paramTh.martingValue == 4))
-                                    {
-                                        lotCount = 5;
-                                        int delt = (priceEnterLong - (int)bid) / 5;
-                                        priceEnterLong = priceEnterLong - delt;
-                                        profitValueTemp = profitValueTemp + delt;
                                     }
                                     else
                                     {
                                         resThTemp.countLDeal++;
                                         resThTemp.loss += (priceEnterLong - (int)bid) * lotCount;
+                                        dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)bid);
+                                        resThTemp.lstAllDeals.Add(dealTemp);
                                         priceEnterLong = 0;
                                         lotCount = 1;
                                     }
@@ -391,10 +362,7 @@ namespace MyMoney
                                         sumGlass += glass[pkey];
                                 }
                                 // удаляем из стакана значения, выпадающие за пределы глубины стакана
-                                oldGlassValue.ForEach((int i) =>
-                                {
-                                    glass.Remove(i);
-                                });
+                                oldGlassValue.ForEach((int i) => { glass.Remove(i); });
                                 // среднее значение по стакану
                                 int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                                 int sumlong = 0, sumshort = 0;
@@ -406,19 +374,24 @@ namespace MyMoney
                                         sumshort += glass[pkey];
                                 }
                                 int indicator = (sumlong + sumshort) != 0 ? (int)(sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
+                                // вход лонг
                                 if (indicator >= paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
                                 {
                                     lossValueTemp = paramTh.lossValue;
                                     profitValueTemp = paramTh.profitValue;
                                     priceEnterLong = (int)ask;
                                     lotCount = 1;
+                                    dealTemp = new DealInfo(ActionDeal.buy, dr.Field<DateTime>("dtserver"), 1, priceEnterLong);
+
                                 }
+                                // вход шорт
                                 else if (indicator <= -paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
                                 {
                                     lossValueTemp = paramTh.lossValue;
                                     profitValueTemp = paramTh.profitValue;
                                     priceEnterShort = (int)bid;
                                     lotCount = 1;
+                                    dealTemp = new DealInfo(ActionDeal.sell, dr.Field<DateTime>("dtserver"), 1, priceEnterShort);
                                 }
                             }
                         }

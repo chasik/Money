@@ -28,6 +28,7 @@ namespace MyMoney
         float maxPF = 0, maxMargin = 0;
         private ObservableCollection<ResultOneThreadSumm> allResults;
         private ObservableCollection<ResultOneThread> detailResults;
+        private ObservableCollection<SubDealInfo> detailAllDeals;
         private IDataSource dsource;
         private QuotesFromBD dsourceDB;
         private Dictionary<int, ResultOneThreadSumm> dicAllResults = new Dictionary<int, ResultOneThreadSumm>();
@@ -36,12 +37,16 @@ namespace MyMoney
             InitializeComponent();
             allResults = new ObservableCollection<ResultOneThreadSumm>();
             detailResults = new ObservableCollection<ResultOneThread>();
+            detailAllDeals = new ObservableCollection<SubDealInfo>();
 
             dgResult.ItemsSource = allResults;
             dgResult.ColumnWidth = DataGridLength.Auto;
 
             dgResultDetail.ItemsSource = detailResults;
             dgResultDetail.ColumnWidth = DataGridLength.Auto;
+
+            dgResultDeals.ItemsSource = detailAllDeals;
+            dgResultDeals.ColumnWidth = DataGridLength.Auto;
 
             DataGridTextColumn c0 = new DataGridTextColumn();
             c0.Header = "shortName"; c0.Binding = new Binding("shortName");
@@ -232,7 +237,22 @@ namespace MyMoney
             {
                 detailResults.Add(item);
             }
+        }
 
+        private void dgResultDetail_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ResultOneThread r = (sender as DataGrid).SelectedItem as ResultOneThread;
+            if (r == null)
+                return;
+            detailAllDeals.Clear();
+            foreach (DealInfo item in r.lstAllDeals)
+            {
+                detailAllDeals.Add(item);
+                foreach (SubDealInfo item2 in item.lstSubDeal)
+                {
+                    detailAllDeals.Add(item2);
+                }
+            }
         }
 
     }
