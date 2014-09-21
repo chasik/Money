@@ -78,6 +78,7 @@ namespace MyMoney
             profit = 0;
             loss = 0;
         }
+        public string shortName { get; set; }
         public int idParam { get; set; }
         public float profitFac { get; set; }
         public int margin { get; set; }
@@ -91,5 +92,19 @@ namespace MyMoney
         public int lossLevel { get; set; }
         public int indicVal { get; set; }
         public int martinLevel { get; set; }
+    }
+
+    public class ResultOneThreadSumm : ResultOneThread
+    {
+        public List<ResultOneThread> lstResults = new List<ResultOneThread>();
+
+        public void AddOneDayResult(ResultOneThread _result)
+        {
+            this.countPDeal += _result.countPDeal;
+            this.countLDeal += _result.countLDeal;
+            this.loss += _result.loss;
+            this.profit += _result.profit;
+            this.lstResults.Add(_result);
+        }
     }
 }

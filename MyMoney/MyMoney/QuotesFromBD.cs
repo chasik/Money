@@ -13,7 +13,7 @@ namespace MyMoney
     public class QuotesFromBD : IDataSource
     {
         private object lockObj = new Object();
-        public int countThreads = 5;
+        public int countThreads = 1;
         private List<Thread> listThreads;
         private SqlConnection sqlconn;
         private SqlCommand sqlcommand = new SqlCommand();
@@ -29,7 +29,7 @@ namespace MyMoney
         public Dictionary<string, diapasonTestParam> dicDiapasonParams;
 
         public delegate void ChangeProgressEvent(int minval, int maxval, int val, string mes = "", bool showProgress = true);
-        public delegate void FinishOneThread(ResultOneThread resTh);
+        public delegate void FinishOneThread(ResultOneThreadSumm resTh);
 
         public event FinishOneThread OnFinishOneThread;
         public event ChangeProgressEvent OnChangeProgress;
@@ -85,8 +85,15 @@ namespace MyMoney
             }
         }
 
-        public void GetAllTables(int _idinst)
+        public void GetAllTables(int[] _idinst)
         {
+            string idinstINstr = "";
+            for (int i = 0; i < _idinst.Length; i++)
+            {
+                idinstINstr += _idinst[i];
+                if (i != _idinst.Length - 1)
+                    idinstINstr += ", ";
+            }
             lock (lockObj)
             {
                 dictAllTables.Clear();
@@ -94,7 +101,7 @@ namespace MyMoney
                     select at.idtable, at.idinstrument, i.name, tt.name as typetname, convert(date, at.datecre) as shortdate, at.datecre from alltables at 
 	                    join instruments i on at.idinstrument = i.idinstrument
 	                    join typetable tt on at.idtypetable = tt.idtypetable
-                    where at.idinstrument = " + _idinst.ToString();
+                    where at.idinstrument in (" + idinstINstr + ")";
                 dtAllTables.Clear();
                 dtAllTables.Load(sqlcommand.ExecuteReader());
 
@@ -228,7 +235,7 @@ namespace MyMoney
 
         private void OneThreadTester(object p)
         {
-            ResultOneThread resTh = new ResultOneThread();
+            ResultOneThreadSumm resTh = new ResultOneThreadSumm();
             List<int> oldGlassValue = new List<int>();
             Dictionary<int, int> glass = new Dictionary<int, int>();
             int priceEnterLong = 0, priceEnterShort = 0;
@@ -242,6 +249,8 @@ namespace MyMoney
             int profitValueTemp = paramTh.profitValue;
             foreach (string k in dictionaryDT.Keys)
             {
+                ResultOneThread resThTemp = new ResultOneThread();
+                resThTemp.shortName = k;
                 DataTable dt = dictionaryDT[k].Copy();
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -259,8 +268,8 @@ namespace MyMoney
                                 // профит короткая
                                 if (priceEnterShort - profitValueTemp >= ask)
                                 {
-                                    resTh.countPDeal++;
-                                    resTh.profit += (priceEnterShort - (int)ask) * lotCount;
+                                    resThTemp.countPDeal++;
+                                    resThTemp.profit += (priceEnterShort - (int)ask) * lotCount;
                                     priceEnterShort = 0;
                                 }
                                 // лосс короткая
@@ -281,17 +290,24 @@ namespace MyMoney
                                         priceEnterShort = priceEnterShort + delt;
                                         profitValueTemp = profitValueTemp + delt;
                                     }
-                                    else if (lotCount == 3 && (paramTh.martingValue == 3))
+                                    else if (lotCount == 3 && (paramTh.martingValue != 0 && paramTh.martingValue != 1 && paramTh.martingValue != 2))
                                     {
                                         lotCount = 4;
                                         int delt = ((int)ask - priceEnterShort) / 4;
                                         priceEnterShort = priceEnterShort + delt;
                                         profitValueTemp = profitValueTemp + delt;
                                     }
+                                    else if (lotCount == 4 && (paramTh.martingValue == 4))
+                                    {
+                                        lotCount = 5;
+                                        int delt = ((int)ask - priceEnterShort) / 5;
+                                        priceEnterShort = priceEnterShort + delt;
+                                        profitValueTemp = profitValueTemp + delt;
+                                    }
                                     else
                                     {
-                                        resTh.countLDeal++;
-                                        resTh.loss += ((int)ask - priceEnterShort) * lotCount;
+                                        resThTemp.countLDeal++;
+                                        resThTemp.loss += ((int)ask - priceEnterShort) * lotCount;
                                         priceEnterShort = 0;
                                         lotCount = 1;
                                     }
@@ -306,8 +322,8 @@ namespace MyMoney
                                 // профит длиная
                                 if (priceEnterLong + profitValueTemp <= bid)
                                 {
-                                    resTh.countPDeal++;
-                                    resTh.profit += ((int)bid - priceEnterLong) * lotCount;
+                                    resThTemp.countPDeal++;
+                                    resThTemp.profit += ((int)bid - priceEnterLong) * lotCount;
                                     priceEnterLong = 0;
                                 }
                                 // лосс длиная
@@ -328,17 +344,24 @@ namespace MyMoney
                                         priceEnterLong = priceEnterLong - delt;
                                         profitValueTemp = profitValueTemp + delt;
                                     }
-                                    else if (lotCount == 3 && (paramTh.martingValue == 3))
+                                    else if (lotCount == 3 && (paramTh.martingValue != 0 && paramTh.martingValue != 1 && paramTh.martingValue != 2))
                                     {
                                         lotCount = 4;
                                         int delt = (priceEnterLong - (int)bid) / 4;
                                         priceEnterLong = priceEnterLong - delt;
                                         profitValueTemp = profitValueTemp + delt;
                                     }
+                                    else if (lotCount == 4 && (paramTh.martingValue == 4))
+                                    {
+                                        lotCount = 5;
+                                        int delt = (priceEnterLong - (int)bid) / 5;
+                                        priceEnterLong = priceEnterLong - delt;
+                                        profitValueTemp = profitValueTemp + delt;
+                                    }
                                     else
                                     {
-                                        resTh.countLDeal++;
-                                        resTh.loss += (priceEnterLong - (int)bid) * lotCount;
+                                        resThTemp.countLDeal++;
+                                        resThTemp.loss += (priceEnterLong - (int)bid) * lotCount;
                                         priceEnterLong = 0;
                                         lotCount = 1;
                                     }
@@ -408,19 +431,22 @@ namespace MyMoney
                     }
                     #endregion торговля
                 }
-
+                resThTemp.margin = resThTemp.profit - resThTemp.loss;
+                resThTemp.profitFac = (float)resThTemp.profit / (float)resThTemp.loss;
+                resTh.AddOneDayResult(resThTemp);
             }
             lock (lockObj)
             {
                 resTh.idParam = paramTh.id;
-                resTh.margin = resTh.profit - resTh.loss;
-                resTh.profitFac = (float)resTh.profit / (float)resTh.loss;
                 resTh.glassH = paramTh.glassHeight;
                 resTh.indicVal = paramTh.indicatorValue;
                 resTh.profLevel = paramTh.profitValue;
                 resTh.lossLevel = paramTh.lossValue;
                 resTh.martinLevel = paramTh.martingValue;
                 resTh.averageVal = paramTh.averageValue;
+
+                resTh.margin = resTh.profit - resTh.loss;
+                resTh.profitFac = (float)resTh.profit / (float)resTh.loss;
 
                 if (OnFinishOneThread != null)
                     OnFinishOneThread(resTh);

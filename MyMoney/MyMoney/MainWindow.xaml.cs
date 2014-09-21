@@ -26,29 +26,44 @@ namespace MyMoney
     public partial class MainWindow : Window
     {
         float maxPF = 0, maxMargin = 0;
-        private ObservableCollection<ResultOneThread> allResults;
+        private ObservableCollection<ResultOneThreadSumm> allResults;
+        private ObservableCollection<ResultOneThread> detailResults;
         private IDataSource dsource;
         private QuotesFromBD dsourceDB;
+        private Dictionary<int, ResultOneThreadSumm> dicAllResults = new Dictionary<int, ResultOneThreadSumm>();
         public MainWindow()
         {
             InitializeComponent();
-            allResults = new ObservableCollection<ResultOneThread>();
-/*            DataGridTextColumn c1 = new DataGridTextColumn();
-            c1.Header = "profitFactor"; c1.Binding = new Binding("profitFactor"); c1.Width = 120;
-            DataGridTextColumn c2 = new DataGridTextColumn();
-            c2.Header = "profit"; c2.Binding = new Binding("profit"); c2.Width = 120;
-            DataGridTextColumn c3 = new DataGridTextColumn();
-            c3.Header = "loss"; c3.Binding = new Binding("loss"); c3.Width = 120;
-            DataGridTextColumn c4 = new DataGridTextColumn();
-            c4.Header = "countProfitDeal"; c4.Binding = new Binding("countProfitDeal"); c4.Width = 120;
-            DataGridTextColumn c5 = new DataGridTextColumn();
-            c5.Header = "countLossDeal"; c5.Binding = new Binding("countLossDeal"); c5.Width = 120;
-            dgResult.Columns.Add(c1);
-            dgResult.Columns.Add(c2);
-            dgResult.Columns.Add(c3);
-            dgResult.Columns.Add(c4);
-            dgResult.Columns.Add(c5);*/
+            allResults = new ObservableCollection<ResultOneThreadSumm>();
+            detailResults = new ObservableCollection<ResultOneThread>();
+
             dgResult.ItemsSource = allResults;
+            dgResult.ColumnWidth = DataGridLength.Auto;
+
+            dgResultDetail.ItemsSource = detailResults;
+            dgResultDetail.ColumnWidth = DataGridLength.Auto;
+
+            DataGridTextColumn c0 = new DataGridTextColumn();
+            c0.Header = "shortName"; c0.Binding = new Binding("shortName");
+            DataGridTextColumn c1 = new DataGridTextColumn();
+            c1.Header = "profitFac"; c1.Binding = new Binding("profitFac");
+            DataGridTextColumn c21 = new DataGridTextColumn();
+            c21.Header = "margin"; c21.Binding = new Binding("margin");
+            DataGridTextColumn c2 = new DataGridTextColumn();
+            c2.Header = "profit"; c2.Binding = new Binding("profit");
+            DataGridTextColumn c3 = new DataGridTextColumn();
+            c3.Header = "loss"; c3.Binding = new Binding("loss"); 
+            DataGridTextColumn c4 = new DataGridTextColumn();
+            c4.Header = "countPDeal"; c4.Binding = new Binding("countPDeal");
+            DataGridTextColumn c5 = new DataGridTextColumn();
+            c5.Header = "countLDeal"; c5.Binding = new Binding("countLDeal");
+            dgResultDetail.Columns.Add(c0);
+            dgResultDetail.Columns.Add(c1);
+            dgResultDetail.Columns.Add(c21);
+            dgResultDetail.Columns.Add(c2);
+            dgResultDetail.Columns.Add(c3);
+            dgResultDetail.Columns.Add(c4);
+            dgResultDetail.Columns.Add(c5);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -70,11 +85,12 @@ namespace MyMoney
             dsource.ConnectToDataSource();
         }
 
-        void MainWindow_OnFinishOneThread(ResultOneThread resTh)
+        void MainWindow_OnFinishOneThread(ResultOneThreadSumm resTh)
         {
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                     {
+                        dicAllResults.Add(resTh.idParam, resTh);
                         allResults.Add(resTh);
                         if (resTh.profitFac > maxPF || resTh.profit - resTh.loss > maxMargin)
                         {
@@ -135,15 +151,24 @@ namespace MyMoney
 
         private void listBox1_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            textBoxTable.Clear();
-            object item = (sender as ListBox).SelectedItem;
-            if (item == null || dsourceDB == null || dsourceDB.dictInstruments == null)
+            // собираем выделенные инструменты и передаем в GetAllTables
+            List<int> selInsLst = new List<int>();
+            foreach (string item in (sender as ListBox).SelectedItems)
+            {
+                selInsLst.Add((int)dsourceDB.dictInstruments[item]);
+            }
+            if (dsourceDB == null || dsourceDB.dictInstruments == null)
                 return;
-            dsourceDB.GetAllTables((int) dsourceDB.dictInstruments[item.ToString()]);
             listBox2.Items.Clear();
+            if (selInsLst.Count == 0)
+            {
+                dsourceDB.dictAllTables.Clear();
+                return;
+            }
+            dsourceDB.GetAllTables(selInsLst.ToArray());
             foreach (string k in dsourceDB.dictAllTables.Keys)
             {
-                string st1 = dsourceDB.dictAllTables[k].dateTable;
+                string st1 = dsourceDB.dictAllTables[k].shortName;
                 bool newDate = true;
                 foreach (string s in listBox2.Items)
                 {
@@ -154,21 +179,7 @@ namespace MyMoney
                     }
                 }
                 if (newDate)
-                    listBox2.Items.Add(st1 + "\t[" + dsourceDB.dictAllTables[k].shortName + "]");
-            }
-        }
-
-        private void listBox2_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            textBoxTable.Clear();
-            object item = (sender as ListBox).SelectedItem;
-            if (item == null || dsourceDB == null || dsourceDB.dictInstruments == null)
-                return;
-            foreach(string k in dsourceDB.dictAllTables.Keys)
-            {
-                if (item.ToString().Contains(dsourceDB.dictAllTables[k].shortName)){
-                    textBoxTable.AppendText(k + "\t" + dsourceDB.GetCountRecrodInTable(k).ToString() + "\r\n");
-                }
+                    listBox2.Items.Add(dsourceDB.dictAllTables[k].dateTable + "\t[" + dsourceDB.dictAllTables[k].shortName + "]");
             }
         }
 
@@ -209,6 +220,19 @@ namespace MyMoney
                (ThreadStart)delegate()
            {
            });
+        }
+
+        private void dgResult_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ResultOneThreadSumm r = (sender as DataGrid).SelectedItem as ResultOneThreadSumm;
+            if (r == null)
+                return;
+            detailResults.Clear();
+            foreach (ResultOneThread item in r.lstResults)
+            {
+                detailResults.Add(item);
+            }
+
         }
 
     }
