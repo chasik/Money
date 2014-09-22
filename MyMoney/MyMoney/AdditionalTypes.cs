@@ -122,19 +122,23 @@ namespace MyMoney
                 return pexit;
             } 
             set {
+                float pEnt = priceEnter;
+                if (lstSubDeal.Count > 0)
+                    pEnt = lstSubDeal.Last().priceEnter;
                 if (actiond == ActionDeal.sell)
                 {
-                    margin = (priceEnter - value) * lotsCount;
-                    pointsCount = priceEnter - value;
+                    margin = (pEnt - value) * lotsCount;
+                    pointsCount = pEnt - value;
                 }
                 else if (actiond == ActionDeal.buy)
                 {
-                    margin = (value - priceEnter) * lotsCount;
-                    pointsCount = value - priceEnter;
+                    margin = (value - pEnt) * lotsCount;
+                    pointsCount = value - pEnt;
                 }
                 pexit = value;
             }
         }
+        public List<SubDealInfo> lstSubDeal = new List<SubDealInfo>();
     }
 
     public class DealInfo : SubDealInfo
@@ -148,7 +152,7 @@ namespace MyMoney
             lossValueTemp = _lossValueTemp;
             profitValueTemp = _profitValueTemp;
         }
-        public List<SubDealInfo> lstSubDeal = new List<SubDealInfo>();
+
     }
     public class ResultOneThread
     {

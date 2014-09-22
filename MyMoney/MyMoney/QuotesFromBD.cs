@@ -238,7 +238,7 @@ namespace MyMoney
             ResultOneThreadSumm resTh = new ResultOneThreadSumm();
             List<int> oldGlassValue = new List<int>();
             Dictionary<int, int> glass = new Dictionary<int, int>();
-            int priceEnterLong = 0, priceEnterShort = 0;
+            int priceEnterLong, priceEnterShort ;
             int lotCount = 1;
             int? bid = 0, ask = 0;
             int? pricetick = 0;
@@ -249,6 +249,7 @@ namespace MyMoney
             int profitValueTemp = paramTh.profitValue;
             foreach (string k in dictionaryDT.Keys)
             {
+                priceEnterLong = 0; priceEnterShort = 0;
                 ResultOneThread resThTemp = new ResultOneThread();
                 resThTemp.shortName = k;
                 DealInfo dealTemp = null;
@@ -281,17 +282,21 @@ namespace MyMoney
                                     if (paramTh.martingValue >= lotCount)
                                     {
                                         lotCount += 1;
-                                        int delt = ((int)ask - priceEnterShort) / lotCount;
+                                        dealTemp.lotsCount = lotCount;
+                                        int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
                                         if (lotCount == 2)
+                                        {
                                             lossValueTemp = lossValueTemp + delt;
-                                        profitValueTemp = profitValueTemp + delt;
-                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, (float)lossValueTemp, (float)profitValueTemp));
+                                            profitValueTemp = profitValueTemp + delt;
+                                        }
                                         priceEnterShort = priceEnterShort + delt;
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, (float)lossValueTemp, (float)profitValueTemp));
                                     }
                                     else
                                     {
                                         resThTemp.countLDeal++;
-                                        resThTemp.loss += ((int)ask - priceEnterShort) * lotCount;
+                                        int g = ((int)ask - priceEnterShort) * lotCount;
+                                        resThTemp.loss += g;
                                         dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)ask);
                                         resThTemp.lstAllDeals.Add(dealTemp);
                                         priceEnterShort = 0;
@@ -320,17 +325,21 @@ namespace MyMoney
                                     if (paramTh.martingValue >= lotCount)
                                     {
                                         lotCount += 1;
-                                        int delt = (priceEnterLong - (int)bid) / lotCount;
+                                        dealTemp.lotsCount = lotCount;
+                                        int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount /10) * 10;
                                         if (lotCount == 2)
+                                        {
                                             lossValueTemp = lossValueTemp + delt;
-                                        profitValueTemp = profitValueTemp + delt;
-                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, (float)lossValueTemp, (float)profitValueTemp));
+                                            profitValueTemp = profitValueTemp + delt;
+                                        }
                                         priceEnterLong = priceEnterLong - delt;
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, (float)lossValueTemp, (float)profitValueTemp));
                                     }
                                     else
                                     {
                                         resThTemp.countLDeal++;
-                                        resThTemp.loss += (priceEnterLong - (int)bid) * lotCount;
+                                        int g = (priceEnterLong - (int)bid) * lotCount;
+                                        resThTemp.loss += g;
                                         dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)bid);
                                         resThTemp.lstAllDeals.Add(dealTemp);
                                         priceEnterLong = 0;
