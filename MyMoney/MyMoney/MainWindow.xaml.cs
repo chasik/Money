@@ -255,5 +255,21 @@ namespace MyMoney
             }
         }
 
+        private void dgResultDeals_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            //SubDealInfo di = (SubDealInfo)e.Row.DataContext;
+
+         /*   if (di.actiond != ActionDeal.buy && di.actiond != ActionDeal.sell)
+                e.Row.Background = new SolidColorBrush(Colors.LightSlateGray);
+            else if (di.actiond == ActionDeal.buy && di.margin > 0)
+                e.Row.Background = new SolidColorBrush(Colors.Blue);
+            else if (di.actiond == ActionDeal.buy && di.margin <= 0)
+                e.Row.Background = new SolidColorBrush(Colors.BlueViolet);
+            else if (di.actiond == ActionDeal.sell && di.margin > 0)
+                e.Row.Background = new SolidColorBrush(Colors.LightPink);
+            else if (di.actiond == ActionDeal.sell && di.margin <= 0)
+                e.Row.Background = new SolidColorBrush(Colors.LavenderBlush);*/
+        }
+
     }
 }

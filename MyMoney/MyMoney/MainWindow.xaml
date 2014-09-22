@@ -58,7 +58,7 @@
             </DataGrid.RowBackground>
         </DataGrid>
         <TextBox x:Name="filterTextBox" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="4,59,0,0" TextWrapping="Wrap" Text="RTS-" VerticalAlignment="Top" Width="228"/>
-        <DataGrid x:Name="dgResultDeals" Grid.Column="1" Margin="555,442,10,10" FontFamily="Tahoma" FontSize="9"/>
+        <DataGrid x:Name="dgResultDeals" Grid.Column="1" Margin="555,442,10,10" FontFamily="Tahoma" FontSize="9" LoadingRow="dgResultDeals_LoadingRow"/>
         <DataGrid x:Name="dgResultDetail" Grid.Column="1" Margin="555,223,0,0" Height="214" VerticalAlignment="Top" AutoGenerateColumns="False" FontFamily="Tahoma" FontSize="9" HorizontalAlignment="Left" Width="429" SelectionChanged="dgResultDetail_SelectionChanged"/>
 
     </Grid>
