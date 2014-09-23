@@ -26,12 +26,12 @@ namespace MyMoney
     public partial class MainWindow : Window
     {
         float maxPF = 0, maxMargin = 0;
-        private ObservableCollection<ResultOneThreadSumm> allResults;
+        public ObservableCollection<ResultOneThreadSumm> allResults;
         private ObservableCollection<ResultOneThread> detailResults;
         private ObservableCollection<SubDealInfo> detailAllDeals;
         private IDataSource dsource;
         private QuotesFromBD dsourceDB;
-        private Dictionary<int, ResultOneThreadSumm> dicAllResults = new Dictionary<int, ResultOneThreadSumm>();
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -95,7 +95,6 @@ namespace MyMoney
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                     {
-                        dicAllResults.Add(resTh.idParam, resTh);
                         allResults.Add(resTh);
                         if (resTh.profitFac > maxPF || resTh.profit - resTh.loss > maxMargin)
                         {
@@ -210,16 +209,16 @@ namespace MyMoney
                     }
                 }
                 dsourceDB.dicDiapasonParams.Clear();
-                dsourceDB.dicDiapasonParams.Add("glassHeight", new diapasonTestParam(tbGlassStart.Text, tbGlassFinish.Text, tbGlassStep.Text));
-                dsourceDB.dicDiapasonParams.Add("averageValue", new diapasonTestParam(tbAverageStart.Text, tbAverageFinish.Text, tbAverageStep.Text));
+                dsourceDB.dicDiapasonParams.Add("glassHeight", new diapasonTestParam(1, tbGlassStart.Text, tbGlassFinish.Text, tbGlassStep.Text));
+                dsourceDB.dicDiapasonParams.Add("averageValue", new diapasonTestParam(2, tbAverageStart.Text, tbAverageFinish.Text, tbAverageStep.Text));
 
-                dsourceDB.dicDiapasonParams.Add("profitLongValue", new diapasonTestParam(tbProfitLongStart.Text, tbProfitLongFinish.Text, tbProfitLongStep.Text));
-                dsourceDB.dicDiapasonParams.Add("lossLongValue", new diapasonTestParam(tbLossLongStart.Text, tbLossLongFinish.Text, tbLossLongStep.Text));
-                dsourceDB.dicDiapasonParams.Add("profitShortValue", new diapasonTestParam(tbProfitShortStart.Text, tbProfitShortFinish.Text, tbProfitShortStep.Text));
-                dsourceDB.dicDiapasonParams.Add("lossShortValue", new diapasonTestParam(tbLossShortStart.Text, tbLossShortFinish.Text, tbLossShortStep.Text));
+                dsourceDB.dicDiapasonParams.Add("profitLongValue", new diapasonTestParam(3, tbProfitLongStart.Text, tbProfitLongFinish.Text, tbProfitLongStep.Text));
+                dsourceDB.dicDiapasonParams.Add("lossLongValue", new diapasonTestParam(4, tbLossLongStart.Text, tbLossLongFinish.Text, tbLossLongStep.Text));
+                dsourceDB.dicDiapasonParams.Add("profitShortValue", new diapasonTestParam(5, tbProfitShortStart.Text, tbProfitShortFinish.Text, tbProfitShortStep.Text));
+                dsourceDB.dicDiapasonParams.Add("lossShortValue", new diapasonTestParam(6, tbLossShortStart.Text, tbLossShortFinish.Text, tbLossShortStep.Text));
 
-                dsourceDB.dicDiapasonParams.Add("indicatorValue", new diapasonTestParam(tbIndicatorStart.Text, tbIndicatorFinish.Text, tbIndicatorStep.Text));
-                dsourceDB.dicDiapasonParams.Add("martingValue", new diapasonTestParam(tbMartingStart.Text, tbMartingFinish.Text, tbMartingStep.Text));
+                dsourceDB.dicDiapasonParams.Add("indicatorValue", new diapasonTestParam(7, tbIndicatorStart.Text, tbIndicatorFinish.Text, tbIndicatorStep.Text));
+                dsourceDB.dicDiapasonParams.Add("martingValue", new diapasonTestParam(8, tbMartingStart.Text, tbMartingFinish.Text, tbMartingStep.Text));
                 dsourceDB.StartTester();
             }
         }

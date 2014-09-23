@@ -30,18 +30,20 @@ namespace MyMoney
     }
     public struct diapasonTestParam
     {
-        public diapasonTestParam(string _start, string _finish, string _step)
+        public diapasonTestParam(int _idParam, string _start, string _finish, string _step)
         {
+            idParam = _idParam;
             start = int.Parse( _start);
             finish = int.Parse(_finish);
             step = int.Parse(_step);
         }
+        public int idParam;
         public int start;
         public int finish;
         public int step;
 
     }
-    public struct ParametrsForTest
+    public struct ParametrsForTest 
     {
         public ParametrsForTest(int _id, List<string> _instruments, int _i0, float _i1, int _i2, int _i3, int _i4, int _i5, int _i6, int _i7)
         {
@@ -56,6 +58,61 @@ namespace MyMoney
             lossShortValue = _i6;
             profitShortValue = _i7;
         }
+
+        public ParametrsForTest(ParametrsForTest _param1, ParametrsForTest _param2)
+        {
+            instruments = _param1.instruments;
+            id = 0;
+            glassHeight = _param1.glassHeight;
+            averageValue = _param2.averageValue;
+            profitLongValue = _param1.profitLongValue;
+            lossLongValue = _param1.lossLongValue;
+            indicatorValue = _param1.indicatorValue;
+            martingValue = _param2.martingValue;
+            lossShortValue = _param2.lossShortValue;
+            profitShortValue = _param2.profitShortValue;
+        }
+
+        public bool Compare(ParametrsForTest p1, ParametrsForTest p2)
+        {
+            if (p1.indicatorValue.CompareTo(p2.indicatorValue) == 0 && p1.glassHeight.CompareTo(p2.glassHeight) == 0 //&& p1.instruments == p2.instruments
+                && p1.lossLongValue.CompareTo(p2.lossLongValue) == 0 && p1.lossShortValue.CompareTo(p2.lossShortValue) == 0 && p1.martingValue.CompareTo(p2.martingValue) == 0
+                && p1.profitLongValue.CompareTo(p2.profitLongValue) == 0 && p1.profitShortValue.CompareTo(p2.profitShortValue) == 0)
+                return true;
+            else 
+                return false;
+        }
+
+        public void Mutation(diapasonTestParam _diapParam)
+        {
+            Random rnd = new Random();
+            int colIter = (_diapParam.finish - _diapParam.start) / _diapParam.step;
+            int randomStep = rnd.Next(0, colIter - 1);
+            int newVal = _diapParam.start + _diapParam.step * randomStep;
+            switch (_diapParam.idParam)
+            {
+                case 1: glassHeight = newVal;
+                break;
+                case 2: averageValue = newVal;
+                break;
+                case 3: profitLongValue = newVal;
+                break;
+                case 4: lossLongValue = newVal;
+                break;
+                case 5: profitShortValue = newVal;
+                break;
+                case 6: lossShortValue = newVal;
+                break;
+                case 7: indicatorValue = newVal;
+                break;
+                case 8: martingValue = newVal;
+                break;
+                default:
+                    break;
+            }
+
+        }
+
         public int id;
         public List<string> instruments;
         public int glassHeight;
@@ -70,11 +127,13 @@ namespace MyMoney
 
     public class ParametrsForTestObj
     {
-        public ParametrsForTestObj(ParametrsForTest _p, Dictionary<string, DataTable> _dictionaryDT)
+        public ParametrsForTestObj(ParametrsForTest _p, Dictionary<string, DataTable> _dictionaryDT, int _numThread = 0)
         {
             paramS = _p;
             dictionaryDT = _dictionaryDT;
+            this.numThread = _numThread;
         }
+        public int numThread;
         public ParametrsForTest paramS;
         public Dictionary<string, DataTable> dictionaryDT;
     }
@@ -171,6 +230,7 @@ namespace MyMoney
         }
         public List<DealInfo> lstAllDeals = new List<DealInfo>();
         public string shortName { get; set; }
+        public int idCycle { get; set; }
         public int idParam { get; set; }
         public float profitFac { get; set; }
         public int margin { get; set; }
@@ -180,8 +240,10 @@ namespace MyMoney
         public int countLDeal { get; set; }
         public int glassH { get; set; }
         public float averageVal { get; set; }
-        public int profLevel { get; set; }
-        public int lossLevel { get; set; }
+        public int profLongLevel { get; set; }
+        public int lossLongLevel { get; set; }
+        public int profShortLevel { get; set; }
+        public int lossShortLevel { get; set; }
         public int indicVal { get; set; }
         public int martinLevel { get; set; }
     }
@@ -198,5 +260,51 @@ namespace MyMoney
             this.profit += _result.profit;
             this.lstResults.Add(_result);
         }
+
+        public ParametrsForTest paramForTest;
     }
+
+    public class ResultBestMargin : IComparable
+    {
+        public ResultBestMargin(int _idparam, float _margin)
+        {
+            idparam = _idparam;
+            margin = _margin;
+        }
+        
+        public int idparam { get; set; }
+        public float margin { get; set; }
+        public int CompareTo(object j)
+        {
+            if (this.margin < (j as ResultBestMargin).margin)
+                return 1;
+            if (this.margin == (j as ResultBestMargin).margin)
+                return 0;
+            if (this.margin > (j as ResultBestMargin).margin)
+                return -1;
+            return 0;
+        }
+    }
+
+    public class ResultBestProfitFactor : IComparable
+    {
+        public ResultBestProfitFactor(int _idparam, float _profitfactor)
+        {
+            idparam = _idparam;
+            profitFactor = _profitfactor;
+        }
+        public int idparam { get; set; }
+        public float profitFactor { get; set; }
+        public int CompareTo(object j)
+        {
+            if (this.profitFactor < (j as ResultBestProfitFactor).profitFactor)
+                return 1;
+            if (this.profitFactor == (j as ResultBestProfitFactor).profitFactor)
+                return 0;
+            if (this.profitFactor > (j as ResultBestProfitFactor).profitFactor)
+                return -1;
+            return 0;
+        }
+    }
+
 }

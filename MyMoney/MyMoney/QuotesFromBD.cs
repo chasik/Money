@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Data;
+using System.Collections.ObjectModel;
 
 namespace MyMoney
 {
@@ -23,6 +24,10 @@ namespace MyMoney
         public Dictionary<string, tableInfo> dictAllTables;
         public Dictionary<string, DataTable> dicSelectedDataTables;
         public List<string> selectedSessionList;
+
+        public SortedDictionary<ResultBestProfitFactor, ResultOneThreadSumm> dicAllProfitResult = new SortedDictionary<ResultBestProfitFactor, ResultOneThreadSumm>();
+        public SortedDictionary<ResultBestMargin, ResultOneThreadSumm> dicAllMarginResult = new SortedDictionary<ResultBestMargin, ResultOneThreadSumm>();
+
         public string connectionstr = "user id=sa;password=WaNo11998811mssql;server=localhost;database=smartcom;MultipleActiveResultSets=true";
 
         private List<ParametrsForTest> parametrsList;
@@ -212,14 +217,50 @@ namespace MyMoney
             if (OnChangeProgress != null)
                 OnChangeProgress(0, 0, 0, "", false);
             int plStartCount = parametrsList.Count;
+            Random rnd = new Random();
             while (parametrsList.Count > 0)
             {
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
-                    ParametrsForTest pt = parametrsList[new Random().Next(0, parametrsList.Count)];
+                    ParametrsForTest pt;
+                    if (dicAllProfitResult.Count < 22)
+                        pt = parametrsList[new Random().Next(0, parametrsList.Count)];
+                    else
+                    {
+                        int o1 = rnd.Next(1, 19);
+                        int o2 = rnd.Next(1, 19);
+                        if (o1 == o2)
+                            o2 += 1;
+                        ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count)];
+                        ParametrsForTest param2 = parametrsList[new Random().Next(0, parametrsList.Count)]; ;
+                        foreach (ResultBestProfitFactor item in dicAllProfitResult.Keys)
+                        {
+                            o1--;
+                            o2--;
+                            if (o1 < 0 && o2 < 0)
+                                break;
+                            if (o1 == 0)
+                                param1 = dicAllProfitResult[item].paramForTest;
+                            if (o2 == 0)
+                                param2 = dicAllProfitResult[item].paramForTest;
+                        }
+                        ParametrsForTest ptTemp = new ParametrsForTest(param1, param2);
+
+                        pt = parametrsList.Find(x => x.Compare(x, ptTemp));
+                        while (pt.id == 0)
+                        {
+                            pt = parametrsList.Find(x => x.Compare(x, ptTemp));
+                            int mutantParamId = rnd.Next(1, 7);
+                            foreach (diapasonTestParam dp in dicDiapasonParams.Values)
+	                        {
+		                        if (dp.idParam == mutantParamId)
+                                    ptTemp.Mutation(dp);
+	                        }
+                        }
+                    }
                     listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
                     listThreads.Last().IsBackground = true;
-                    listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables));
+                    listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables, plStartCount - parametrsList.Count));
                     parametrsList.Remove(pt);
                     if (OnChangeProgress != null)
                         OnChangeProgress(0, plStartCount, plStartCount - parametrsList.Count);
@@ -251,8 +292,8 @@ namespace MyMoney
             byte? actiontick = 0;
             Dictionary<string, DataTable> dictionaryDT = (p as ParametrsForTestObj).dictionaryDT;
             ParametrsForTest paramTh = (p as ParametrsForTestObj).paramS;
-            int lossValueTemp = paramTh.lossValue;
-            int profitValueTemp = paramTh.profitValue;
+            int lossLongValueTemp = paramTh.lossLongValue, profitLongValueTemp = paramTh.profitLongValue;
+            int lossShortValueTemp = paramTh.lossShortValue, profitShortValueTemp = paramTh.profitShortValue;
             foreach (string k in dictionaryDT.Keys)
             {
                 priceEnterLong = 0; priceEnterShort = 0;
@@ -274,7 +315,7 @@ namespace MyMoney
                             if (priceEnterShort != 0)
                             {
                                 // профит короткая
-                                if (priceEnterShort - profitValueTemp >= ask)
+                                if (priceEnterShort - profitShortValueTemp >= ask)
                                 {
                                     resThTemp.countPDeal++;
                                     resThTemp.profit += (priceEnterShort - (int)ask) * lotCount;
@@ -283,7 +324,7 @@ namespace MyMoney
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                 }
                                 // лосс короткая
-                                else if (priceEnterShort + lossValueTemp <= ask)
+                                else if (priceEnterShort + lossShortValueTemp <= ask)
                                 {
                                     if (paramTh.martingValue >= lotCount)
                                     {
@@ -292,11 +333,11 @@ namespace MyMoney
                                         int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
                                         if (lotCount == 2)
                                         {
-                                            lossValueTemp = lossValueTemp + delt;
-                                            profitValueTemp = profitValueTemp + delt;
+                                            lossShortValueTemp += delt;
+                                            profitShortValueTemp += delt;
                                         }
                                         priceEnterShort = priceEnterShort + delt;
-                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, (float)lossValueTemp, (float)profitValueTemp));
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, (float)lossShortValueTemp, (float)profitShortValueTemp));
                                     }
                                     else
                                     {
@@ -317,7 +358,7 @@ namespace MyMoney
                             if (priceEnterLong != 0)
                             {
                                 // профит длиная
-                                if (priceEnterLong + profitValueTemp <= bid)
+                                if (priceEnterLong + profitLongValueTemp <= bid)
                                 {
                                     resThTemp.countPDeal++;
                                     resThTemp.profit += ((int)bid - priceEnterLong) * lotCount;
@@ -326,7 +367,7 @@ namespace MyMoney
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                 }
                                 // лосс длиная
-                                else if (priceEnterLong - lossValueTemp >= bid)
+                                else if (priceEnterLong - lossLongValueTemp >= bid)
                                 {
                                     if (paramTh.martingValue >= lotCount)
                                     {
@@ -335,11 +376,11 @@ namespace MyMoney
                                         int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount /10) * 10;
                                         if (lotCount == 2)
                                         {
-                                            lossValueTemp = lossValueTemp + delt;
-                                            profitValueTemp = profitValueTemp + delt;
+                                            lossLongValueTemp += delt;
+                                            profitLongValueTemp += delt;
                                         }
                                         priceEnterLong = priceEnterLong - delt;
-                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, (float)lossValueTemp, (float)profitValueTemp));
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, (float)lossLongValueTemp, (float)profitLongValueTemp));
                                     }
                                     else
                                     {
@@ -392,8 +433,8 @@ namespace MyMoney
                                 // вход лонг
                                 if (indicator >= paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
                                 {
-                                    lossValueTemp = paramTh.lossValue;
-                                    profitValueTemp = paramTh.profitValue;
+                                    lossLongValueTemp = paramTh.lossLongValue;
+                                    profitLongValueTemp = paramTh.profitLongValue;
                                     priceEnterLong = (int)ask;
                                     lotCount = 1;
                                     dealTemp = new DealInfo(ActionDeal.buy, dr.Field<DateTime>("dtserver"), 1, priceEnterLong);
@@ -402,8 +443,8 @@ namespace MyMoney
                                 // вход шорт
                                 else if (indicator <= -paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
                                 {
-                                    lossValueTemp = paramTh.lossValue;
-                                    profitValueTemp = paramTh.profitValue;
+                                    lossShortValueTemp = paramTh.lossShortValue;
+                                    profitShortValueTemp = paramTh.profitShortValue;
                                     priceEnterShort = (int)bid;
                                     lotCount = 1;
                                     dealTemp = new DealInfo(ActionDeal.sell, dr.Field<DateTime>("dtserver"), 1, priceEnterShort);
@@ -425,16 +466,23 @@ namespace MyMoney
             }
             lock (lockObj)
             {
+                resTh.idCycle = (p as ParametrsForTestObj).numThread;
                 resTh.idParam = paramTh.id;
+                resTh.paramForTest = paramTh;
                 resTh.glassH = paramTh.glassHeight;
                 resTh.indicVal = paramTh.indicatorValue;
-                resTh.profLevel = paramTh.profitValue;
-                resTh.lossLevel = paramTh.lossValue;
+                resTh.profLongLevel = paramTh.profitLongValue;
+                resTh.lossLongLevel = paramTh.lossLongValue;
+                resTh.profShortLevel = paramTh.profitShortValue;
+                resTh.lossShortLevel = paramTh.lossShortValue;
                 resTh.martinLevel = paramTh.martingValue;
                 resTh.averageVal = paramTh.averageValue;
 
                 resTh.margin = resTh.profit - resTh.loss;
                 resTh.profitFac = (float)resTh.profit / (float)resTh.loss;
+
+                dicAllProfitResult.Add(new ResultBestProfitFactor(resTh.idParam, resTh.profitFac), resTh);
+                //dicAllMarginResult.Add(new ResultBestMargin(resTh.idParam, resTh.margin), resTh);
 
                 if (OnFinishOneThread != null)
                     OnFinishOneThread(resTh);
