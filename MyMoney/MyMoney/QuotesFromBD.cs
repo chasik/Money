@@ -142,9 +142,9 @@ namespace MyMoney
             { });
             for (int i0 = dicDiapasonParams["glassHeight"].start; i0 <= dicDiapasonParams["glassHeight"].finish; i0 = i0 + dicDiapasonParams["glassHeight"].step)
             {
-                for (int i3 = dicDiapasonParams["lossValue"].start; i3 <= dicDiapasonParams["lossValue"].finish; i3 = i3 + dicDiapasonParams["lossValue"].step)
+                for (int i3 = dicDiapasonParams["lossLongValue"].start; i3 <= dicDiapasonParams["lossLongValue"].finish; i3 = i3 + dicDiapasonParams["lossLongValue"].step)
                 {
-                    for (int i2 = dicDiapasonParams["profitValue"].start; i2 <= dicDiapasonParams["profitValue"].finish; i2 = i2 + dicDiapasonParams["profitValue"].step)
+                    for (int i2 = dicDiapasonParams["profitLongValue"].start; i2 <= dicDiapasonParams["profitLongValue"].finish; i2 = i2 + dicDiapasonParams["profitLongValue"].step)
                     {
                         for (int i1 = dicDiapasonParams["averageValue"].start; i1 <= dicDiapasonParams["averageValue"].finish; i1 = i1 + dicDiapasonParams["averageValue"].step)
                         {
@@ -152,8 +152,14 @@ namespace MyMoney
                             {
                                 for (int i5 = dicDiapasonParams["martingValue"].start; i5 <= dicDiapasonParams["martingValue"].finish; i5 = i5 + dicDiapasonParams["martingValue"].step)
                                 {
-                                    idParametrsRow++;
-                                    parametrsList.Add(new ParametrsForTest(idParametrsRow, selectedSessionList, i0, i1, i2, i3, i4, i5));
+                                    for (int i6 = dicDiapasonParams["lossShortValue"].start; i6 <= dicDiapasonParams["lossShortValue"].finish; i6 = i6 + dicDiapasonParams["lossShortValue"].step)
+                                    {
+                                        for (int i7 = dicDiapasonParams["profitShortValue"].start; i7 <= dicDiapasonParams["profitShortValue"].finish; i7 = i7 + dicDiapasonParams["profitShortValue"].step)
+                                        {
+                                            idParametrsRow++;
+                                            parametrsList.Add(new ParametrsForTest(idParametrsRow, selectedSessionList, i0, i1, i2, i3, i4, i5, i6, i7));
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -9,6 +9,7 @@ namespace MyMoney
 {
     public enum ActionDeal
 	{
+        none = 0,
         sell = 1,
         buy = 2
 	};
@@ -42,23 +43,27 @@ namespace MyMoney
     }
     public struct ParametrsForTest
     {
-        public ParametrsForTest(int _id, List<string> _instruments, int _i0, float _i1, int _i2, int _i3, int _i4, int _i5)
+        public ParametrsForTest(int _id, List<string> _instruments, int _i0, float _i1, int _i2, int _i3, int _i4, int _i5, int _i6, int _i7)
         {
             instruments = _instruments;
             id = _id;
             glassHeight = _i0;
             averageValue = _i1;
-            profitValue = _i2;
-            lossValue = _i3;
+            profitLongValue = _i2;
+            lossLongValue = _i3;
             indicatorValue = _i4;
             martingValue = _i5;
+            lossShortValue = _i6;
+            profitShortValue = _i7;
         }
         public int id;
         public List<string> instruments;
         public int glassHeight;
         public float averageValue; // отношение среднего по стакану к каждой позиции (если более averageValue - в рассчет не берется)
-        public int profitValue; // значение профита
-        public int lossValue; // значение убытка
+        public int profitLongValue; // значение профита лонга
+        public int lossLongValue; // значение убытка лонга
+        public int profitShortValue; // значение профита шорта
+        public int lossShortValue; // значение убытка шорта
         public int indicatorValue; // значение индикатора для входа
         public int martingValue; // допустимое количество раз усреднения
     }
@@ -87,6 +92,7 @@ namespace MyMoney
 
         public SubDealInfo(DateTime _dt, int _lotCount, float _priceEnter, float _curPrice, float _delt, float _lossValueTemp = 0, float _profitValueTemp = 0)
         {
+            actiond = ActionDeal.none;
             dtEnter = _dt;
             lotsCount = _lotCount;
             priceEnter = _priceEnter;

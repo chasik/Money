@@ -212,8 +212,12 @@ namespace MyMoney
                 dsourceDB.dicDiapasonParams.Clear();
                 dsourceDB.dicDiapasonParams.Add("glassHeight", new diapasonTestParam(tbGlassStart.Text, tbGlassFinish.Text, tbGlassStep.Text));
                 dsourceDB.dicDiapasonParams.Add("averageValue", new diapasonTestParam(tbAverageStart.Text, tbAverageFinish.Text, tbAverageStep.Text));
-                dsourceDB.dicDiapasonParams.Add("profitValue", new diapasonTestParam(tbProfitStart.Text, tbProfitFinish.Text, tbProfitStep.Text));
-                dsourceDB.dicDiapasonParams.Add("lossValue", new diapasonTestParam(tbLossStart.Text, tbLossFinish.Text, tbLossStep.Text));
+
+                dsourceDB.dicDiapasonParams.Add("profitLongValue", new diapasonTestParam(tbProfitLongStart.Text, tbProfitLongFinish.Text, tbProfitLongStep.Text));
+                dsourceDB.dicDiapasonParams.Add("lossLongValue", new diapasonTestParam(tbLossLongStart.Text, tbLossLongFinish.Text, tbLossLongStep.Text));
+                dsourceDB.dicDiapasonParams.Add("profitShortValue", new diapasonTestParam(tbProfitShortStart.Text, tbProfitShortFinish.Text, tbProfitShortStep.Text));
+                dsourceDB.dicDiapasonParams.Add("lossShortValue", new diapasonTestParam(tbLossShortStart.Text, tbLossShortFinish.Text, tbLossShortStep.Text));
+
                 dsourceDB.dicDiapasonParams.Add("indicatorValue", new diapasonTestParam(tbIndicatorStart.Text, tbIndicatorFinish.Text, tbIndicatorStep.Text));
                 dsourceDB.dicDiapasonParams.Add("martingValue", new diapasonTestParam(tbMartingStart.Text, tbMartingFinish.Text, tbMartingStep.Text));
                 dsourceDB.StartTester();
@@ -257,18 +261,20 @@ namespace MyMoney
 
         private void dgResultDeals_LoadingRow(object sender, DataGridRowEventArgs e)
         {
-            //SubDealInfo di = (SubDealInfo)e.Row.DataContext;
+            SubDealInfo di = (e.Row.Item as SubDealInfo);
+            if (di == null)
+                return;
 
-         /*   if (di.actiond != ActionDeal.buy && di.actiond != ActionDeal.sell)
-                e.Row.Background = new SolidColorBrush(Colors.LightSlateGray);
+            if (di.actiond == ActionDeal.none)
+                e.Row.Background = new SolidColorBrush(Colors.OldLace);
             else if (di.actiond == ActionDeal.buy && di.margin > 0)
-                e.Row.Background = new SolidColorBrush(Colors.Blue);
+                e.Row.Background = new SolidColorBrush(Colors.SkyBlue);
             else if (di.actiond == ActionDeal.buy && di.margin <= 0)
-                e.Row.Background = new SolidColorBrush(Colors.BlueViolet);
+                e.Row.Background = new SolidColorBrush(Colors.DeepSkyBlue);
             else if (di.actiond == ActionDeal.sell && di.margin > 0)
-                e.Row.Background = new SolidColorBrush(Colors.LightPink);
+                e.Row.Background = new SolidColorBrush(Colors.HotPink);
             else if (di.actiond == ActionDeal.sell && di.margin <= 0)
-                e.Row.Background = new SolidColorBrush(Colors.LavenderBlush);*/
+                e.Row.Background = new SolidColorBrush(Colors.DeepPink);
         }
 
     }
