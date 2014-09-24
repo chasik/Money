@@ -59,18 +59,19 @@ namespace MyMoney
             profitShortValue = _i7;
         }
 
-        public ParametrsForTest(ParametrsForTest _param1, ParametrsForTest _param2)
+        public ParametrsForTest(ParametrsForTest[] _params)
         {
-            instruments = _param1.instruments;
+            Random r = new Random();
             id = 0;
-            glassHeight = _param1.glassHeight;
-            averageValue = _param2.averageValue;
-            profitLongValue = _param1.profitLongValue;
-            lossLongValue = _param1.lossLongValue;
-            indicatorValue = _param1.indicatorValue;
-            martingValue = _param2.martingValue;
-            lossShortValue = _param2.lossShortValue;
-            profitShortValue = _param2.profitShortValue;
+            instruments = _params[r.Next(0,1)].instruments;
+            glassHeight = _params[r.Next(0,1)].glassHeight;
+            averageValue = _params[r.Next(0,1)].averageValue;
+            profitLongValue = _params[r.Next(0,1)].profitLongValue;
+            lossLongValue = _params[r.Next(0,1)].lossLongValue;
+            indicatorValue = _params[r.Next(0,1)].indicatorValue;
+            martingValue = _params[r.Next(0,1)].martingValue;
+            lossShortValue = _params[r.Next(0,1)].lossShortValue;
+            profitShortValue = _params[r.Next(0, 1)].profitShortValue;
         }
 
         public bool Compare(ParametrsForTest p1, ParametrsForTest p2)

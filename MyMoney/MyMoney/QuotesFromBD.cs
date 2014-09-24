@@ -244,13 +244,14 @@ namespace MyMoney
                             if (o2 == 0)
                                 param2 = dicAllProfitResult[item].paramForTest;
                         }
-                        ParametrsForTest ptTemp = new ParametrsForTest(param1, param2);
+                        ParametrsForTest[] ptForTest = { param1, param2 };
+                        ParametrsForTest ptTemp = new ParametrsForTest(ptForTest);
 
                         pt = parametrsList.Find(x => x.Compare(x, ptTemp));
                         while (pt.id == 0)
                         {
                             pt = parametrsList.Find(x => x.Compare(x, ptTemp));
-                            int mutantParamId = rnd.Next(1, 7);
+                            int mutantParamId = rnd.Next(1, 8);
                             foreach (diapasonTestParam dp in dicDiapasonParams.Values)
 	                        {
 		                        if (dp.idParam == mutantParamId)
@@ -331,7 +332,7 @@ namespace MyMoney
                                         lotCount += 1;
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
-                                        if (lotCount == 2)
+                                        //if (lotCount == 2)
                                         {
                                             lossShortValueTemp += delt;
                                             profitShortValueTemp += delt;
@@ -374,7 +375,7 @@ namespace MyMoney
                                         lotCount += 1;
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount /10) * 10;
-                                        if (lotCount == 2)
+                                        //if (lotCount == 2)
                                         {
                                             lossLongValueTemp += delt;
                                             profitLongValueTemp += delt;
@@ -481,7 +482,9 @@ namespace MyMoney
                 resTh.margin = resTh.profit - resTh.loss;
                 resTh.profitFac = (float)resTh.profit / (float)resTh.loss;
 
-                dicAllProfitResult.Add(new ResultBestProfitFactor(resTh.idParam, resTh.profitFac), resTh);
+                ResultBestProfitFactor rp = new ResultBestProfitFactor(resTh.idParam, resTh.profitFac);
+                if (!dicAllProfitResult.ContainsKey(rp))
+                    dicAllProfitResult.Add(rp, resTh);
                 //dicAllMarginResult.Add(new ResultBestMargin(resTh.idParam, resTh.margin), resTh);
 
                 if (OnFinishOneThread != null)
