@@ -153,16 +153,19 @@ namespace MyMoney
                     {
                         for (int i1 = dicDiapasonParams["averageValue"].start; i1 <= dicDiapasonParams["averageValue"].finish; i1 = i1 + dicDiapasonParams["averageValue"].step)
                         {
-                            for (int i4 = dicDiapasonParams["indicatorValue"].start; i4 <= dicDiapasonParams["indicatorValue"].finish; i4 = i4 + dicDiapasonParams["indicatorValue"].step)
+                            for (int i4 = dicDiapasonParams["indicatorLongValue"].start; i4 <= dicDiapasonParams["indicatorLongValue"].finish; i4 = i4 + dicDiapasonParams["indicatorLongValue"].step)
                             {
-                                for (int i5 = dicDiapasonParams["martingValue"].start; i5 <= dicDiapasonParams["martingValue"].finish; i5 = i5 + dicDiapasonParams["martingValue"].step)
+                                for (int i8 = dicDiapasonParams["indicatorShortValue"].start; i8 <= dicDiapasonParams["indicatorShortValue"].finish; i8 = i8 + dicDiapasonParams["indicatorShortValue"].step)
                                 {
-                                    for (int i6 = dicDiapasonParams["lossShortValue"].start; i6 <= dicDiapasonParams["lossShortValue"].finish; i6 = i6 + dicDiapasonParams["lossShortValue"].step)
+                                    for (int i5 = dicDiapasonParams["martingValue"].start; i5 <= dicDiapasonParams["martingValue"].finish; i5 = i5 + dicDiapasonParams["martingValue"].step)
                                     {
-                                        for (int i7 = dicDiapasonParams["profitShortValue"].start; i7 <= dicDiapasonParams["profitShortValue"].finish; i7 = i7 + dicDiapasonParams["profitShortValue"].step)
+                                        for (int i6 = dicDiapasonParams["lossShortValue"].start; i6 <= dicDiapasonParams["lossShortValue"].finish; i6 = i6 + dicDiapasonParams["lossShortValue"].step)
                                         {
-                                            idParametrsRow++;
-                                            parametrsList.Add(new ParametrsForTest(idParametrsRow, selectedSessionList, i0, i1, i2, i3, i4, i5, i6, i7));
+                                            for (int i7 = dicDiapasonParams["profitShortValue"].start; i7 <= dicDiapasonParams["profitShortValue"].finish; i7 = i7 + dicDiapasonParams["profitShortValue"].step)
+                                            {
+                                                idParametrsRow++;
+                                                parametrsList.Add(new ParametrsForTest(idParametrsRow, selectedSessionList, i0, i1, i2, i3, i4, i5, i6, i7, i8));
+                                            }
                                         }
                                     }
                                 }
@@ -251,7 +254,7 @@ namespace MyMoney
                         while (pt.id == 0)
                         {
                             pt = parametrsList.Find(x => x.Compare(x, ptTemp));
-                            int mutantParamId = rnd.Next(1, 8);
+                            int mutantParamId = rnd.Next(1, 9);
                             foreach (diapasonTestParam dp in dicDiapasonParams.Values)
 	                        {
 		                        if (dp.idParam == mutantParamId)
@@ -333,11 +336,11 @@ namespace MyMoney
                                         lotCount += 1;
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
-                                        //if (lotCount == 2)
+                                        if (lotCount == 2)
                                         {
-                                            lossShortValueTemp += delt;
-                                            //profitShortValueTemp += delt;
+                                            profitShortValueTemp += delt;
                                         }
+                                        lossShortValueTemp += delt;
                                         priceEnterShort = priceEnterShort + delt;
 
 
@@ -380,11 +383,11 @@ namespace MyMoney
                                         lotCount += 1;
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount /10) * 10;
-                                        //if (lotCount == 2)
+                                        if (lotCount == 2)
                                         {
-                                            lossLongValueTemp += delt;
-                                            //profitLongValueTemp += delt;
+                                            profitLongValueTemp += delt;
                                         }
+                                        lossLongValueTemp += delt;
                                         priceEnterLong = priceEnterLong - delt;
 
                                         if (dealTemp.lstSubDeal.Count > 0)
@@ -440,7 +443,7 @@ namespace MyMoney
                                 }
                                 indicator = (sumlong + sumshort) != 0 ? (int)(sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
                                 // вход лонг
-                                if (indicator >= paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
+                                if (indicator >= paramTh.indicatorLongValue && priceEnterLong == 0 && priceEnterShort == 0)
                                 {
                                     lossLongValueTemp = paramTh.lossLongValue;
                                     profitLongValueTemp = paramTh.profitLongValue;
@@ -450,7 +453,7 @@ namespace MyMoney
 
                                 }
                                 // вход шорт
-                                else if (indicator <= -paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
+                                else if (indicator <= -paramTh.indicatorShortValue && priceEnterLong == 0 && priceEnterShort == 0)
                                 {
                                     lossShortValueTemp = paramTh.lossShortValue;
                                     profitShortValueTemp = paramTh.profitShortValue;
@@ -479,7 +482,8 @@ namespace MyMoney
                 resTh.idParam = paramTh.id;
                 resTh.paramForTest = paramTh;
                 resTh.glassH = paramTh.glassHeight;
-                resTh.indicVal = paramTh.indicatorValue;
+                resTh.indicLongVal = paramTh.indicatorLongValue;
+                resTh.indicShortVal = paramTh.indicatorShortValue;
                 resTh.profLongLevel = paramTh.profitLongValue;
                 resTh.lossLongLevel = paramTh.lossLongValue;
                 resTh.profShortLevel = paramTh.profitShortValue;

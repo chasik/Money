@@ -45,7 +45,7 @@ namespace MyMoney
     }
     public struct ParametrsForTest 
     {
-        public ParametrsForTest(int _id, List<string> _instruments, int _i0, float _i1, int _i2, int _i3, int _i4, int _i5, int _i6, int _i7)
+        public ParametrsForTest(int _id, List<string> _instruments, int _i0, float _i1, int _i2, int _i3, int _i4, int _i5, int _i6, int _i7, int _i8)
         {
             instruments = _instruments;
             id = _id;
@@ -53,10 +53,11 @@ namespace MyMoney
             averageValue = _i1;
             profitLongValue = _i2;
             lossLongValue = _i3;
-            indicatorValue = _i4;
+            indicatorLongValue = _i4;
             martingValue = _i5;
             lossShortValue = _i6;
             profitShortValue = _i7;
+            indicatorShortValue = _i8;
         }
 
         public ParametrsForTest(ParametrsForTest[] _params)
@@ -68,7 +69,8 @@ namespace MyMoney
             averageValue = _params[r.Next(0,1)].averageValue;
             profitLongValue = _params[r.Next(0,1)].profitLongValue;
             lossLongValue = _params[r.Next(0,1)].lossLongValue;
-            indicatorValue = _params[r.Next(0,1)].indicatorValue;
+            indicatorLongValue = _params[r.Next(0,1)].indicatorLongValue;
+            indicatorShortValue = _params[r.Next(0, 1)].indicatorShortValue;
             martingValue = _params[r.Next(0,1)].martingValue;
             lossShortValue = _params[r.Next(0,1)].lossShortValue;
             profitShortValue = _params[r.Next(0, 1)].profitShortValue;
@@ -76,9 +78,9 @@ namespace MyMoney
 
         public bool Compare(ParametrsForTest p1, ParametrsForTest p2)
         {
-            if (p1.indicatorValue.CompareTo(p2.indicatorValue) == 0 && p1.glassHeight.CompareTo(p2.glassHeight) == 0 //&& p1.instruments == p2.instruments
-                && p1.lossLongValue.CompareTo(p2.lossLongValue) == 0 && p1.lossShortValue.CompareTo(p2.lossShortValue) == 0 && p1.martingValue.CompareTo(p2.martingValue) == 0
-                && p1.profitLongValue.CompareTo(p2.profitLongValue) == 0 && p1.profitShortValue.CompareTo(p2.profitShortValue) == 0)
+            if (p1.indicatorShortValue.CompareTo(p2.indicatorShortValue) == 0 && p1.indicatorLongValue.CompareTo(p2.indicatorLongValue) == 0 
+                && p1.glassHeight.CompareTo(p2.glassHeight) == 0 && p1.lossLongValue.CompareTo(p2.lossLongValue) == 0 && p1.lossShortValue.CompareTo(p2.lossShortValue) == 0 
+                && p1.martingValue.CompareTo(p2.martingValue) == 0 && p1.profitLongValue.CompareTo(p2.profitLongValue) == 0 && p1.profitShortValue.CompareTo(p2.profitShortValue) == 0)
                 return true;
             else 
                 return false;
@@ -104,9 +106,11 @@ namespace MyMoney
                 break;
                 case 6: lossShortValue = newVal;
                 break;
-                case 7: indicatorValue = newVal;
+                case 7: indicatorLongValue = newVal;
                 break;
-                case 8: martingValue = newVal;
+                case 8: indicatorShortValue = newVal;
+                break;
+                case 9: martingValue = newVal;
                 break;
                 default:
                     break;
@@ -122,7 +126,8 @@ namespace MyMoney
         public int lossLongValue; // значение убытка лонга
         public int profitShortValue; // значение профита шорта
         public int lossShortValue; // значение убытка шорта
-        public int indicatorValue; // значение индикатора для входа
+        public int indicatorLongValue; // значение индикатора для входа
+        public int indicatorShortValue; // значение индикатора для входа
         public int martingValue; // допустимое количество раз усреднения
     }
 
@@ -254,7 +259,8 @@ namespace MyMoney
         public int lossLongLevel { get; set; }
         public int profShortLevel { get; set; }
         public int lossShortLevel { get; set; }
-        public int indicVal { get; set; }
+        public int indicLongVal { get; set; }
+        public int indicShortVal { get; set; }
         public int martinLevel { get; set; }
     }
 

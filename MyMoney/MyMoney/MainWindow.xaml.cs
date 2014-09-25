@@ -222,8 +222,9 @@ namespace MyMoney
                 dsourceDB.dicDiapasonParams.Add("profitShortValue", new diapasonTestParam(5, tbProfitShortStart.Text, tbProfitShortFinish.Text, tbProfitShortStep.Text));
                 dsourceDB.dicDiapasonParams.Add("lossShortValue", new diapasonTestParam(6, tbLossShortStart.Text, tbLossShortFinish.Text, tbLossShortStep.Text));
 
-                dsourceDB.dicDiapasonParams.Add("indicatorValue", new diapasonTestParam(7, tbIndicatorStart.Text, tbIndicatorFinish.Text, tbIndicatorStep.Text));
-                dsourceDB.dicDiapasonParams.Add("martingValue", new diapasonTestParam(8, tbMartingStart.Text, tbMartingFinish.Text, tbMartingStep.Text));
+                dsourceDB.dicDiapasonParams.Add("indicatorLongValue", new diapasonTestParam(7, tbIndicatorLongStart.Text, tbIndicatorLongFinish.Text, tbIndicatorLongStep.Text));
+                dsourceDB.dicDiapasonParams.Add("indicatorShortValue", new diapasonTestParam(8, tbIndicatorShortStart.Text, tbIndicatorShortFinish.Text, tbIndicatorShortStep.Text));
+                dsourceDB.dicDiapasonParams.Add("martingValue", new diapasonTestParam(9, tbMartingStart.Text, tbMartingFinish.Text, tbMartingStep.Text));
                 dsourceDB.StartTester();
             }
         }
