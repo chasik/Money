@@ -302,6 +302,7 @@ namespace MyMoney
                 resThTemp.shortName = k;
                 DealInfo dealTemp = null;
                 DataTable dt = dictionaryDT[k].Copy();
+                int indicator = 0;
                 foreach (DataRow dr in dt.Rows)
                 {
                     #region торговля
@@ -342,7 +343,7 @@ namespace MyMoney
 
                                         if (dealTemp.lstSubDeal.Count > 0)
                                             dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").Subtract(dealTemp.lstSubDeal.Last().dtEnter);
-                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, (float)lossShortValueTemp, (float)profitShortValueTemp));
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, indicator, (float)lossShortValueTemp, (float)profitShortValueTemp));
                                     }
                                     else
                                     {
@@ -388,7 +389,7 @@ namespace MyMoney
 
                                         if (dealTemp.lstSubDeal.Count > 0)
                                             dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").Subtract(dealTemp.lstSubDeal.Last().dtEnter);
-                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, (float)lossLongValueTemp, (float)profitLongValueTemp));
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, indicator, (float)lossLongValueTemp, (float)profitLongValueTemp));
                                     }
                                     else
                                     {
@@ -437,7 +438,7 @@ namespace MyMoney
                                     else if (pkey <= bid && glass[pkey] < averageGlass * paramTh.averageValue)
                                         sumshort += glass[pkey];
                                 }
-                                int indicator = (sumlong + sumshort) != 0 ? (int)(sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
+                                indicator = (sumlong + sumshort) != 0 ? (int)(sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
                                 // вход лонг
                                 if (indicator >= paramTh.indicatorValue && priceEnterLong == 0 && priceEnterShort == 0)
                                 {
@@ -445,7 +446,7 @@ namespace MyMoney
                                     profitLongValueTemp = paramTh.profitLongValue;
                                     priceEnterLong = (int)ask;
                                     lotCount = 1;
-                                    dealTemp = new DealInfo(ActionDeal.buy, dr.Field<DateTime>("dtserver"), 1, priceEnterLong);
+                                    dealTemp = new DealInfo(ActionDeal.buy, dr.Field<DateTime>("dtserver"), 1, priceEnterLong, indicator);
 
                                 }
                                 // вход шорт
@@ -455,7 +456,7 @@ namespace MyMoney
                                     profitShortValueTemp = paramTh.profitShortValue;
                                     priceEnterShort = (int)bid;
                                     lotCount = 1;
-                                    dealTemp = new DealInfo(ActionDeal.sell, dr.Field<DateTime>("dtserver"), 1, priceEnterShort);
+                                    dealTemp = new DealInfo(ActionDeal.sell, dr.Field<DateTime>("dtserver"), 1, priceEnterShort, indicator);
                                 }
                             }
                         }

@@ -150,7 +150,7 @@ namespace MyMoney
             priceExit = 0;
         }
 
-        public SubDealInfo(DateTime _dt, int _lotCount, float _priceEnter, float _curPrice, float _delt, float _lossValueTemp = 0, float _profitValueTemp = 0)
+        public SubDealInfo(DateTime _dt, int _lotCount, float _priceEnter, float _curPrice, float _delt, int _indicValue, float _lossValueTemp = 0, float _profitValueTemp = 0)
         {
             actiond = ActionDeal.none;
             dtEnter = _dt;
@@ -160,6 +160,7 @@ namespace MyMoney
             delt = _delt;
             lossValueTemp = _lossValueTemp;
             profitValueTemp = _profitValueTemp;
+            indicValue = _indicValue;
         }
 
         public void DoExit(DateTime _dt, float _pexit)
@@ -184,6 +185,7 @@ namespace MyMoney
         public float pointsCount { get; set; }
         public float margin { get; set; }
         public float delt { get; set; }
+        public int indicValue { get; set; }
         public float priceEnter { get; set; }
         public float priceExit { 
             get {
@@ -215,7 +217,7 @@ namespace MyMoney
 
     public class DealInfo : SubDealInfo
     {
-        public DealInfo(ActionDeal _actiond, DateTime _dtEnter, int _lotsCount, float _pEnter, float _lossValueTemp = 0, float _profitValueTemp = 0)
+        public DealInfo(ActionDeal _actiond, DateTime _dtEnter, int _lotsCount, float _pEnter, int _indicValue, float _lossValueTemp = 0, float _profitValueTemp = 0)
         {
             actiond = _actiond;
             dtEnter = _dtEnter;
@@ -223,6 +225,7 @@ namespace MyMoney
             priceEnter = _pEnter;
             lossValueTemp = _lossValueTemp;
             profitValueTemp = _profitValueTemp;
+            indicValue = _indicValue;
         }
 
     }
