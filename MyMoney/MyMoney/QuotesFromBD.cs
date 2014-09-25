@@ -288,7 +288,7 @@ namespace MyMoney
         {
             ResultOneThreadSumm resTh = new ResultOneThreadSumm();
             List<int> oldGlassValue = new List<int>();
-            Dictionary<int, int> glass = new Dictionary<int, int>();
+            SortedDictionary<int, int> glass = new SortedDictionary<int, int>();
             int priceEnterLong, priceEnterShort ;
             int lotCount = 1;
             int? bid = 0, ask = 0;
@@ -336,7 +336,7 @@ namespace MyMoney
                                         lotCount += 1;
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
-                                        if (lotCount == 2)
+                                        //if (lotCount == 2)
                                         {
                                             profitShortValueTemp += delt;
                                         }
@@ -383,7 +383,7 @@ namespace MyMoney
                                         lotCount += 1;
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount /10) * 10;
-                                        if (lotCount == 2)
+                                        //if (lotCount == 2)
                                         {
                                             profitLongValueTemp += delt;
                                         }
@@ -434,14 +434,35 @@ namespace MyMoney
                                 // среднее значение по стакану
                                 int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                                 int sumlong = 0, sumshort = 0;
-                                foreach (int pkey in glass.Keys)
+                                List<int> tempListForIndicator = new List<int>();
+                                // новая версия, более взвешенное значение (как год назад)
+                                for (int i = 0; i < paramTh.glassHeight; i++)
+                                {
+                                    sumlong += glass.ContainsKey((int)ask + i * 10)
+                                        && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue 
+                                        ? glass[(int)ask + i * 10] : 0;
+                                    sumshort += glass.ContainsKey((int)bid - i * 10)
+                                        && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
+                                        ? glass[(int)bid - i * 10] : 0;
+                                    if (sumlong + sumshort == 0) 
+                                        continue;
+                                    tempListForIndicator.Add((int) (sumlong - sumshort) * 100 / (sumlong + sumshort));
+                                }
+                                int s = 0;
+                                foreach (int i in tempListForIndicator)
+                                {
+                                    s += i;
+                                }
+                                indicator = (int) s / paramTh.glassHeight;
+                                // старая версия индикатора
+                                /*foreach (int pkey in glass.Keys)
                                 {
                                     if (pkey >= ask && glass[pkey] < averageGlass * paramTh.averageValue)
                                         sumlong += glass[pkey];
                                     else if (pkey <= bid && glass[pkey] < averageGlass * paramTh.averageValue)
                                         sumshort += glass[pkey];
-                                }
-                                indicator = (sumlong + sumshort) != 0 ? (int)(sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
+                                }*/
+                                //indicator = (sumlong + sumshort) != 0 ? (int)(sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
                                 // вход лонг
                                 if (indicator >= paramTh.indicatorLongValue && priceEnterLong == 0 && priceEnterShort == 0)
                                 {
