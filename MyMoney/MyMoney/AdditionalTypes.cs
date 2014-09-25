@@ -88,7 +88,7 @@ namespace MyMoney
         {
             Random rnd = new Random();
             int colIter = (_diapParam.finish - _diapParam.start) / _diapParam.step;
-            int randomStep = rnd.Next(0, colIter - 1);
+            int randomStep = rnd.Next(0, colIter);
             int newVal = _diapParam.start + _diapParam.step * randomStep;
             switch (_diapParam.idParam)
             {
@@ -171,7 +171,12 @@ namespace MyMoney
         public DateTime dtEnter { get; set; }
         public DateTime dtExit {
             get { return dtext; }
-            set { dtDealLength = value.Subtract(dtEnter); dtext = value; }
+            set { 
+                dtDealLength = value.Subtract(dtEnter); 
+                dtext = value;
+                if (this.lstSubDeal.Count > 0)
+                    this.lstSubDeal.Last().dtDealLength = value.Subtract(this.lstSubDeal.Last().dtEnter);
+            }
         }
         public TimeSpan dtDealLength { get; set; }
         public ActionDeal actiond { get; set; }
@@ -179,9 +184,6 @@ namespace MyMoney
         public float pointsCount { get; set; }
         public float margin { get; set; }
         public float delt { get; set; }
-        public float currentPrice { get; set; }
-        public float lossValueTemp { get; set; }
-        public float profitValueTemp { get; set; }
         public float priceEnter { get; set; }
         public float priceExit { 
             get {
@@ -204,6 +206,10 @@ namespace MyMoney
                 pexit = value;
             }
         }
+        public float currentPrice { get; set; }
+        public float lossValueTemp { get; set; }
+        public float profitValueTemp { get; set; }
+
         public List<SubDealInfo> lstSubDeal = new List<SubDealInfo>();
     }
 

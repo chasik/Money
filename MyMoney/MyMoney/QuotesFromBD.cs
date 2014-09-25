@@ -223,16 +223,16 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 22)
+                    if (dicAllProfitResult.Count < 16)
                         pt = parametrsList[new Random().Next(0, parametrsList.Count)];
                     else
                     {
-                        int o1 = rnd.Next(1, 19);
-                        int o2 = rnd.Next(1, 19);
+                        int o1 = rnd.Next(1, 15);
+                        int o2 = rnd.Next(1, 15);
                         if (o1 == o2)
                             o2 += 1;
-                        ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count)];
-                        ParametrsForTest param2 = parametrsList[new Random().Next(0, parametrsList.Count)]; ;
+                        ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
+                        ParametrsForTest param2 = parametrsList[new Random().Next(0, parametrsList.Count - 1)]; ;
                         foreach (ResultBestProfitFactor item in dicAllProfitResult.Keys)
                         {
                             o1--;
@@ -335,9 +335,13 @@ namespace MyMoney
                                         //if (lotCount == 2)
                                         {
                                             lossShortValueTemp += delt;
-                                            profitShortValueTemp += delt;
+                                            //profitShortValueTemp += delt;
                                         }
                                         priceEnterShort = priceEnterShort + delt;
+
+
+                                        if (dealTemp.lstSubDeal.Count > 0)
+                                            dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").Subtract(dealTemp.lstSubDeal.Last().dtEnter);
                                         dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, (float)lossShortValueTemp, (float)profitShortValueTemp));
                                     }
                                     else
@@ -378,9 +382,12 @@ namespace MyMoney
                                         //if (lotCount == 2)
                                         {
                                             lossLongValueTemp += delt;
-                                            profitLongValueTemp += delt;
+                                            //profitLongValueTemp += delt;
                                         }
                                         priceEnterLong = priceEnterLong - delt;
+
+                                        if (dealTemp.lstSubDeal.Count > 0)
+                                            dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").Subtract(dealTemp.lstSubDeal.Last().dtEnter);
                                         dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, (float)lossLongValueTemp, (float)profitLongValueTemp));
                                     }
                                     else

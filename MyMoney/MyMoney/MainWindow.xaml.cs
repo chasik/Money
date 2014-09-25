@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Data;
 using System.Collections.ObjectModel;
+using System.Globalization;
 
 
 namespace MyMoney
@@ -34,6 +35,10 @@ namespace MyMoney
         
         public MainWindow()
         {
+            CultureInfo ci = new CultureInfo("ru-RU");
+            Thread.CurrentThread.CurrentCulture = ci;
+            Thread.CurrentThread.CurrentUICulture = ci;
+
             InitializeComponent();
             allResults = new ObservableCollection<ResultOneThreadSumm>();
             detailResults = new ObservableCollection<ResultOneThread>();
