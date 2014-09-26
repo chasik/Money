@@ -304,21 +304,26 @@ namespace MyMoney
 
     public class ResultBestProfitFactor : IComparable
     {
-        public ResultBestProfitFactor(int _idparam, float _profitfactor)
+        public ResultBestProfitFactor(int _idparam, float _profitfactor, float _margin)
         {
             idparam = _idparam;
             profitFactor = _profitfactor;
+            margin = _margin;
         }
         public int idparam { get; set; }
         public float profitFactor { get; set; }
+        public float margin { get; set; }
         public int CompareTo(object j)
         {
-            if (this.profitFactor < (j as ResultBestProfitFactor).profitFactor)
-                return 1;
-            if (this.profitFactor == (j as ResultBestProfitFactor).profitFactor)
+            ResultBestProfitFactor compareObj = j as ResultBestProfitFactor;
+            if (this.idparam == compareObj.idparam)
                 return 0;
-            if (this.profitFactor > (j as ResultBestProfitFactor).profitFactor)
+            if (this.profitFactor == compareObj.profitFactor && this.margin == compareObj.margin)
+                return 0;
+            if (this.profitFactor > compareObj.profitFactor || this.margin > compareObj.margin)
                 return -1;
+            else
+                return 1;
             return 0;
         }
     }

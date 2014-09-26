@@ -26,7 +26,6 @@ namespace MyMoney
         public List<string> selectedSessionList;
 
         public SortedDictionary<ResultBestProfitFactor, ResultOneThreadSumm> dicAllProfitResult = new SortedDictionary<ResultBestProfitFactor, ResultOneThreadSumm>();
-        public SortedDictionary<ResultBestMargin, ResultOneThreadSumm> dicAllMarginResult = new SortedDictionary<ResultBestMargin, ResultOneThreadSumm>();
 
         public string connectionstr = "user id=sa;password=WaNo11998811mssql;server=localhost;database=smartcom;MultipleActiveResultSets=true";
 
@@ -226,7 +225,7 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 16)
+                    if (dicAllProfitResult.Count < 17)
                         pt = parametrsList[new Random().Next(0, parametrsList.Count)];
                     else
                     {
@@ -235,16 +234,16 @@ namespace MyMoney
                         if (o1 == o2)
                             o2 += 1;
                         ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
-                        ParametrsForTest param2 = parametrsList[new Random().Next(0, parametrsList.Count - 1)]; ;
+                        ParametrsForTest param2 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
                         foreach (ResultBestProfitFactor item in dicAllProfitResult.Keys)
                         {
                             o1--;
                             o2--;
                             if (o1 < 0 && o2 < 0)
                                 break;
-                            if (o1 == 0)
+                            if (o1 == 0 && dicAllProfitResult.ContainsKey(item))
                                 param1 = dicAllProfitResult[item].paramForTest;
-                            if (o2 == 0)
+                            if (o2 == 0 && dicAllProfitResult.ContainsKey(item))
                                 param2 = dicAllProfitResult[item].paramForTest;
                         }
                         ParametrsForTest[] ptForTest = { param1, param2 };
@@ -288,6 +287,7 @@ namespace MyMoney
         {
             ResultOneThreadSumm resTh = new ResultOneThreadSumm();
             List<int> oldGlassValue = new List<int>();
+            List<int> tempListForIndicator = new List<int>();
             SortedDictionary<int, int> glass = new SortedDictionary<int, int>();
             int priceEnterLong, priceEnterShort ;
             int lotCount = 1;
@@ -421,7 +421,8 @@ namespace MyMoney
                             if (glass.Count > 40)
                             {
                                 int sumGlass = 0;
-                                oldGlassValue.Clear();
+                                // старый вариант работы стакана (до использования SortedDictionary)
+                                /*oldGlassValue.Clear();
                                 foreach (int pkey in glass.Keys)
                                 {
                                     if (pkey > ask + paramTh.glassHeight * 10 || pkey < bid - paramTh.glassHeight * 10)
@@ -430,11 +431,18 @@ namespace MyMoney
                                         sumGlass += glass[pkey];
                                 }
                                 // удаляем из стакана значения, выпадающие за пределы глубины стакана
-                                oldGlassValue.ForEach((int i) => { glass.Remove(i); });
+                                oldGlassValue.ForEach((int i) => { glass.Remove(i); });*/
+
                                 // среднее значение по стакану
+                                for (int i = 0; i < paramTh.glassHeight; i++)
+                                {
+                                    sumGlass += glass.ContainsKey((int)ask + i * 10) ? glass[(int)ask + i * 10] : 0;
+                                    sumGlass += glass.ContainsKey((int)bid - i * 10) ? glass[(int)bid - i * 10] : 0;
+                                }
                                 int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                                 int sumlong = 0, sumshort = 0;
-                                List<int> tempListForIndicator = new List<int>();
+
+                                tempListForIndicator.Clear();
                                 // новая версия, более взвешенное значение (как год назад)
                                 for (int i = 0; i < paramTh.glassHeight; i++)
                                 {
@@ -513,12 +521,14 @@ namespace MyMoney
                 resTh.averageVal = paramTh.averageValue;
 
                 resTh.margin = resTh.profit - resTh.loss;
-                resTh.profitFac = (float)resTh.profit / (float)resTh.loss;
+                if (resTh.loss == 0)
+                    resTh.profitFac = 999;
+                else
+                    resTh.profitFac = (float)resTh.profit / (float)resTh.loss;
 
-                ResultBestProfitFactor rp = new ResultBestProfitFactor(resTh.idParam, resTh.profitFac);
+                ResultBestProfitFactor rp = new ResultBestProfitFactor(resTh.idParam, resTh.profitFac, resTh.margin);
                 if (!dicAllProfitResult.ContainsKey(rp))
                     dicAllProfitResult.Add(rp, resTh);
-                //dicAllMarginResult.Add(new ResultBestMargin(resTh.idParam, resTh.margin), resTh);
 
                 if (OnFinishOneThread != null)
                     OnFinishOneThread(resTh);
