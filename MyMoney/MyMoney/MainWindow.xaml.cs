@@ -213,6 +213,9 @@ namespace MyMoney
                         }
                     }
                 }
+
+                dsourceDB.countThreads = int.Parse(tbThreadCount.Text);
+
                 dsourceDB.dicDiapasonParams.Clear();
                 dsourceDB.dicDiapasonParams.Add("glassHeight", new diapasonTestParam(1, tbGlassStart.Text, tbGlassFinish.Text, tbGlassStep.Text));
                 dsourceDB.dicDiapasonParams.Add("averageValue", new diapasonTestParam(2, tbAverageStart.Text, tbAverageFinish.Text, tbAverageStep.Text));

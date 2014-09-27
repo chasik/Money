@@ -14,7 +14,7 @@ namespace MyMoney
     public class QuotesFromBD : IDataSource
     {
         private object lockObj = new Object();
-        public int countThreads = 6;
+        public int countThreads = 0;
         private List<Thread> listThreads;
         private SqlConnection sqlconn;
         private SqlCommand sqlcommand = new SqlCommand();
@@ -304,7 +304,7 @@ namespace MyMoney
                 ResultOneThread resThTemp = new ResultOneThread();
                 resThTemp.shortName = k;
                 DealInfo dealTemp = null;
-                DataTable dt = dictionaryDT[k].Copy();
+                DataTable dt = dictionaryDT[k];//.Copy();
                 int indicator = 0;
                 foreach (DataRow dr in dt.Rows)
                 {
@@ -331,16 +331,15 @@ namespace MyMoney
                                 // лосс короткая
                                 else if (priceEnterShort + lossShortValueTemp <= ask)
                                 {
-                                    if (paramTh.martingValue >= lotCount)
+                                    if (paramTh.martingValue >= lotCount)// && indicator < 0)
                                     {
                                         lotCount += 1;
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
-                                        //if (lotCount == 2)
-                                        {
-                                            profitShortValueTemp += delt;
-                                        }
+
+                                        profitShortValueTemp += delt;
                                         lossShortValueTemp += delt;
+
                                         priceEnterShort = priceEnterShort + delt;
 
 
@@ -378,16 +377,15 @@ namespace MyMoney
                                 // лосс длиная
                                 else if (priceEnterLong - lossLongValueTemp >= bid)
                                 {
-                                    if (paramTh.martingValue >= lotCount)
+                                    if (paramTh.martingValue >= lotCount) //&& indicator > 0)
                                     {
                                         lotCount += 1;
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount /10) * 10;
-                                        //if (lotCount == 2)
-                                        {
-                                            profitLongValueTemp += delt;
-                                        }
+
+                                        profitLongValueTemp += delt;
                                         lossLongValueTemp += delt;
+
                                         priceEnterLong = priceEnterLong - delt;
 
                                         if (dealTemp.lstSubDeal.Count > 0)
