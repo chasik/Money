@@ -147,7 +147,7 @@ namespace MyMoney
     public class SubDealInfo
     {
         private float pexit;
-        private DateTime dtext;
+        private TimeSpan dtext;
         public SubDealInfo()
         {
             lotsCount = 0;
@@ -158,7 +158,7 @@ namespace MyMoney
         public SubDealInfo(DateTime _dt, int _lotCount, float _priceEnter, float _curPrice, float _delt, int _indicValue, float _lossValueTemp = 0, float _profitValueTemp = 0)
         {
             actiond = ActionDeal.none;
-            dtEnter = _dt;
+            dtEnter = _dt.TimeOfDay;
             lotsCount = _lotCount;
             priceEnter = _priceEnter;
             currentPrice = _curPrice;
@@ -171,11 +171,11 @@ namespace MyMoney
         public void DoExit(DateTime _dt, float _pexit)
         {
             priceExit = _pexit;
-            dtExit = _dt;
+            dtExit = _dt.TimeOfDay;
         }
         public SubDealInfo parentDeal = null;
-        public DateTime dtEnter { get; set; }
-        public DateTime dtExit {
+        public TimeSpan dtEnter { get; set; }
+        public TimeSpan dtExit {
             get { return dtext; }
             set { 
                 dtDealLength = value.Subtract(dtEnter); 
@@ -225,7 +225,7 @@ namespace MyMoney
         public DealInfo(ActionDeal _actiond, DateTime _dtEnter, int _lotsCount, float _pEnter, int _indicValue, float _lossValueTemp = 0, float _profitValueTemp = 0)
         {
             actiond = _actiond;
-            dtEnter = _dtEnter;
+            dtEnter = _dtEnter.TimeOfDay;
             lotsCount = _lotsCount;
             priceEnter = _pEnter;
             lossValueTemp = _lossValueTemp;
@@ -280,27 +280,6 @@ namespace MyMoney
         public ParametrsForTest paramForTest;
     }
 
-    public class ResultBestMargin : IComparable
-    {
-        public ResultBestMargin(int _idparam, float _margin)
-        {
-            idparam = _idparam;
-            margin = _margin;
-        }
-        
-        public int idparam { get; set; }
-        public float margin { get; set; }
-        public int CompareTo(object j)
-        {
-            if (this.margin < (j as ResultBestMargin).margin)
-                return 1;
-            if (this.margin == (j as ResultBestMargin).margin)
-                return 0;
-            if (this.margin > (j as ResultBestMargin).margin)
-                return -1;
-            return 0;
-        }
-    }
 
     public class ResultBestProfitFactor : IComparable
     {
@@ -324,7 +303,6 @@ namespace MyMoney
                 return -1;
             else
                 return 1;
-            return 0;
         }
     }
 

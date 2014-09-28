@@ -388,7 +388,7 @@ namespace MyMoney
                                         priceEnterShort = priceEnterShort + delt;
 
                                         if (dealTemp.lstSubDeal.Count > 0)
-                                            dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").Subtract(dealTemp.lstSubDeal.Last().dtEnter);
+                                            dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
                                         dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, indicator, (float)lossShortValueTemp, (float)profitShortValueTemp));
                                     }
                                     else
@@ -433,7 +433,7 @@ namespace MyMoney
                                         priceEnterLong = priceEnterLong - delt;
 
                                         if (dealTemp.lstSubDeal.Count > 0)
-                                            dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").Subtract(dealTemp.lstSubDeal.Last().dtEnter);
+                                            dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
                                         dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, indicator, (float)lossLongValueTemp, (float)profitLongValueTemp));
                                     }
                                     else
