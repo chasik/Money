@@ -295,9 +295,7 @@ namespace MyMoney
         public int CompareTo(object j)
         {
             ResultBestProfitFactor compareObj = j as ResultBestProfitFactor;
-            if (this.idparam == compareObj.idparam)
-                return 0;
-            if (this.profitFactor == compareObj.profitFactor && this.margin == compareObj.margin)
+            if (this.idparam == compareObj.idparam || (this.profitFactor == compareObj.profitFactor && this.margin == compareObj.margin))
                 return 0;
             if (this.profitFactor > compareObj.profitFactor || this.margin > compareObj.margin)
                 return -1;

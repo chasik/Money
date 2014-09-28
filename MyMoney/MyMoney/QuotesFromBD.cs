@@ -226,12 +226,12 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 27)
+                    if (dicAllProfitResult.Count < 31)
                         pt = parametrsList[new Random().Next(0, parametrsList.Count)];
                     else
                     {
-                        int o1 = rnd.Next(1, 5);
-                        int o2 = rnd.Next(1, 25);
+                        int o1 = rnd.Next(1, 30);
+                        int o2 = rnd.Next(1, 30);
                         if (o1 == o2)
                             o2 += 1;
                         ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
@@ -245,7 +245,7 @@ namespace MyMoney
                                     break;
                                 if (o1 == 0 && dicAllProfitResult.ContainsKey(item))
                                     param1 = dicAllProfitResult[item].paramForTest;
-                                if (o2 == 0 && dicAllProfitResult.ContainsKey(item))
+                                else if (o2 == 0 && dicAllProfitResult.ContainsKey(item))
                                     param2 = dicAllProfitResult[item].paramForTest;
                             }
                         }

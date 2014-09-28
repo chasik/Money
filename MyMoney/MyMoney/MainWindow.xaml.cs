@@ -285,5 +285,11 @@ namespace MyMoney
                 e.Row.Background = new SolidColorBrush(Colors.DeepPink);
         }
 
+        private void Rectangle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            //MessageBox.Show((sender as Rectangle)..ToString());
+
+        }
+
     }
 }
