@@ -197,13 +197,14 @@ namespace MyMoney
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
 	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
-
-	            UNION ALL
+            "
+	         /*   UNION ALL
 
                 SELECT dtserver, null as price, null as volume, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_quotes] rts2 
 	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
-
+              */
+            + @"
   	            UNION ALL
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
@@ -225,26 +226,28 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 17)
+                    if (dicAllProfitResult.Count < 27)
                         pt = parametrsList[new Random().Next(0, parametrsList.Count)];
                     else
                     {
-                        int o1 = rnd.Next(1, 15);
-                        int o2 = rnd.Next(1, 15);
+                        int o1 = rnd.Next(1, 5);
+                        int o2 = rnd.Next(1, 25);
                         if (o1 == o2)
                             o2 += 1;
                         ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
                         ParametrsForTest param2 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
-                        foreach (ResultBestProfitFactor item in dicAllProfitResult.Keys)
+                        lock (lockObj)
                         {
-                            o1--;
-                            o2--;
-                            if (o1 < 0 && o2 < 0)
-                                break;
-                            if (o1 == 0 && dicAllProfitResult.ContainsKey(item))
-                                param1 = dicAllProfitResult[item].paramForTest;
-                            if (o2 == 0 && dicAllProfitResult.ContainsKey(item))
-                                param2 = dicAllProfitResult[item].paramForTest;
+                            foreach (ResultBestProfitFactor item in dicAllProfitResult.Keys)
+                            {
+                                o1--; o2--;
+                                if (o1 < 0 && o2 < 0)
+                                    break;
+                                if (o1 == 0 && dicAllProfitResult.ContainsKey(item))
+                                    param1 = dicAllProfitResult[item].paramForTest;
+                                if (o2 == 0 && dicAllProfitResult.ContainsKey(item))
+                                    param2 = dicAllProfitResult[item].paramForTest;
+                            }
                         }
                         ParametrsForTest[] ptForTest = { param1, param2 };
                         ParametrsForTest ptTemp = new ParametrsForTest(ptForTest);
@@ -306,9 +309,51 @@ namespace MyMoney
                 DealInfo dealTemp = null;
                 DataTable dt = dictionaryDT[k];//.Copy();
                 int indicator = 0;
+                int iterationNum = 0;
                 foreach (DataRow dr in dt.Rows)
                 {
                     #region торговля
+                    iterationNum++;
+                    if (iterationNum == dt.Rows.Count)
+                    {
+                        #region Закрыть последнюю сделку, если данные закончились (эмитируем отключение программы)
+                        if (priceEnterLong != 0)
+                        {
+                            if (bid - priceEnterLong > 0)
+                            {
+                                resThTemp.countPDeal++;
+                                resThTemp.profit += ((int)bid - priceEnterLong) * lotCount;
+                            }
+                            else
+                            {
+                                resThTemp.countLDeal++;
+                                resThTemp.loss += (priceEnterLong - (int)bid) * lotCount;
+                            }
+                            dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)bid);
+                            resThTemp.lstAllDeals.Add(dealTemp);
+                            priceEnterLong = 0;
+                            lotCount = 1;
+                        }
+                        if (priceEnterShort != 0)
+                        {
+                            if (priceEnterShort - ask > 0)
+                            {
+                                resThTemp.countPDeal++;
+                                resThTemp.profit += (priceEnterShort - (int)ask) * lotCount;
+                            }
+                            else
+                            {
+                                resThTemp.countLDeal++;
+                                resThTemp.loss += ((int)ask - priceEnterShort) * lotCount;
+                            }
+                            dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)ask);
+                            resThTemp.lstAllDeals.Add(dealTemp);
+                            priceEnterShort = 0;
+                            lotCount = 1;
+                        }
+                        continue;
+                        #endregion
+                    }
                     // совершена сделка
                     if (!dr.IsNull("priceTick"))
                     {
@@ -341,7 +386,6 @@ namespace MyMoney
                                         lossShortValueTemp += delt;
 
                                         priceEnterShort = priceEnterShort + delt;
-
 
                                         if (dealTemp.lstSubDeal.Count > 0)
                                             dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").Subtract(dealTemp.lstSubDeal.Last().dtEnter);
@@ -492,11 +536,11 @@ namespace MyMoney
                         }
 
                     }
-                    else if (!dr.IsNull("bid"))
-                    {
-                        bid = (int?)dr.Field<float?>("bid");
-                        ask = (int?)dr.Field<float?>("ask");
-                    }
+                    //else if (!dr.IsNull("bid"))
+                    //{
+                    //    bid = (int?)dr.Field<float?>("bid");
+                    //    ask = (int?)dr.Field<float?>("ask");
+                    //}
                     #endregion торговля
                 }
                 resThTemp.margin = resThTemp.profit - resThTemp.loss;
