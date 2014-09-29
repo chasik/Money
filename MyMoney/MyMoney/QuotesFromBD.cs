@@ -226,12 +226,12 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 31)
+                    if (dicAllProfitResult.Count < 16)
                         pt = parametrsList[new Random().Next(0, parametrsList.Count)];
                     else
                     {
-                        int o1 = rnd.Next(1, 30);
-                        int o2 = rnd.Next(1, 30);
+                        int o1 = rnd.Next(1, 5);
+                        int o2 = rnd.Next(1, 15);
                         if (o1 == o2)
                             o2 += 1;
                         ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
@@ -292,7 +292,7 @@ namespace MyMoney
             List<int> oldGlassValue = new List<int>();
             List<int> tempListForIndicator = new List<int>();
             SortedDictionary<int, int> glass = new SortedDictionary<int, int>();
-            int priceEnterLong, priceEnterShort ;
+            int priceEnterLong, priceEnterShort;
             int lotCount = 1;
             int? bid = 0, ask = 0;
             int? pricetick = 0;
@@ -489,11 +489,11 @@ namespace MyMoney
                                 for (int i = 0; i < paramTh.glassHeight; i++)
                                 {
                                     sumlong += glass.ContainsKey((int)ask + i * 10)
-                                        && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue 
-                                        ? glass[(int)ask + i * 10] : 0;
+                                        && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
+                                        ? glass[(int)ask + i * 10] : averageGlass;
                                     sumshort += glass.ContainsKey((int)bid - i * 10)
                                         && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
-                                        ? glass[(int)bid - i * 10] : 0;
+                                        ? glass[(int)bid - i * 10] : averageGlass;
                                     if (sumlong + sumshort == 0) 
                                         continue;
                                     tempListForIndicator.Add((int) (sumlong - sumshort) * 100 / (sumlong + sumshort));

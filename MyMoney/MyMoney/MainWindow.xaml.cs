@@ -91,8 +91,24 @@ namespace MyMoney
             else
             {
                 dsource = new QuotesFromSmartCom(textBox1.Text, passBox1.Password);
+                (dsource as QuotesFromSmartCom).paramTh = new ParametrsForTest(0, new List<string>{}
+                    , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
+                    , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
+                    , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
+                    , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
+                    , int.Parse(tbIndicatorShortCurrent.Text));
+                (dsource as QuotesFromSmartCom).OnChangeIndicator += MainWindow_OnChangeIndicator;
             }
             dsource.ConnectToDataSource();
+        }
+
+        void MainWindow_OnChangeIndicator(string _value)
+        {
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate() {
+                    progressLabel.Content = _value;
+                    //listBox2.Items.Add(_value);
+            });
         }
 
         void MainWindow_OnFinishOneThread(ResultOneThreadSumm resTh)
