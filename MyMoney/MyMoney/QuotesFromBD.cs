@@ -490,10 +490,10 @@ namespace MyMoney
                                 {
                                     sumlong += glass.ContainsKey((int)ask + i * 10)
                                         && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
-                                        ? glass[(int)ask + i * 10] : averageGlass;
+                                        ? glass[(int)ask + i * 10] : (int)(averageGlass * paramTh.averageValue);
                                     sumshort += glass.ContainsKey((int)bid - i * 10)
                                         && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
-                                        ? glass[(int)bid - i * 10] : averageGlass;
+                                        ? glass[(int)bid - i * 10] : (int)(averageGlass * paramTh.averageValue);
                                     if (sumlong + sumshort == 0) 
                                         continue;
                                     tempListForIndicator.Add((int) (sumlong - sumshort) * 100 / (sumlong + sumshort));
