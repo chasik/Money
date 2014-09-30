@@ -76,9 +76,25 @@ namespace MyMoney
             scom.UpdateQuote += scom_UpdateQuote;
             scom.ListenTicks("RTS-12.14_FT");
             scom.AddTick += scom_AddTick;
+
+            //scom.ListenPortfolio("BP12800-RF-01");
+            scom.ListenPortfolio("ST59164-RF-01");
+            scom.UpdateOrder += scom_UpdateOrder;
+            scom.UpdatePosition += scom_UpdatePosition;
             scom.OrderFailed += scom_OrderFailed;
             scom.OrderSucceeded += scom_OrderSucceeded;
-            scom.UpdateOrder += scom_UpdateOrder;
+            scom.AddTrade += scom_AddTrade;
+
+        }
+
+        void scom_AddTrade(string portfolio, string symbol, string orderid, double price, double amount, DateTime datetime, string tradeno)
+        {
+            throw new NotImplementedException();
+        }
+
+        void scom_UpdatePosition(string portfolio, string symbol, double avprice, double amount, double planned)
+        {
+            throw new NotImplementedException();
         }
 
         void scom_UpdateOrder(string portfolio, string symbol
@@ -86,7 +102,7 @@ namespace MyMoney
             , SmartCOM3Lib.StOrder_Validity validity
             , double price, double amount, double stop, double filled, DateTime datetime, string orderid, string orderno, int status_mask, int cookie)
         {
-            //throw new NotImplementedException();
+            throw new NotImplementedException();
 
         }
 
@@ -167,7 +183,8 @@ namespace MyMoney
                         priceEnterLong = (int)ask;
                         lotCount = 1;
                         cookie++;
-                        scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                        //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                        scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                             , SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy, SmartCOM3Lib.StOrder_Type.StOrder_Type_Market
                             , SmartCOM3Lib.StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookie);
                     }
@@ -179,7 +196,8 @@ namespace MyMoney
                         priceEnterShort = (int)bid;
                         lotCount = 1;
                         cookie++;
-                        scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                        //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                        scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                             , SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell, SmartCOM3Lib.StOrder_Type.StOrder_Type_Market
                             , SmartCOM3Lib.StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookie);
                     }

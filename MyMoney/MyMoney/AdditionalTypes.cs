@@ -297,7 +297,7 @@ namespace MyMoney
             ResultBestProfitFactor compareObj = j as ResultBestProfitFactor;
             if (this.idparam == compareObj.idparam || (this.profitFactor == compareObj.profitFactor && this.margin == compareObj.margin))
                 return 0;
-            if (this.profitFactor > compareObj.profitFactor || this.margin > compareObj.margin)
+            if (this.margin > compareObj.margin || this.profitFactor > compareObj.profitFactor)
                 return -1;
             else
                 return 1;
