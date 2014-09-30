@@ -37,12 +37,10 @@ namespace MyMoney
 
         public event FinishOneThread OnFinishOneThread;
         public event ChangeProgressEvent OnChangeProgress;
-
         public event ConnectedHandler OnConnected;
-
         public event GetInstrumentsHandler OnGetInstruments;
-
         public event ThreadStarted OnThreadTesterStart;
+        public event GetInformation OnInformation;
         public QuotesFromBD() 
         {
             dtInstruments = new DataTable();

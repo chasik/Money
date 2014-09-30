@@ -100,6 +100,15 @@ namespace MyMoney
                 (dsource as QuotesFromSmartCom).OnChangeIndicator += MainWindow_OnChangeIndicator;
             }
             dsource.ConnectToDataSource();
+            dsource.OnInformation += dsource_OnInformation;
+        }
+
+        void dsource_OnInformation(string _mess)
+        {
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate() {
+                    tbInformation.AppendText(_mess + "\r\n");
+            });
         }
 
         void MainWindow_OnChangeIndicator(string _value)

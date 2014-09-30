@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using SmartCOM3Lib;
 
 namespace MyMoney
 {
@@ -22,6 +24,7 @@ namespace MyMoney
         public int profitLongValueTemp = 0, profitShortValueTemp = 0;
         public int lotCount = 1;
 
+        public int idCookieValue { get; set; }
         public int cookie = 0, cookieProfit = 0, cookieLoss = 0;
 
         public SmartCOM3Lib.StServerClass scom;
@@ -32,6 +35,8 @@ namespace MyMoney
         public event GetInstrumentsHandler OnGetInstruments;
 
         public event ChangeIndicator OnChangeIndicator;
+
+        public event GetInformation OnInformation;
 
         SortedDictionary<double, double> glass = new SortedDictionary<double, double>();
         List<int> tempListForIndicator = new List<int>();
@@ -52,15 +57,15 @@ namespace MyMoney
         {
             login = _login;
             password = _pass;
-            int z = new Random().Next(1, 100);
-            cookie = z * 100000;
-            cookieProfit = z * 200000;
-            cookieLoss = z * 300000;
+            idCookieValue = new Random().Next(10, 99);
+            cookie = idCookieValue * 100000;
+            cookieProfit = idCookieValue * 200000;
+            cookieLoss = idCookieValue * 300000;
         }
         public void ConnectToDataSource()
         {
             scom = new SmartCOM3Lib.StServerClass();
-            scom.ConfigureClient("logLevel=1");
+            scom.ConfigureClient("logLevel=1;CalcPlannedPos=no");
             scom.ConfigureServer("logLevel=1;pingTimeOut=5");
             //scom.connect("mx.ittrade.ru", 8443, login, password);
             scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3"); // тестовый доступ
@@ -69,7 +74,6 @@ namespace MyMoney
 
         void scom_Connected()
         {
-            MessageBox.Show("Connected!!!");
             scom.ListenBidAsks("RTS-12.14_FT");
             scom.UpdateBidAsk += scom_UpdateBidAsk;
             scom.ListenQuotes("RTS-12.14_FT");
@@ -89,21 +93,62 @@ namespace MyMoney
 
         void scom_AddTrade(string portfolio, string symbol, string orderid, double price, double amount, DateTime datetime, string tradeno)
         {
-            throw new NotImplementedException();
+            if (OnInformation != null)
+                OnInformation("scom_AddTrade " + price.ToString() + " " + amount.ToString() + " " + orderid + " " + tradeno);
         }
 
         void scom_UpdatePosition(string portfolio, string symbol, double avprice, double amount, double planned)
         {
-            throw new NotImplementedException();
+            if (OnInformation != null)
+                OnInformation("scom_UpdatePosition " + avprice.ToString() + " " + amount.ToString() + " " + planned.ToString());
         }
 
         void scom_UpdateOrder(string portfolio, string symbol
-            , SmartCOM3Lib.StOrder_State state, SmartCOM3Lib.StOrder_Action action, SmartCOM3Lib.StOrder_Type type
-            , SmartCOM3Lib.StOrder_Validity validity
+            , StOrder_State state, StOrder_Action action, StOrder_Type type
+            , StOrder_Validity validity
             , double price, double amount, double stop, double filled, DateTime datetime, string orderid, string orderno, int status_mask, int cookie)
         {
-            throw new NotImplementedException();
+            string messageInf = cookie + ": ";
+            switch (state) 
+            {
+                case StOrder_State.StOrder_State_Pending:
+                    messageInf += "Размещен у брокера (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.CreateSpecificCulture("ru-RU")) + ")";
+                    break;
+                case StOrder_State.StOrder_State_Open:
+                    messageInf += "Выведен на рынок (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")";
+                    break;
+                case StOrder_State.StOrder_State_Cancel:
+                    messageInf += "Отменён (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")";
+                    break;
+                case StOrder_State.StOrder_State_Filled:
+                    switch (action)
+                    {
+                        case StOrder_Action.StOrder_Action_Buy:
+                            OnInformation("priceEnterLong: " + priceEnterLong.ToString() + " new: " + price.ToString());
+                            priceEnterLong = (int)price;
+                            //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                            //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                            //    , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day, priceEnterLong + paramTh.profitLongValue, lotCount, 0, cookieProfit);
+                            break;
+                        case StOrder_Action.StOrder_Action_Sell:
+                            OnInformation("priceEnterShort: " + priceEnterShort.ToString() + " new: " + price.ToString());
+                            priceEnterShort = (int)price;
+                            //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                            //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                            //    , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookie);
+                            break;
+                    }
+                    messageInf += "Исполнен (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")";
+                    break;
+                case StOrder_State.StOrder_State_Partial:
+                    messageInf += "Исполнен частично (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")";
+                    break;
+                default:
+                    break;
+            }
 
+            if (OnInformation != null)
+                OnInformation(messageInf);
         }
 
         void scom_OrderSucceeded(int cookie, string orderid)
@@ -116,7 +161,7 @@ namespace MyMoney
             //throw new NotImplementedException();
         }
 
-        void scom_AddTick(string symbol, DateTime datetime, double price, double volume, string tradeno, SmartCOM3Lib.StOrder_Action action)
+        void scom_AddTick(string symbol, DateTime datetime, double price, double volume, string tradeno, StOrder_Action action)
         {
             //throw new NotImplementedException();
         }
@@ -185,8 +230,8 @@ namespace MyMoney
                         cookie++;
                         //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
                         scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
-                            , SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy, SmartCOM3Lib.StOrder_Type.StOrder_Type_Market
-                            , SmartCOM3Lib.StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookie);
+                            , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market
+                            , StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookie);
                     }
                     // вход шорт
                     else if (indicator <= -paramTh.indicatorShortValue && priceEnterLong == 0 && priceEnterShort == 0)
@@ -198,8 +243,8 @@ namespace MyMoney
                         cookie++;
                         //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
                         scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
-                            , SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell, SmartCOM3Lib.StOrder_Type.StOrder_Type_Market
-                            , SmartCOM3Lib.StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookie);
+                            , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market
+                            , StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookie);
                     }
                 }
             }
