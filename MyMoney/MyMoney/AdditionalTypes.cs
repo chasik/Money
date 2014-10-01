@@ -304,4 +304,74 @@ namespace MyMoney
         }
     }
 
+    public class ClaimInfo
+    {
+        public ClaimInfo(double _priceenter, SmartCOM3Lib.StOrder_Action _action)
+        {
+            priceEnter = _priceenter;
+            action = _action;
+        }
+
+        public double priceEnter = 0;
+        public SmartCOM3Lib.StOrder_Action action;
+        public double realPriceEnter = 0;
+        public string orderid;
+        public string orderno;
+        public string tradeno;
+    }
+
+    public class AllClaimsInfo
+    {
+        public Dictionary<int, ClaimInfo> dicAllClaims = new Dictionary<int, ClaimInfo>();
+
+        public void Add(int _cookie, double _priceent, SmartCOM3Lib.StOrder_Action _action)
+        {
+            dicAllClaims.Add(_cookie, new ClaimInfo(_priceent, _action));
+        }
+        public void AddTradeNo(int _cook, string _tradeno)
+        {
+            if (!dicAllClaims.ContainsKey(_cook))
+                return;
+            if (!_tradeno.Equals("0"))
+                dicAllClaims[_cook].tradeno = _tradeno;
+        }
+        public void AddOrderIdAndOrderNo(int _cook, string _ordid, string _ordno)
+        {
+            if (!dicAllClaims.ContainsKey(_cook))
+                return;
+            if (!_ordid.Equals("0"))
+                dicAllClaims[_cook].orderid = _ordid;
+            if (!_ordno.Equals("0"))
+                dicAllClaims[_cook].orderno = _ordno;
+        }
+
+        public int GetCookie(string _idstr)
+        {
+            int r = 0;
+            foreach (int k in dicAllClaims.Keys)
+            {
+                if (dicAllClaims[k].orderid == _idstr || dicAllClaims[k].orderno == _idstr || dicAllClaims[k].tradeno == _idstr)
+                {
+                    r = k;
+                    break;
+                }
+            }
+            return r;
+        }
+
+        public void SetRealPrice(int _cook, double _price)
+        {
+            if (!dicAllClaims.ContainsKey(_cook))
+                return;
+            dicAllClaims[_cook].realPriceEnter = _price;
+        }
+
+        public double GetRealPrice(int _cook)
+        {
+            if (!dicAllClaims.ContainsKey(_cook))
+                return 0;
+            return dicAllClaims[_cook].realPriceEnter;
+        }
+    }
+
 }
