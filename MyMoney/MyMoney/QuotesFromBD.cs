@@ -423,7 +423,7 @@ namespace MyMoney
                                     {
                                         lotCount += 1;
                                         dealTemp.lotsCount = lotCount;
-                                        int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount /10) * 10;
+                                        int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
                                         profitLongValueTemp += delt;
                                         lossLongValueTemp += delt;

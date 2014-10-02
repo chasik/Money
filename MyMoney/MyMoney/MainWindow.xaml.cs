@@ -27,6 +27,7 @@ namespace MyMoney
     public partial class MainWindow : Window
     {
         float maxPF = 0, maxMargin = 0;
+        int lastSecondReIndicator = 0;
         public ObservableCollection<ResultOneThreadSumm> allResults;
         private ObservableCollection<ResultOneThread> detailResults;
         private ObservableCollection<SubDealInfo> detailAllDeals;
@@ -91,6 +92,7 @@ namespace MyMoney
             else
             {
                 dsource = new QuotesFromSmartCom(textBox1.Text, passBox1.Password);
+                (dsource as QuotesFromSmartCom).Trading = (bool)chbTrading.IsChecked;
                 (dsource as QuotesFromSmartCom).paramTh = new ParametrsForTest(0, new List<string>{}
                     , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
                     , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
@@ -115,8 +117,14 @@ namespace MyMoney
         {
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate() {
-                    progressLabel.Content = _value;
-                    //listBox2.Items.Add(_value);
+                    DateTime dt = DateTime.Now;
+                    int ls = dt.Hour * 60 * 60 * 1000 + dt.Minute * 60 * 1000 + dt.Second * 1000 + dt.Millisecond;
+                    //if (ls > lastSecondReIndicator + 300)
+                    {
+                        progressLabel.Content = _value;
+                        //tbInformation.AppendText(_value + " " + (dt.Second * 1000 + dt.Millisecond).ToString() + "\r\n");
+                        lastSecondReIndicator = ls;
+                    }
             });
         }
 

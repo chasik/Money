@@ -14,6 +14,7 @@ namespace MyMoney
     {
         public delegate void ChangeIndicator(string _value);
 
+        public Boolean Trading = false;
         private string login;
         private string password;
         public double lastBid = 0;
@@ -67,8 +68,8 @@ namespace MyMoney
             scom = new SmartCOM3Lib.StServerClass();
             scom.ConfigureClient("logLevel=1;CalcPlannedPos=no");
             scom.ConfigureServer("logLevel=1;pingTimeOut=5");
-            scom.connect("mx.ittrade.ru", 8443, login, password);
-            //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3"); // тестовый доступ
+            //scom.connect("mx.ittrade.ru", 8443, login, password);
+            scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3"); // тестовый доступ
             scom.Connected += scom_Connected;
         }
 
@@ -81,8 +82,8 @@ namespace MyMoney
             scom.ListenTicks("RTS-12.14_FT");
             scom.AddTick += scom_AddTick;
 
-            scom.ListenPortfolio("BP12800-RF-01");
-            //scom.ListenPortfolio("ST59164-RF-01");
+            //scom.ListenPortfolio("BP12800-RF-01");
+            scom.ListenPortfolio("ST59164-RF-01");
             scom.UpdateOrder += scom_UpdateOrder;
             scom.UpdatePosition += scom_UpdatePosition;
             scom.OrderFailed += scom_OrderFailed;
@@ -104,34 +105,36 @@ namespace MyMoney
                 {
                     double realP = allClaims.SetRealPrice(cookieTemp, price);
                     messageInf += "priceEnterLong: " + priceEnterLong.ToString() + " new: " + realP.ToString();
-                    scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                         , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , realP + paramTh.profitLongValue, lotCount, 0, ++cookieProfit);
-                    scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
-                        , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
+                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
                         , 0, lotCount, realP - paramTh.lossLongValue, ++cookieLoss);
+                    messageInf += " realp-losslong: " + (realP - paramTh.lossLongValue).ToString() + " losslong: " + paramTh.lossLongValue.ToString();
                 }
                 if (amount < 0)
                 {
                     double realP = allClaims.SetRealPrice(cookieTemp, price);
                     messageInf += "priceEnterShort: " + priceEnterShort.ToString() + " new: " + realP.ToString();
-                    scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                         , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , realP - paramTh.profitShortValue, lotCount, 0, ++cookieProfit);
-                    scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
-                        , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
+                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
                         , 0, lotCount, realP + paramTh.lossShortValue, ++cookieLoss);
+                    messageInf += " realp+losshort: " + (realP + paramTh.lossShortValue).ToString() + " lossshort: " + paramTh.lossShortValue.ToString();
                 }
             } else if (cookieTemp < 100000) // если это сработал profit
             {
-                priceEnterShort = priceEnterShort = 0;
+                MessageBox.Show("Profit");
             } else if (cookieTemp > 100000) // если это сработал стоп-лосс
             {
-
+                MessageBox.Show("Loss");
             }
 
             if (OnInformation != null)
@@ -150,7 +153,7 @@ namespace MyMoney
             , StOrder_State state, StOrder_Action action, StOrder_Type type, StOrder_Validity validity
             , double price, double amount, double stop, double filled, DateTime datetime, string orderid, string orderno, int status_mask, int cookie)
         {
-            string messageInf = "UpdateOrder: " + cookie + "(" + orderid + " | " + orderno + ")" + price.ToString() + ": ";
+            string messageInf = "UpdateOrder: " + cookie + "(" + orderid + " | " + orderno + ")price: " + price.ToString() + " stop: " + stop.ToString() + " filled: " + filled.ToString() + ": ";
             allClaims.AddOrderIdAndOrderNo(cookie, orderid, orderno);
             switch (state) 
             {
@@ -194,14 +197,11 @@ namespace MyMoney
 
         void scom_UpdateQuote(string symbol, DateTime datetime, double open, double high, double low, double close, double last, double volume, double size, double bid, double ask, double bidsize, double asksize, double open_int, double go_buy, double go_sell, double go_base, double go_base_backed, double high_limit, double low_limit, int trading_status, double volat, double theor_price)
         {
-            //throw new NotImplementedException();
+            lastBid = bid; lastAsk = ask;
         }
 
         void scom_UpdateBidAsk(string symbol, int row, int nrows, double bid, double bidsize, double ask, double asksize)
         {
-            if (row == 0){
-                lastBid = bid; lastAsk = ask;
-            }
             if (!glass.ContainsKey(bid) || !glass.ContainsKey(ask))
             {
                 if (!glass.ContainsKey(bid))
@@ -239,37 +239,45 @@ namespace MyMoney
                             continue;
                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
                     }
-                    int s = 0;
-                    foreach (int i in tempListForIndicator)
-                        s += i;
+                    int s = 0, s10 = 0, s20 = 0;
+                    int ii = 0;
+                    foreach (int ivalue in tempListForIndicator)
+                    {
+                        ii++;
+                        if (ii < 11) s10 += ivalue;
+                        if (ii < 21) s20 += ivalue;
+                        s += ivalue;
+                    }
                     int indicatorTemp = (int) s / paramTh.glassHeight;
+                    int indicatorTemp10 = (int)s10 / 10;
+                    int indicatorTemp20 = (int)s20 / 20;
                     if (indicatorTemp != indicator && OnChangeIndicator != null)
-                        OnChangeIndicator(indicatorTemp.ToString());
+                        OnChangeIndicator(indicatorTemp10.ToString() + " " + indicatorTemp20.ToString() + " " + indicatorTemp.ToString());
                     indicator = indicatorTemp;
                     // вход лонг
-                    if (indicator >= paramTh.indicatorLongValue && priceEnterLong == 0 && priceEnterShort == 0)
+                    if (indicator >= paramTh.indicatorLongValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
                     {
                         lossLongValueTemp = paramTh.lossLongValue;
                         profitLongValueTemp = paramTh.profitLongValue;
                         priceEnterLong = (int)ask;
                         lotCount = 1;
                         cookieId++;
-                        scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                        //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                        scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                             , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market
                             , StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookieId);
                         allClaims.Add(cookieId, priceEnterLong, StOrder_Action.StOrder_Action_Buy);
                     }
                     // вход шорт
-                    else if (indicator <= -paramTh.indicatorShortValue && priceEnterLong == 0 && priceEnterShort == 0)
+                    else if (indicator <= -paramTh.indicatorShortValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
                     {
                         lossShortValueTemp = paramTh.lossShortValue;
                         profitShortValueTemp = paramTh.profitShortValue;
                         priceEnterShort = (int)bid;
                         lotCount = 1;
                         cookieId++;
-                        scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                        //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                        scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                             , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market
                             , StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookieId);
                         allClaims.Add(cookieId, priceEnterShort, StOrder_Action.StOrder_Action_Sell);
