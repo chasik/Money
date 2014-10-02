@@ -359,11 +359,11 @@ namespace MyMoney
             return r;
         }
 
-        public void SetRealPrice(int _cook, double _price)
+        public double SetRealPrice(int _cook, double _price)
         {
             if (!dicAllClaims.ContainsKey(_cook))
-                return;
-            dicAllClaims[_cook].realPriceEnter = _price;
+                return 0;
+            return dicAllClaims[_cook].realPriceEnter = _price;
         }
 
         public double GetRealPrice(int _cook)

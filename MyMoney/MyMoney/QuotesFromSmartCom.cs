@@ -67,8 +67,8 @@ namespace MyMoney
             scom = new SmartCOM3Lib.StServerClass();
             scom.ConfigureClient("logLevel=1;CalcPlannedPos=no");
             scom.ConfigureServer("logLevel=1;pingTimeOut=5");
-            //scom.connect("mx.ittrade.ru", 8443, login, password);
-            scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3"); // тестовый доступ
+            scom.connect("mx.ittrade.ru", 8443, login, password);
+            //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3"); // тестовый доступ
             scom.Connected += scom_Connected;
         }
 
@@ -81,8 +81,8 @@ namespace MyMoney
             scom.ListenTicks("RTS-12.14_FT");
             scom.AddTick += scom_AddTick;
 
-            //scom.ListenPortfolio("BP12800-RF-01");
-            scom.ListenPortfolio("ST59164-RF-01");
+            scom.ListenPortfolio("BP12800-RF-01");
+            //scom.ListenPortfolio("ST59164-RF-01");
             scom.UpdateOrder += scom_UpdateOrder;
             scom.UpdatePosition += scom_UpdatePosition;
             scom.OrderFailed += scom_OrderFailed;
@@ -102,21 +102,29 @@ namespace MyMoney
             {
                 if (amount > 0)
                 {
-                    allClaims.SetRealPrice(cookieTemp, price);
-                    messageInf += "priceEnterLong: " + priceEnterLong.ToString() + " new: " + allClaims.GetRealPrice(cookieTemp).ToString();
-                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                    double realP = allClaims.SetRealPrice(cookieTemp, price);
+                    messageInf += "priceEnterLong: " + priceEnterLong.ToString() + " new: " + realP.ToString();
+                    scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                    //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                         , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                        , allClaims.GetRealPrice(cookieTemp) + paramTh.profitLongValue, lotCount, 0, ++cookieProfit);
+                        , realP + paramTh.profitLongValue, lotCount, 0, ++cookieProfit);
+                    scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                    //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
+                        , 0, lotCount, realP - paramTh.lossLongValue, ++cookieLoss);
                 }
                 if (amount < 0)
                 {
-                    allClaims.SetRealPrice(cookieTemp, price);
-                    messageInf += "priceEnterShort: " + priceEnterShort.ToString() + " new: " + allClaims.GetRealPrice(cookieTemp).ToString();
-                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                    double realP = allClaims.SetRealPrice(cookieTemp, price);
+                    messageInf += "priceEnterShort: " + priceEnterShort.ToString() + " new: " + realP.ToString();
+                    scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                    //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                         , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                        , allClaims.GetRealPrice(cookieTemp) + paramTh.profitShortValue, lotCount, 0, ++cookieProfit);
+                        , realP - paramTh.profitShortValue, lotCount, 0, ++cookieProfit);
+                    scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                    //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
+                        , 0, lotCount, realP + paramTh.lossShortValue, ++cookieLoss);
                 }
             } else if (cookieTemp < 100000) // если это сработал profit
             {
@@ -142,7 +150,7 @@ namespace MyMoney
             , StOrder_State state, StOrder_Action action, StOrder_Type type, StOrder_Validity validity
             , double price, double amount, double stop, double filled, DateTime datetime, string orderid, string orderno, int status_mask, int cookie)
         {
-            string messageInf = "UpdateOrder: " + cookie + "(" + orderid + " | " + orderno + "): ";
+            string messageInf = "UpdateOrder: " + cookie + "(" + orderid + " | " + orderno + ")" + price.ToString() + ": ";
             allClaims.AddOrderIdAndOrderNo(cookie, orderid, orderno);
             switch (state) 
             {
@@ -246,8 +254,8 @@ namespace MyMoney
                         priceEnterLong = (int)ask;
                         lotCount = 1;
                         cookieId++;
-                        //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                        scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                        //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                             , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market
                             , StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookieId);
                         allClaims.Add(cookieId, priceEnterLong, StOrder_Action.StOrder_Action_Buy);
@@ -260,8 +268,8 @@ namespace MyMoney
                         priceEnterShort = (int)bid;
                         lotCount = 1;
                         cookieId++;
-                        //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                        scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
+                        //scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
                             , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market
                             , StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookieId);
                         allClaims.Add(cookieId, priceEnterShort, StOrder_Action.StOrder_Action_Sell);
