@@ -17,6 +17,7 @@ namespace MyMoney
         public Boolean Trading = false;
         private string login;
         private string password;
+        private string workPortfolioName = "";
         public double lastBid = 0;
         public double lastAsk = 0;
         public int indicator = 0;
@@ -66,10 +67,10 @@ namespace MyMoney
         public void ConnectToDataSource()
         {
             scom = new SmartCOM3Lib.StServerClass();
-            scom.ConfigureClient("logLevel=1;CalcPlannedPos=no");
-            scom.ConfigureServer("logLevel=1;pingTimeOut=5");
-            //scom.connect("mx.ittrade.ru", 8443, login, password);
-            scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3"); // тестовый доступ
+            scom.ConfigureClient("logLevel=4;CalcPlannedPos=no;logFilePath=D:");
+            scom.ConfigureServer("logLevel=4;pingTimeOut=5;logFilePath=D:");
+            scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
             scom.Connected += scom_Connected;
         }
 
@@ -82,8 +83,7 @@ namespace MyMoney
             scom.ListenTicks("RTS-12.14_FT");
             scom.AddTick += scom_AddTick;
 
-            //scom.ListenPortfolio("BP12800-RF-01");
-            scom.ListenPortfolio("ST59164-RF-01");
+            scom.ListenPortfolio(workPortfolioName);
             scom.UpdateOrder += scom_UpdateOrder;
             scom.UpdatePosition += scom_UpdatePosition;
             scom.OrderFailed += scom_OrderFailed;
@@ -105,12 +105,10 @@ namespace MyMoney
                 {
                     double realP = allClaims.SetRealPrice(cookieTemp, price);
                     messageInf += "priceEnterLong: " + priceEnterLong.ToString() + " new: " + realP.ToString();
-                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                    scom.PlaceOrder(workPortfolioName, "RTS-12.14_FT"
                         , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , realP + paramTh.profitLongValue, lotCount, 0, ++cookieProfit);
-                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                    scom.PlaceOrder(workPortfolioName, "RTS-12.14_FT"
                         , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
                         , 0, lotCount, realP - paramTh.lossLongValue, ++cookieLoss);
                     messageInf += " realp-losslong: " + (realP - paramTh.lossLongValue).ToString() + " losslong: " + paramTh.lossLongValue.ToString();
@@ -119,12 +117,10 @@ namespace MyMoney
                 {
                     double realP = allClaims.SetRealPrice(cookieTemp, price);
                     messageInf += "priceEnterShort: " + priceEnterShort.ToString() + " new: " + realP.ToString();
-                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                    scom.PlaceOrder(workPortfolioName, "RTS-12.14_FT"
                         , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , realP - paramTh.profitShortValue, lotCount, 0, ++cookieProfit);
-                    //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                    scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                    scom.PlaceOrder(workPortfolioName, "RTS-12.14_FT"
                         , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
                         , 0, lotCount, realP + paramTh.lossShortValue, ++cookieLoss);
                     messageInf += " realp+losshort: " + (realP + paramTh.lossShortValue).ToString() + " lossshort: " + paramTh.lossShortValue.ToString();
@@ -252,7 +248,8 @@ namespace MyMoney
                     int indicatorTemp10 = (int)s10 / 10;
                     int indicatorTemp20 = (int)s20 / 20;
                     if (indicatorTemp != indicator && OnChangeIndicator != null)
-                        OnChangeIndicator(indicatorTemp10.ToString() + " " + indicatorTemp20.ToString() + " " + indicatorTemp.ToString());
+                        //OnChangeIndicator(indicatorTemp10.ToString() + " " + indicatorTemp20.ToString() + " " + indicatorTemp.ToString());
+                        OnChangeIndicator(indicatorTemp.ToString());
                     indicator = indicatorTemp;
                     // вход лонг
                     if (indicator >= paramTh.indicatorLongValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
@@ -262,8 +259,7 @@ namespace MyMoney
                         priceEnterLong = (int)ask;
                         lotCount = 1;
                         cookieId++;
-                        //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                        scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        scom.PlaceOrder(workPortfolioName, "RTS-12.14_FT"
                             , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market
                             , StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookieId);
                         allClaims.Add(cookieId, priceEnterLong, StOrder_Action.StOrder_Action_Buy);
@@ -276,8 +272,7 @@ namespace MyMoney
                         priceEnterShort = (int)bid;
                         lotCount = 1;
                         cookieId++;
-                        //scom.PlaceOrder("BP12800-RF-01", "RTS-12.14_FT"
-                        scom.PlaceOrder("ST59164-RF-01", "RTS-12.14_FT"
+                        scom.PlaceOrder(workPortfolioName, "RTS-12.14_FT"
                             , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market
                             , StOrder_Validity.StOrder_Validity_Day, 0, lotCount, 0, cookieId);
                         allClaims.Add(cookieId, priceEnterShort, StOrder_Action.StOrder_Action_Sell);
