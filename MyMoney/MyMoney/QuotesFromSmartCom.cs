@@ -67,8 +67,8 @@ namespace MyMoney
         public void ConnectToDataSource()
         {
             scom = new SmartCOM3Lib.StServerClass();
-            scom.ConfigureClient("logLevel=4;CalcPlannedPos=no;logFilePath=D:");
-            scom.ConfigureServer("logLevel=4;pingTimeOut=5;logFilePath=D:");
+            scom.ConfigureClient("logLevel=5;CalcPlannedPos=no;logFilePath=D:");
+            scom.ConfigureServer("logLevel=5;pingTimeOut=5;logFilePath=D:");
             scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
             scom.Connected += scom_Connected;
@@ -109,7 +109,7 @@ namespace MyMoney
                         , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , realP + paramTh.profitLongValue, lotCount, 0, ++cookieProfit);
                     scom.PlaceOrder(workPortfolioName, "RTS-12.14_FT"
-                        , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
+                        , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , 0, lotCount, realP - paramTh.lossLongValue, ++cookieLoss);
                     messageInf += " realp-losslong: " + (realP - paramTh.lossLongValue).ToString() + " losslong: " + paramTh.lossLongValue.ToString();
                 }
@@ -121,7 +121,7 @@ namespace MyMoney
                         , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , realP - paramTh.profitShortValue, lotCount, 0, ++cookieProfit);
                     scom.PlaceOrder(workPortfolioName, "RTS-12.14_FT"
-                        , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
+                        , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , 0, lotCount, realP + paramTh.lossShortValue, ++cookieLoss);
                     messageInf += " realp+losshort: " + (realP + paramTh.lossShortValue).ToString() + " lossshort: " + paramTh.lossShortValue.ToString();
                 }

@@ -45,7 +45,7 @@ namespace MyMoney
     }
     public struct ParametrsForTest 
     {
-        public ParametrsForTest(int _id, List<string> _instruments, int _i0, float _i1, int _i2, int _i3, int _i4, int _i5, int _i6, int _i7, int _i8)
+        public ParametrsForTest(int _id, List<string> _instruments, int _i0, float _i1, int _i2, int _i3, int _i4, int _i5, int _i6, int _i7, int _i8, int _delay)
         {
             instruments = _instruments;
             id = _id;
@@ -58,6 +58,7 @@ namespace MyMoney
             lossShortValue = _i6;
             profitShortValue = _i7;
             indicatorShortValue = _i8;
+            delay = _delay;
         }
 
         public ParametrsForTest(ParametrsForTest[] _params)
@@ -74,6 +75,7 @@ namespace MyMoney
             martingValue = _params[r.Next(0,1)].martingValue;
             lossShortValue = _params[r.Next(0,1)].lossShortValue;
             profitShortValue = _params[r.Next(0, 1)].profitShortValue;
+            delay = _params[r.Next(0, 1)].delay;
         }
 
         public bool Compare(ParametrsForTest p1, ParametrsForTest p2)
@@ -112,6 +114,8 @@ namespace MyMoney
                 break;
                 case 9: martingValue = newVal;
                 break;
+                case 10: delay = newVal;
+                break;
                 default:
                     break;
             }
@@ -128,6 +132,7 @@ namespace MyMoney
         public int lossShortValue; // значение убытка шорта
         public int indicatorLongValue; // значение индикатора для входа
         public int indicatorShortValue; // значение индикатора для входа
+        public int delay; // длительность, при которой индикатор не опускается ниже заданного уровня
         public int martingValue; // допустимое количество раз усреднения
     }
 
@@ -261,6 +266,7 @@ namespace MyMoney
         public int lossShortLevel { get; set; }
         public int indicLongVal { get; set; }
         public int indicShortVal { get; set; }
+        public int delay { get; set; }
         public int martinLevel { get; set; }
     }
 

@@ -160,8 +160,11 @@ namespace MyMoney
                                         {
                                             for (int i7 = dicDiapasonParams["profitShortValue"].start; i7 <= dicDiapasonParams["profitShortValue"].finish; i7 = i7 + dicDiapasonParams["profitShortValue"].step)
                                             {
-                                                idParametrsRow++;
-                                                parametrsList.Add(new ParametrsForTest(idParametrsRow, selectedSessionList, i0, i1, i2, i3, i4, i5, i6, i7, i8));
+                                                for (int _delay = dicDiapasonParams["delay"].start; _delay <= dicDiapasonParams["delay"].finish; _delay = _delay + dicDiapasonParams["delay"].step)
+                                                {
+                                                    idParametrsRow++;
+                                                    parametrsList.Add(new ParametrsForTest(idParametrsRow, selectedSessionList, i0, i1, i2, i3, i4, i5, i6, i7, i8, _delay));
+                                                }
                                             }
                                         }
                                     }
@@ -286,6 +289,7 @@ namespace MyMoney
 
         private void OneThreadTester(object p)
         {
+            DateTime lastDtBadIndicator;
             ResultOneThreadSumm resTh = new ResultOneThreadSumm();
             List<int> oldGlassValue = new List<int>();
             List<int> tempListForIndicator = new List<int>();
@@ -301,6 +305,7 @@ namespace MyMoney
             int lossShortValueTemp = paramTh.lossShortValue, profitShortValueTemp = paramTh.profitShortValue;
             foreach (string k in dictionaryDT.Keys)
             {
+                lastDtBadIndicator = new DateTime();
                 priceEnterLong = 0; priceEnterShort = 0;
                 ResultOneThread resThTemp = new ResultOneThread();
                 resThTemp.shortName = k;
@@ -512,24 +517,34 @@ namespace MyMoney
                                 }*/
                                 //indicator = (sumlong + sumshort) != 0 ? (int)(sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
                                 // вход лонг
-                                if (indicator >= paramTh.indicatorLongValue && priceEnterLong == 0 && priceEnterShort == 0)
+                                TimeSpan ddt = dr.Field<DateTime>("dtserver").Subtract(lastDtBadIndicator);
+                                if (indicator >= paramTh.indicatorLongValue)
                                 {
-                                    lossLongValueTemp = paramTh.lossLongValue;
-                                    profitLongValueTemp = paramTh.profitLongValue;
-                                    priceEnterLong = (int)ask;
-                                    lotCount = 1;
-                                    dealTemp = new DealInfo(ActionDeal.buy, dr.Field<DateTime>("dtserver"), 1, priceEnterLong, indicator);
-
+                                    if (priceEnterLong == 0 && priceEnterShort == 0 && ddt.TotalMilliseconds > paramTh.delay)
+                                    {
+                                        lastDtBadIndicator = dr.Field<DateTime>("dtserver");
+                                        lossLongValueTemp = paramTh.lossLongValue;
+                                        profitLongValueTemp = paramTh.profitLongValue;
+                                        priceEnterLong = (int)ask;
+                                        lotCount = 1;
+                                        dealTemp = new DealInfo(ActionDeal.buy, dr.Field<DateTime>("dtserver"), 1, priceEnterLong, indicator);
+                                    }
                                 }
                                 // вход шорт
-                                else if (indicator <= -paramTh.indicatorShortValue && priceEnterLong == 0 && priceEnterShort == 0)
+                                if (indicator <= -paramTh.indicatorShortValue)
                                 {
-                                    lossShortValueTemp = paramTh.lossShortValue;
-                                    profitShortValueTemp = paramTh.profitShortValue;
-                                    priceEnterShort = (int)bid;
-                                    lotCount = 1;
-                                    dealTemp = new DealInfo(ActionDeal.sell, dr.Field<DateTime>("dtserver"), 1, priceEnterShort, indicator);
+                                    if (priceEnterLong == 0 && priceEnterShort == 0 && ddt.TotalMilliseconds > paramTh.delay)
+                                    {
+                                        lastDtBadIndicator = dr.Field<DateTime>("dtserver");
+                                        lossShortValueTemp = paramTh.lossShortValue;
+                                        profitShortValueTemp = paramTh.profitShortValue;
+                                        priceEnterShort = (int)bid;
+                                        lotCount = 1;
+                                        dealTemp = new DealInfo(ActionDeal.sell, dr.Field<DateTime>("dtserver"), 1, priceEnterShort, indicator);
+                                    }
                                 }
+                                if (indicator < paramTh.indicatorLongValue && indicator > -paramTh.indicatorShortValue)
+                                    lastDtBadIndicator = dr.Field<DateTime>("dtserver");
                             }
                         }
 
@@ -558,6 +573,7 @@ namespace MyMoney
                 resTh.profShortLevel = paramTh.profitShortValue;
                 resTh.lossShortLevel = paramTh.lossShortValue;
                 resTh.martinLevel = paramTh.martingValue;
+                resTh.delay = paramTh.delay;
                 resTh.averageVal = paramTh.averageValue;
 
                 resTh.margin = resTh.profit - resTh.loss;

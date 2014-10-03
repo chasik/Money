@@ -98,7 +98,7 @@ namespace MyMoney
                     , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
                     , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
                     , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
-                    , int.Parse(tbIndicatorShortCurrent.Text));
+                    , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
                 (dsource as QuotesFromSmartCom).OnChangeIndicator += MainWindow_OnChangeIndicator;
             }
             dsource.ConnectToDataSource();
@@ -261,6 +261,7 @@ namespace MyMoney
                 dsourceDB.dicDiapasonParams.Add("indicatorLongValue", new diapasonTestParam(7, tbIndicatorLongStart.Text, tbIndicatorLongFinish.Text, tbIndicatorLongStep.Text));
                 dsourceDB.dicDiapasonParams.Add("indicatorShortValue", new diapasonTestParam(8, tbIndicatorShortStart.Text, tbIndicatorShortFinish.Text, tbIndicatorShortStep.Text));
                 dsourceDB.dicDiapasonParams.Add("martingValue", new diapasonTestParam(9, tbMartingStart.Text, tbMartingFinish.Text, tbMartingStep.Text));
+                dsourceDB.dicDiapasonParams.Add("delay", new diapasonTestParam(10, tbDelayStart.Text, tbDelayFinish.Text, tbDelayStep.Text));
                 dsourceDB.StartTester();
             }
         }
