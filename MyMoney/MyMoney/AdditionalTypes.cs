@@ -328,8 +328,29 @@ namespace MyMoney
 
     public class AllClaimsInfo
     {
-        public Dictionary<int, ClaimInfo> dicAllClaims = new Dictionary<int, ClaimInfo>();
 
+        public delegate void DoTradeEvent(int _cookie, SmartCOM3Lib.StOrder_Action _ordAction, SmartCOM3Lib.StOrder_Type _ordType);
+        public event DoTradeEvent OnDoTrade;
+
+        public Dictionary<int, ClaimInfo> dicAllClaims = new Dictionary<int, ClaimInfo>();
+        private int _activecookie = 0;
+        public int ActiveCookie {
+            get { return _activecookie; }
+            set {
+                LastActiveCookie = _activecookie;
+                _activecookie = value;
+            }
+        }
+        public int LastActiveCookie { get; set; }
+        public int ProfitLevel { get; set; }
+        public int LossLevel { get; set; }
+
+        public AllClaimsInfo()
+        {
+            ActiveCookie = 0;
+            ProfitLevel = 0;
+            LossLevel = 0;
+        }
         public void Add(int _cookie, double _priceent, SmartCOM3Lib.StOrder_Action _action)
         {
             dicAllClaims.Add(_cookie, new ClaimInfo(_priceent, _action));
@@ -377,6 +398,21 @@ namespace MyMoney
             if (!dicAllClaims.ContainsKey(_cook))
                 return 0;
             return dicAllClaims[_cook].realPriceEnter;
+        }
+        public void NewQuotes(double _bid, double _ask)
+        {
+            if (ActiveCookie == 0)
+                return;
+            if (dicAllClaims[ActiveCookie].action == SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy)
+            {
+                if ((int)_bid > dicAllClaims[ActiveCookie].realPriceEnter + ProfitLevel)
+                    OnDoTrade(ActiveCookie + 10000, SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell, SmartCOM3Lib.StOrder_Type.StOrder_Type_Market);
+            }
+            else if (dicAllClaims[ActiveCookie].action == SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell)
+            {
+                if ((int)_ask < dicAllClaims[ActiveCookie].realPriceEnter - ProfitLevel)
+                    OnDoTrade(ActiveCookie + 10000, SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy, SmartCOM3Lib.StOrder_Type.StOrder_Type_Market);
+            }
         }
     }
 
