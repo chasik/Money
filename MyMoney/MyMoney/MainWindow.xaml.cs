@@ -26,6 +26,7 @@ namespace MyMoney
     /// </summary>
     public partial class MainWindow : Window
     {
+        public TradeGraph tradeGraphVisual;
         float maxPF = 0, maxMargin = 0;
         int lastSecondReIndicator = 0;
         public ObservableCollection<ResultOneThreadSumm> allResults;
@@ -41,6 +42,8 @@ namespace MyMoney
             Thread.CurrentThread.CurrentUICulture = ci;
 
             InitializeComponent();
+            tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
+
             allResults = new ObservableCollection<ResultOneThreadSumm>();
             detailResults = new ObservableCollection<ResultOneThread>();
             detailAllDeals = new ObservableCollection<SubDealInfo>();
@@ -291,11 +294,14 @@ namespace MyMoney
             if (r == null)
                 return;
             detailAllDeals.Clear();
+
             foreach (DealInfo item in r.lstAllDeals)
             {
+                item.shortName = r.shortName;
                 detailAllDeals.Add(item);
                 foreach (SubDealInfo item2 in item.lstSubDeal)
                 {
+                    item2.parentDeal = item;
                     detailAllDeals.Add(item2);
                 }
             }
@@ -323,6 +329,30 @@ namespace MyMoney
         {
             //MessageBox.Show((sender as Rectangle)..ToString());
 
+        }
+
+        private void dgResultDeals_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SubDealInfo sd = (sender as DataGrid).SelectedItem as SubDealInfo;
+            if (sd == null)
+                return;
+            // находим родительскую сделку
+            if (sd.parentDeal != null)
+                sd = sd.parentDeal;
+            string shortN = sd.shortName;
+            Thread t = new Thread(new ParameterizedThreadStart(InitGraph));
+            t.Start(sd);
+        }
+
+        public void InitGraph(object obj)
+        {
+            SubDealInfo sd = (obj as SubDealInfo);
+            DateTime dt1 = sd.datetimeEnter.Subtract(new TimeSpan(0, 3, 0));
+            DateTime dt2 = sd.datetimeExit.Add(new TimeSpan(0, 3, 0));
+            tradeGraphVisual.drData = dsourceDB.dicSelectedDataTables[sd.shortName]
+                .Select("dtserver > '" + dt1.ToString()
+                         + "' AND dtserver <'" + dt2.ToString() + "' AND priceTick IS NOT NULL"
+                       );
         }
 
     }

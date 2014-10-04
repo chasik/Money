@@ -153,6 +153,8 @@ namespace MyMoney
     {
         private float pexit;
         private TimeSpan dtext;
+        public DateTime datetimeExit, datetimeEnter;
+        public string shortName;
         public SubDealInfo()
         {
             lotsCount = 0;
@@ -162,6 +164,7 @@ namespace MyMoney
 
         public SubDealInfo(DateTime _dt, int _lotCount, float _priceEnter, float _curPrice, float _delt, int _indicValue, float _lossValueTemp = 0, float _profitValueTemp = 0)
         {
+            datetimeEnter = _dt;
             actiond = ActionDeal.none;
             dtEnter = _dt.TimeOfDay;
             lotsCount = _lotCount;
@@ -175,6 +178,7 @@ namespace MyMoney
 
         public void DoExit(DateTime _dt, float _pexit)
         {
+            datetimeExit = _dt;
             priceExit = _pexit;
             dtExit = _dt.TimeOfDay;
         }
@@ -230,6 +234,7 @@ namespace MyMoney
         public DealInfo(ActionDeal _actiond, DateTime _dtEnter, int _lotsCount, float _pEnter, int _indicValue, float _lossValueTemp = 0, float _profitValueTemp = 0)
         {
             actiond = _actiond;
+            datetimeEnter = _dtEnter;
             dtEnter = _dtEnter.TimeOfDay;
             lotsCount = _lotsCount;
             priceEnter = _pEnter;
@@ -280,6 +285,7 @@ namespace MyMoney
             this.countLDeal += _result.countLDeal;
             this.loss += _result.loss;
             this.profit += _result.profit;
+            this.shortName = _result.shortName;
             this.lstResults.Add(_result);
         }
 

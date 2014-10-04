@@ -57,6 +57,7 @@
     <Compile Include="IDataSource.cs" />
     <Compile Include="QuotesFromBD.cs" />
     <Compile Include="QuotesFromSmartCom.cs" />
+    <Compile Include="TradeGraph.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
