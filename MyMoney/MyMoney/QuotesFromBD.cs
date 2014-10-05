@@ -224,15 +224,16 @@ namespace MyMoney
             Random rnd = new Random();
             while (parametrsList.Count > 0)
             {
+                int mutationCount = 0;
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 16)
+                    if (dicAllProfitResult.Count < 11)
                         pt = parametrsList[new Random().Next(0, parametrsList.Count)];
                     else
                     {
-                        int o1 = rnd.Next(1, 5);
-                        int o2 = rnd.Next(1, 15);
+                        int o1 = rnd.Next(1, 3);
+                        int o2 = rnd.Next(1, 10);
                         if (o1 == o2)
                             o2 += 1;
                         ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
@@ -256,6 +257,7 @@ namespace MyMoney
                         pt = parametrsList.Find(x => x.Compare(x, ptTemp));
                         while (pt.id == 0)
                         {
+                            mutationCount++;
                             pt = parametrsList.Find(x => x.Compare(x, ptTemp));
                             int mutantParamId = rnd.Next(1, 9);
                             foreach (diapasonTestParam dp in dicDiapasonParams.Values)
@@ -267,7 +269,7 @@ namespace MyMoney
                     }
                     listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
                     listThreads.Last().IsBackground = true;
-                    listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables, plStartCount - parametrsList.Count));
+                    listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables, plStartCount - parametrsList.Count, mutationCount));
                     parametrsList.Remove(pt);
                     if (OnChangeProgress != null)
                         OnChangeProgress(0, plStartCount, plStartCount - parametrsList.Count);
@@ -297,8 +299,6 @@ namespace MyMoney
             int priceEnterLong, priceEnterShort;
             int lotCount = 1;
             int? bid = 0, ask = 0;
-            int? pricetick = 0;
-            byte? actiontick = 0;
             Dictionary<string, DataTable> dictionaryDT = (p as ParametrsForTestObj).dictionaryDT;
             ParametrsForTest paramTh = (p as ParametrsForTestObj).paramS;
             int lossLongValueTemp = paramTh.lossLongValue, profitLongValueTemp = paramTh.profitLongValue;
@@ -313,52 +313,13 @@ namespace MyMoney
                 DataTable dt = dictionaryDT[k];//.Copy();
                 int indicator = 0;
                 int iterationNum = 0;
+                int? pricetick = 0;
+                byte? actiontick = 0;
                 foreach (DataRow dr in dt.Rows)
                 {
                     #region торговля
-                    iterationNum++;
-                    if (iterationNum == dt.Rows.Count)
-                    {
-                        #region Закрыть последнюю сделку, если данные закончились (эмитируем отключение программы)
-                        if (priceEnterLong != 0)
-                        {
-                            if (bid - priceEnterLong > 0)
-                            {
-                                resThTemp.countPDeal++;
-                                resThTemp.profit += ((int)bid - priceEnterLong) * lotCount;
-                            }
-                            else
-                            {
-                                resThTemp.countLDeal++;
-                                resThTemp.loss += (priceEnterLong - (int)bid) * lotCount;
-                            }
-                            dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)bid);
-                            resThTemp.lstAllDeals.Add(dealTemp);
-                            priceEnterLong = 0;
-                            lotCount = 1;
-                        }
-                        if (priceEnterShort != 0)
-                        {
-                            if (priceEnterShort - ask > 0)
-                            {
-                                resThTemp.countPDeal++;
-                                resThTemp.profit += (priceEnterShort - (int)ask) * lotCount;
-                            }
-                            else
-                            {
-                                resThTemp.countLDeal++;
-                                resThTemp.loss += ((int)ask - priceEnterShort) * lotCount;
-                            }
-                            dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)ask);
-                            resThTemp.lstAllDeals.Add(dealTemp);
-                            priceEnterShort = 0;
-                            lotCount = 1;
-                        }
-                        continue;
-                        #endregion
-                    }
                     // совершена сделка
-                    if (!dr.IsNull("priceTick"))
+                    if (!dr.IsNull("priceTick") && pricetick != (int?)dr.Field<float?>("priceTick")) // вторая часть условия - если перед этим была таже цена - пропускаем
                     {
                         pricetick = (int?)dr.Field<float?>("priceTick");
                         actiontick = dr.Field<byte?>("idaction");
@@ -554,6 +515,47 @@ namespace MyMoney
                     //    bid = (int?)dr.Field<float?>("bid");
                     //    ask = (int?)dr.Field<float?>("ask");
                     //}
+                    iterationNum++;
+                    if (iterationNum == dt.Rows.Count)
+                    {
+                        #region Закрыть последнюю сделку, если данные закончились (эмитируем отключение программы)
+                        if (priceEnterLong != 0)
+                        {
+                            if (bid - priceEnterLong > 0)
+                            {
+                                resThTemp.countPDeal++;
+                                resThTemp.profit += ((int)bid - priceEnterLong) * lotCount;
+                            }
+                            else
+                            {
+                                resThTemp.countLDeal++;
+                                resThTemp.loss += (priceEnterLong - (int)bid) * lotCount;
+                            }
+                            dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)bid);
+                            resThTemp.lstAllDeals.Add(dealTemp);
+                            priceEnterLong = 0;
+                            lotCount = 1;
+                        }
+                        if (priceEnterShort != 0)
+                        {
+                            if (priceEnterShort - ask > 0)
+                            {
+                                resThTemp.countPDeal++;
+                                resThTemp.profit += (priceEnterShort - (int)ask) * lotCount;
+                            }
+                            else
+                            {
+                                resThTemp.countLDeal++;
+                                resThTemp.loss += ((int)ask - priceEnterShort) * lotCount;
+                            }
+                            dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)ask);
+                            resThTemp.lstAllDeals.Add(dealTemp);
+                            priceEnterShort = 0;
+                            lotCount = 1;
+                        }
+                        continue;
+                        #endregion
+                    }
                     #endregion торговля
                 }
                 resThTemp.margin = resThTemp.profit - resThTemp.loss;
@@ -567,6 +569,7 @@ namespace MyMoney
             lock (lockObj)
             {
                 resTh.idCycle = (p as ParametrsForTestObj).numThread;
+                resTh.mutC = (p as ParametrsForTestObj).mutationCount;
                 resTh.idParam = paramTh.id;
                 resTh.paramForTest = paramTh;
                 resTh.glassH = paramTh.glassHeight;

@@ -315,14 +315,14 @@ namespace MyMoney
 
             if (di.actiond == ActionDeal.none)
                 e.Row.Background = new SolidColorBrush(Colors.OldLace);
-            else if (di.actiond == ActionDeal.buy && di.margin > 0)
+            else if (di.actiond == ActionDeal.buy && di.margin >= 0)
                 e.Row.Background = new SolidColorBrush(Colors.SkyBlue);
-            else if (di.actiond == ActionDeal.buy && di.margin <= 0)
-                e.Row.Background = new SolidColorBrush(Colors.DeepSkyBlue);
-            else if (di.actiond == ActionDeal.sell && di.margin > 0)
+            else if (di.actiond == ActionDeal.buy && di.margin < 0)
+                e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 0xFF, 0x1E, 0x00));
+            else if (di.actiond == ActionDeal.sell && di.margin >= 0)
                 e.Row.Background = new SolidColorBrush(Colors.HotPink);
-            else if (di.actiond == ActionDeal.sell && di.margin <= 0)
-                e.Row.Background = new SolidColorBrush(Colors.DeepPink);
+            else if (di.actiond == ActionDeal.sell && di.margin < 0)
+                e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 0xFF, 0x1E, 0x00));
         }
 
         private void Rectangle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -353,6 +353,18 @@ namespace MyMoney
                 .Select("dtserver > '" + dt1.ToString()
                          + "' AND dtserver <'" + dt2.ToString() + "' AND priceTick IS NOT NULL"
                        );
+        }
+
+        private void dgResult_LoadingRow(object sender, DataGridRowEventArgs e)
+        {
+            ResultOneThreadSumm r = (e.Row.Item as ResultOneThreadSumm);
+            if (r == null)
+                return;
+
+            if (r.profitFac >= 1)
+                e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 0x90, 0xDC, 0xED));
+            else if (r.profitFac < 1)
+                e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 0xED, 0x99, 0xD5));
         }
 
     }

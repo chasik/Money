@@ -138,15 +138,17 @@ namespace MyMoney
 
     public class ParametrsForTestObj
     {
-        public ParametrsForTestObj(ParametrsForTest _p, Dictionary<string, DataTable> _dictionaryDT, int _numThread = 0)
+        public ParametrsForTestObj(ParametrsForTest _p, Dictionary<string, DataTable> _dictionaryDT, int _numThread = 0, int _mutationCount = 0)
         {
             paramS = _p;
             dictionaryDT = _dictionaryDT;
             this.numThread = _numThread;
+            this.mutationCount = _mutationCount;
         }
         public int numThread;
         public ParametrsForTest paramS;
         public Dictionary<string, DataTable> dictionaryDT;
+        public int mutationCount;
     }
 
     public class SubDealInfo
@@ -256,6 +258,7 @@ namespace MyMoney
         public List<DealInfo> lstAllDeals = new List<DealInfo>();
         public string shortName { get; set; }
         public int idCycle { get; set; }
+        public int mutC { get; set; }
         public int idParam { get; set; }
         public float profitFac { get; set; }
         public int margin { get; set; }
