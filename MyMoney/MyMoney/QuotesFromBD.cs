@@ -197,7 +197,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(12, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -210,7 +210,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(12, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -558,6 +558,9 @@ namespace MyMoney
                 }
                 resThTemp.margin = resThTemp.profit - resThTemp.loss;
                 resThTemp.profitFac = (float)resThTemp.profit / (float)resThTemp.loss;
+                // математическое ожидание
+                resThTemp.matExp = (1 + ((float)resThTemp.profit / (float)resThTemp.countPDeal) / ((float)resThTemp.loss / (float)resThTemp.countLDeal))
+                    * ((float)resThTemp.countPDeal / ((float)resThTemp.countPDeal + (float)resThTemp.countLDeal)) - 1;
                 resTh.AddOneDayResult(resThTemp);
                 
             }
@@ -578,12 +581,16 @@ namespace MyMoney
                 resTh.averageVal = paramTh.averageValue;
 
                 resTh.margin = resTh.profit - resTh.loss;
-                if (resTh.loss == 0)
+                resTh.matExp = (1 + ((float)resTh.profit / (float)resTh.countPDeal) / ((float)resTh.loss / (float)resTh.countLDeal))
+                    * ((float)resTh.countPDeal / ((float)resTh.countPDeal + (float)resTh.countLDeal)) - 1;
+                if (resTh.loss == 0 && resTh.profit == 0)
+                    resTh.profitFac = -1;
+                else if (resTh.loss == 0)
                     resTh.profitFac = 999;
                 else
                     resTh.profitFac = (float)resTh.profit / (float)resTh.loss;
 
-                ResultBestProfitFactor rp = new ResultBestProfitFactor(resTh.idParam, resTh.profitFac, resTh.margin);
+                ResultBestProfitFactor rp = new ResultBestProfitFactor(resTh.idParam, resTh.profitFac, resTh.margin, resTh.matExp);
                 if (!dicAllProfitResult.ContainsKey(rp))
                     dicAllProfitResult.Add(rp, resTh);
 

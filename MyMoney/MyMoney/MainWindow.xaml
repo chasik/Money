@@ -1,7 +1,7 @@
 ﻿<Window x:Name="MyWindow" x:Class="MyMoney.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="677" Width="1519">
+        Title="MainWindow" Height="677" Width="1587">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="6*"/>

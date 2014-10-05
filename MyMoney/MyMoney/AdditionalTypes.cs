@@ -259,6 +259,7 @@ namespace MyMoney
         public int idParam { get; set; }
         public float profitFac { get; set; }
         public int margin { get; set; }
+        public float matExp { get; set; }
         public int profit { get; set; }
         public int loss { get; set; }
         public int countPDeal { get; set; }
@@ -295,7 +296,7 @@ namespace MyMoney
 
     public class ResultBestProfitFactor : IComparable
     {
-        public ResultBestProfitFactor(int _idparam, float _profitfactor, float _margin)
+        public ResultBestProfitFactor(int _idparam, float _profitfactor, float _margin, float _matexp)
         {
             idparam = _idparam;
             profitFactor = _profitfactor;
@@ -304,12 +305,13 @@ namespace MyMoney
         public int idparam { get; set; }
         public float profitFactor { get; set; }
         public float margin { get; set; }
+        public float matExp { get; set; }
         public int CompareTo(object j)
         {
             ResultBestProfitFactor compareObj = j as ResultBestProfitFactor;
-            if (this.idparam == compareObj.idparam || (this.profitFactor == compareObj.profitFactor && this.margin == compareObj.margin))
+            if (this.idparam == compareObj.idparam || (this.profitFactor == compareObj.profitFactor && this.margin == compareObj.margin && this.matExp == compareObj.matExp))
                 return 0;
-            if (this.margin > compareObj.margin || (this.profitFactor > compareObj.profitFactor && this.profitFactor != 999))
+            if (this.margin > compareObj.margin || this.matExp > compareObj.matExp || (this.profitFactor > compareObj.profitFactor && this.profitFactor != 999))
                 return -1;
             else
                 return 1;
