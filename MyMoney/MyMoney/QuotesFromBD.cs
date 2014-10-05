@@ -228,12 +228,12 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 11)
+                    if (dicAllProfitResult.Count < 21)
                         pt = parametrsList[new Random().Next(0, parametrsList.Count)];
                     else
                     {
-                        int o1 = rnd.Next(1, 3);
-                        int o2 = rnd.Next(1, 10);
+                        int o1 = rnd.Next(1, 5);
+                        int o2 = rnd.Next(1, 20);
                         if (o1 == o2)
                             o2 += 1;
                         ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
@@ -346,7 +346,7 @@ namespace MyMoney
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
 
-                                        profitShortValueTemp += delt;
+                                        profitShortValueTemp += 3 * delt;
                                         lossShortValueTemp += delt;
 
                                         priceEnterShort = priceEnterShort + delt;
@@ -391,7 +391,7 @@ namespace MyMoney
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
-                                        profitLongValueTemp += delt;
+                                        profitLongValueTemp += 3 * delt;
                                         lossLongValueTemp += delt;
 
                                         priceEnterLong = priceEnterLong - delt;
