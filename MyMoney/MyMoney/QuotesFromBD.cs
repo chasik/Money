@@ -346,14 +346,14 @@ namespace MyMoney
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
 
-                                        profitShortValueTemp += 3 * delt;
+                                        profitShortValueTemp += 2 * delt;
                                         lossShortValueTemp += delt;
 
-                                        priceEnterShort = priceEnterShort + delt;
+                                        priceEnterShort = priceEnterShort + (int)((int)ask - priceEnterShort) / lotCount;
 
                                         if (dealTemp.lstSubDeal.Count > 0)
                                             dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
-                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterShort, (float)ask, (float)delt, indicator, (float)lossShortValueTemp, (float)profitShortValueTemp));
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, ActionDeal.subsell, (float)priceEnterShort, (float)ask, (float)delt, indicator, (float)lossShortValueTemp, (float)profitShortValueTemp));
                                     }
                                     else
                                     {
@@ -391,14 +391,14 @@ namespace MyMoney
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
-                                        profitLongValueTemp += 3 * delt;
+                                        profitLongValueTemp += 2 * delt;
                                         lossLongValueTemp += delt;
 
-                                        priceEnterLong = priceEnterLong - delt;
+                                        priceEnterLong = priceEnterLong - (int)(priceEnterLong - (int)bid) / lotCount;
 
                                         if (dealTemp.lstSubDeal.Count > 0)
                                             dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
-                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, (float)priceEnterLong, (float)bid, (float)delt, indicator, (float)lossLongValueTemp, (float)profitLongValueTemp));
+                                        dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, ActionDeal.subbuy, (float)priceEnterLong, (float)bid, (float)delt, indicator, (float)lossLongValueTemp, (float)profitLongValueTemp));
                                     }
                                     else
                                     {

@@ -59,7 +59,7 @@
         </DataGrid>
         <TextBox x:Name="filterTextBox" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="4,59,0,0" TextWrapping="Wrap" Text="RTS-" VerticalAlignment="Top" Width="228"/>
         <DataGrid x:Name="dgResultDeals" Grid.Column="1" Margin="555,539,10,10" FontFamily="Tahoma" FontSize="9" LoadingRow="dgResultDeals_LoadingRow" SelectionChanged="dgResultDeals_SelectionChanged"/>
-        <DataGrid x:Name="dgResultDetail" Grid.Column="1" Margin="555,223,0,0" Height="311" VerticalAlignment="Top" AutoGenerateColumns="False" FontFamily="Tahoma" FontSize="9" HorizontalAlignment="Left" Width="429" SelectionChanged="dgResultDetail_SelectionChanged"/>
+        <DataGrid x:Name="dgResultDetail" Grid.Column="1" Margin="555,223,0,0" Height="311" VerticalAlignment="Top" AutoGenerateColumns="False" FontFamily="Tahoma" FontSize="9" HorizontalAlignment="Left" Width="400" SelectionChanged="dgResultDetail_SelectionChanged"/>
         <Label Content="ProfitShort:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,242,0,0" VerticalAlignment="Top" Width="82"/>
         <TextBox x:Name="tbProfitShortStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="396,244,0,0" TextWrapping="Wrap" Text="140" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
         <Label Content="LossShort:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,271,0,0" VerticalAlignment="Top" Width="82"/>
@@ -81,11 +81,9 @@
         <TextBox x:Name="tbIndicatorShortFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="445,349,0,0" TextWrapping="Wrap" Text="35" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
         <TextBox x:Name="tbIndicatorShortStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="502,349,0,0" TextWrapping="Wrap" Text="3" VerticalAlignment="Top" Width="48" TextAlignment="Right"/>
         <TextBox x:Name="tbIndicatorShortCurrent" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="324,349,0,0" TextWrapping="Wrap" Text="36" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
-        <Canvas x:Name="canvasGraph" Grid.Column="1" Margin="989,223,10,0" Height="196" VerticalAlignment="Top"/>
-        <Canvas x:Name="canvasIndicator" Grid.Column="1" Margin="989,424,10,0" Height="110" VerticalAlignment="Top"
->
-            <Rectangle Fill="#FFF4F4F5" Height="100" Stroke="Black" Width="100" MouseLeftButtonDown="Rectangle_MouseLeftButtonDown" Margin="0"/>
-        </Canvas>
+        <Canvas x:Name="canvasGraph" Grid.Column="1" Margin="960,223,10,0" Height="196" VerticalAlignment="Top"/>
+        <Canvas x:Name="canvasIndicator" Grid.Column="1" Margin="960,424,10,0" Height="110" VerticalAlignment="Top"
+/>
         <TextBox x:Name="tbInformation" Grid.Column="1" HorizontalAlignment="Left" Margin="237,441,0,62" TextWrapping="Wrap" Width="313" FontFamily="Arial" FontSize="9"/>
         <CheckBox Content="CheckBox" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         <CheckBox x:Name="chbTrading" Content="Торговать" Grid.Column="1" HorizontalAlignment="Left" Margin="430,46,0,0" VerticalAlignment="Top" Width="120"/>

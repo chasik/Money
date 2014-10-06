@@ -11,7 +11,9 @@ namespace MyMoney
 	{
         none = 0,
         sell = 1,
-        buy = 2
+        buy = 2,
+        subsell = 3,
+        subbuy = 4
 	};
     public enum ResultConnectToDataSource
     {
@@ -164,10 +166,10 @@ namespace MyMoney
             priceExit = 0;
         }
 
-        public SubDealInfo(DateTime _dt, int _lotCount, float _priceEnter, float _curPrice, float _delt, int _indicValue, float _lossValueTemp = 0, float _profitValueTemp = 0)
+        public SubDealInfo(DateTime _dt, int _lotCount, ActionDeal _act, float _priceEnter, float _curPrice, float _delt, int _indicValue, float _lossValueTemp = 0, float _profitValueTemp = 0)
         {
             datetimeEnter = _dt;
-            actiond = ActionDeal.none;
+            actiond = _act;
             dtEnter = _dt.TimeOfDay;
             lotsCount = _lotCount;
             priceEnter = _priceEnter;
@@ -176,6 +178,19 @@ namespace MyMoney
             lossValueTemp = _lossValueTemp;
             profitValueTemp = _profitValueTemp;
             indicValue = _indicValue;
+            switch (_act)
+            {
+                case ActionDeal.subsell:
+                    profitLevel = _priceEnter - _profitValueTemp;
+                    lossLevel = _priceEnter + _lossValueTemp;
+                    break;
+                case ActionDeal.subbuy:
+                    profitLevel = _priceEnter + _profitValueTemp;
+                    lossLevel = _priceEnter - _lossValueTemp;
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void DoExit(DateTime _dt, float _pexit)
@@ -225,8 +240,10 @@ namespace MyMoney
             }
         }
         public float currentPrice { get; set; }
-        public float lossValueTemp { get; set; }
         public float profitValueTemp { get; set; }
+        public float profitLevel { get; set; }
+        public float lossValueTemp { get; set; }
+        public float lossLevel { get; set; }
 
         public List<SubDealInfo> lstSubDeal = new List<SubDealInfo>();
     }

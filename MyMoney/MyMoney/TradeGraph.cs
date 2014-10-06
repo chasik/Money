@@ -15,17 +15,28 @@ namespace MyMoney
 {
     public struct MinMaxValue
 	{
+        private float _maxV;
+        private float _minV;
         public MinMaxValue(float _min, float _max)
         {
-            MinValue = _min;
-            MaxValue = _max;
+            _maxV = _max;
+            _minV = _min;
+            DeltaValue = Math.Max(_maxV, _minV) - Math.Min(_maxV, _minV);
         }
-		public float MinValue;
-        public float MaxValue;
+		public float MinValue {
+            get{ return _minV; }
+            set{ _minV = value; DeltaValue = Math.Max(_maxV, value) - Math.Min(_maxV, value); }
+        }
+        public float MaxValue {
+            get{ return _maxV; }
+            set{ _maxV = value; DeltaValue = Math.Max(value, _minV) - Math.Min(value, _minV); }
+        }
+        public float DeltaValue;
 	}
     public class TradeGraph
     {
         private DataRow[] _dr;
+        private int heightXArea = 15, widthYArea = 70;
         public SortedDictionary<DateTime, Bar> Bars = new SortedDictionary<DateTime, Bar>();
         private TypeBar _typeBarGraph = TypeBar.TimeMinuteBar;
         private int ValueBar = 1;
@@ -84,23 +95,25 @@ namespace MyMoney
             graphC.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    graphC.Children.Clear();
-
                     SolidColorBrush barBrushUp = new SolidColorBrush();
                     barBrushUp.Color = Color.FromArgb(255, 90, 20, 255);
                     SolidColorBrush barBrushDown = new SolidColorBrush();
                     barBrushDown.Color = Color.FromArgb(255, 255, 53, 50);
 
                     MinMaxValue mm = this.GetMinMaxValues();
-                    
-                    double widthBar = graphC.ActualWidth / Bars.Count / 1.2;
-                    double pixelInPunkt = (mm.MaxValue - mm.MinValue) / graphC.ActualHeight;
+                    double widthBar = (graphC.ActualWidth - widthYArea) / Bars.Count / 1.3;
+                    double pixelInPunkt = (mm.MaxValue - mm.MinValue) / (graphC.ActualHeight - heightXArea);
+                    if (widthBar > 10)
+                        widthBar = 10;
+
+                    ClearWorkAreaGraph(pixelInPunkt);
+
                     int i = -1;
                     foreach (Bar b in Bars.Values)
                     {
                         i++;
                         double topB = (mm.MaxValue - b.hiTick.Price) / pixelInPunkt;
-                        double leftB = i * widthBar * 1.2;
+                        double leftB = i * widthBar * 1.3 + widthYArea;
                         double heightB = (b.hiTick.Price - b.lowTick.Price) / pixelInPunkt;
 
                         Line currentShadow = new Line();
@@ -110,6 +123,7 @@ namespace MyMoney
                         currentShadow.Y2 = topB + heightB;
                         currentShadow.Stroke = Brushes.Black;
                         currentShadow.StrokeThickness = 1;
+                        currentShadow.SnapsToDevicePixels = true;
 
                         Rectangle currentBar = new Rectangle();
                         if (b.closeTick.Price >= b.openTick.Price)
@@ -119,6 +133,7 @@ namespace MyMoney
 
                         currentBar.StrokeThickness = 1;
                         currentBar.Stroke = Brushes.Black;
+                        currentBar.SnapsToDevicePixels = true;
 
                         currentBar.Width = widthBar;
                         currentBar.Height = Math.Abs((b.openTick.Price - b.closeTick.Price) / pixelInPunkt);
@@ -131,7 +146,7 @@ namespace MyMoney
                 });
         }
 
-        public MinMaxValue GetMinMaxValues()
+        private MinMaxValue GetMinMaxValues()
         {
             MinMaxValue _minmaxv = new MinMaxValue(1000000, -1000000);
             foreach (Bar b in Bars.Values)
@@ -142,6 +157,49 @@ namespace MyMoney
                     _minmaxv.MinValue = b.lowTick.Price;
             }
             return _minmaxv;
+        }
+
+        private void ClearWorkAreaGraph(double _pixelInPunkt)
+        {
+            graphC.Children.Clear();
+            Rectangle gback = new Rectangle();
+            gback.StrokeThickness = 1;
+            gback.Stroke = Brushes.Black;
+            gback.Fill = Brushes.LightGray;
+            gback.SnapsToDevicePixels = true;
+            gback.Width = graphC.ActualWidth - widthYArea;
+            gback.Height = graphC.ActualHeight - heightXArea;
+            Canvas.SetLeft(gback, widthYArea);
+            Canvas.SetTop(gback, 0);
+            graphC.Children.Add(gback);
+
+            MinMaxValue mm = this.GetMinMaxValues();
+            float stepY = mm.DeltaValue > 1200 ? 500 : 100;
+            float remainderY = mm.MaxValue % stepY;
+            for (float y = mm.MaxValue - remainderY; y > mm.MinValue; y -= stepY)
+            {
+                Line horizontLine = new Line();
+                horizontLine.X1 = widthYArea;
+                horizontLine.X2 = graphC.ActualWidth - widthYArea;
+                horizontLine.Y1 = horizontLine.Y2 = (mm.MaxValue - y) * graphC.ActualHeight / mm.DeltaValue;
+                horizontLine.Stroke = Brushes.Black;
+                horizontLine.StrokeThickness = 1;
+                horizontLine.SnapsToDevicePixels = true;
+                graphC.Children.Add(horizontLine);
+            }
+            /*int workAHeight = (int)(graphC.ActualHeight - heightXArea);
+            int stepGridY = (int) (workAHeight * 500 / (mm.MaxValue - mm.MinValue));
+
+            float hm = mm.MaxValue % 500;
+            for (int y = (int)(hm / _pixelInPunkt); y < workAHeight; y += stepGridY)
+            {
+                TextBlock t = new TextBlock();
+                t.Text = (mm.MaxValue - y * _pixelInPunkt).ToString();
+                t.FontSize = 9;
+                graphC.Children.Add(t);
+                Canvas.SetLeft(t, 0);
+                Canvas.SetTop(t, y);
+            }*/
         }
     }
 
