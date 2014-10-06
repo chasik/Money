@@ -7,6 +7,13 @@ using System.Threading.Tasks;
 
 namespace MyMoney
 {
+    public enum TypeWorkOrder
+    {
+        none = 0,
+        order = 1,
+        profit = 2,
+        loss = 3
+    }
     public enum ActionDeal
 	{
         none = 0,
@@ -356,10 +363,6 @@ namespace MyMoney
 
     public class AllClaimsInfo
     {
-
-        public delegate void DoTradeEvent(int _cookie, SmartCOM3Lib.StOrder_Action _ordAction, SmartCOM3Lib.StOrder_Type _ordType);
-        public event DoTradeEvent OnDoTrade;
-
         public Dictionary<int, ClaimInfo> dicAllClaims = new Dictionary<int, ClaimInfo>();
         private int _activecookie = 0;
         public int ActiveCookie {
@@ -372,6 +375,7 @@ namespace MyMoney
         public int LastActiveCookie { get; set; }
         public int ProfitLevel { get; set; }
         public int LossLevel { get; set; }
+
 
         public AllClaimsInfo()
         {
@@ -390,10 +394,10 @@ namespace MyMoney
             if (!_tradeno.Equals("0"))
                 dicAllClaims[_cook].tradeno = _tradeno;
         }
-        public void AddOrderIdAndOrderNo(int _cook, string _ordid, string _ordno)
+        public void AddOrderIdAndOrderNo(int _cook, SmartCOM3Lib.StOrder_Action _action, string _ordid, string _ordno)
         {
             if (!dicAllClaims.ContainsKey(_cook))
-                return;
+                Add(_cook, 0, _action);
             if (!_ordid.Equals("0"))
                 dicAllClaims[_cook].orderid = _ordid;
             if (!_ordno.Equals("0"))
@@ -427,20 +431,52 @@ namespace MyMoney
                 return 0;
             return dicAllClaims[_cook].realPriceEnter;
         }
-        public void NewQuotes(double _bid, double _ask)
+
+        public string GetOrderId(int _cook, TypeWorkOrder _torder, int _martinL = 0)
         {
-            if (ActiveCookie == 0)
-                return;
-            if (dicAllClaims[ActiveCookie].action == SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy)
+            string _orderid = "";
+            int cookieId = GetCookieId(_cook, _martinL);
+            if (cookieId != 0)
+                _orderid = dicAllClaims[GetCookieIdFromWorkType(cookieId, _torder, _martinL)].orderid;
+
+            return _orderid;
+        }
+
+        public int GetCookieId(int _cook, int _martinL)
+        {
+            int cookieId = 0;
+            if (_cook < 10000000) cookieId = _cook - 1000000;
+            else if (_cook < 100000000) cookieId = _cook - 10000000;
+            else if (_cook > 100000000) cookieId = _cook - (100000000 * (_martinL + 1));
+            return cookieId;
+        }
+
+        public int GetCookieIdFromWorkType(int _cookieId, TypeWorkOrder _torder,  int _martinL = 0)
+        {
+            switch (_torder)
             {
-                if ((int)_bid > dicAllClaims[ActiveCookie].realPriceEnter + ProfitLevel)
-                    OnDoTrade(ActiveCookie + 10000, SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell, SmartCOM3Lib.StOrder_Type.StOrder_Type_Market);
+                case TypeWorkOrder.order:
+                    return _cookieId + 1000000;
+                    break;
+                case TypeWorkOrder.profit:
+                    return _cookieId + 10000000;
+                    break;
+                case TypeWorkOrder.loss:
+                    return _cookieId + (100000000 * (_martinL + 1));
+                    break;
+                default:
+                    break;
             }
-            else if (dicAllClaims[ActiveCookie].action == SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell)
-            {
-                if ((int)_ask < dicAllClaims[ActiveCookie].realPriceEnter - ProfitLevel)
-                    OnDoTrade(ActiveCookie + 10000, SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy, SmartCOM3Lib.StOrder_Type.StOrder_Type_Market);
-            }
+            return 0;
+        }
+
+        public TypeWorkOrder GetTypeCookie(int _cook)
+        {
+            TypeWorkOrder t = TypeWorkOrder.none;
+            if (_cook < 10000000) t = TypeWorkOrder.order;
+            else if (_cook < 100000000) t = TypeWorkOrder.profit;
+            else if (_cook > 100000000) t = TypeWorkOrder.loss;
+            return t;
         }
     }
 
