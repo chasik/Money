@@ -197,20 +197,20 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
                 SELECT dtserver, null as price, null as volume, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_quotes] rts2 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
               */
             + @"
   	            UNION ALL
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 0, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -306,6 +306,8 @@ namespace MyMoney
             ParametrsForTest paramTh = (p as ParametrsForTestObj).paramS;
             int lossLongValueTemp = paramTh.lossLongValue, profitLongValueTemp = paramTh.profitLongValue;
             int lossShortValueTemp = paramTh.lossShortValue, profitShortValueTemp = paramTh.profitShortValue;
+            //TimeSpan timeLong = new TimeSpan();
+            //TimeSpan timeShort = new TimeSpan();
             foreach (string k in dictionaryDT.Keys)
             {
                 lastDtBadIndicator = new DateTime();
