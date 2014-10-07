@@ -347,18 +347,22 @@ namespace MyMoney
 
     public class ClaimInfo
     {
-        public ClaimInfo(double _priceenter, SmartCOM3Lib.StOrder_Action _action)
+        public ClaimInfo(double _priceenter, int _lotcount, SmartCOM3Lib.StOrder_Action _action)
         {
             priceEnter = _priceenter;
             action = _action;
+            lotcount = _lotcount;
         }
 
         public double priceEnter = 0;
-        public SmartCOM3Lib.StOrder_Action action;
         public double realPriceEnter = 0;
+        public SmartCOM3Lib.StOrder_Action action;
         public string orderid;
         public string orderno;
         public string tradeno;
+        public int lotcount;
+        public int ProfitLevel { get; set; }
+        public int LossLevel { get; set; }
     }
 
     public class AllClaimsInfo
@@ -373,19 +377,15 @@ namespace MyMoney
             }
         }
         public int LastActiveCookie { get; set; }
-        public int ProfitLevel { get; set; }
-        public int LossLevel { get; set; }
-
 
         public AllClaimsInfo()
         {
             ActiveCookie = 0;
-            ProfitLevel = 0;
-            LossLevel = 0;
         }
-        public void Add(int _cookie, double _priceent, SmartCOM3Lib.StOrder_Action _action)
+        public ClaimInfo Add(int _cookie, double _priceent, int _lotcount, SmartCOM3Lib.StOrder_Action _action)
         {
-            dicAllClaims.Add(_cookie, new ClaimInfo(_priceent, _action));
+            dicAllClaims.Add(_cookie, new ClaimInfo(_priceent, _lotcount, _action));
+            return dicAllClaims[_cookie];
         }
         public void AddTradeNo(int _cook, string _tradeno)
         {
@@ -394,10 +394,24 @@ namespace MyMoney
             if (!_tradeno.Equals("0"))
                 dicAllClaims[_cook].tradeno = _tradeno;
         }
-        public void AddOrderIdAndOrderNo(int _cook, SmartCOM3Lib.StOrder_Action _action, string _ordid, string _ordno)
+        public void AddOrderIdAndOrderNo(int _cook, double _amount, SmartCOM3Lib.StOrder_Action _action, string _ordid, string _ordno)
         {
             if (!dicAllClaims.ContainsKey(_cook))
-                Add(_cook, 0, _action);
+            {
+                ClaimInfo lastc = this.Add(_cook, 0, (int)_amount, _action);
+                int cookId = GetCookieId(_cook);
+                foreach(int c in dicAllClaims.Keys)
+                {
+                    if (GetCookieId(c) == cookId)
+                    { 
+                        if (dicAllClaims[c].ProfitLevel > lastc.ProfitLevel)
+                            lastc.ProfitLevel = dicAllClaims[c].ProfitLevel;
+                        if (dicAllClaims[c].LossLevel > lastc.LossLevel)
+                            lastc.LossLevel = dicAllClaims[c].LossLevel;
+                    }
+                }
+            }
+                
             if (!_ordid.Equals("0"))
                 dicAllClaims[_cook].orderid = _ordid;
             if (!_ordno.Equals("0"))
@@ -435,20 +449,16 @@ namespace MyMoney
         public string GetOrderId(int _cook, TypeWorkOrder _torder, int _martinL = 0)
         {
             string _orderid = "";
-            int cookieId = GetCookieId(_cook, _martinL);
+            int cookieId = GetCookieId(_cook);
             if (cookieId != 0)
                 _orderid = dicAllClaims[GetCookieIdFromWorkType(cookieId, _torder, _martinL)].orderid;
 
             return _orderid;
         }
 
-        public int GetCookieId(int _cook, int _martinL)
+        public int GetCookieId(int _cook)
         {
-            int cookieId = 0;
-            if (_cook < 10000000) cookieId = _cook - 1000000;
-            else if (_cook < 100000000) cookieId = _cook - 10000000;
-            else if (_cook > 100000000) cookieId = _cook - (100000000 * (_martinL + 1));
-            return cookieId;
+            return _cook % 1000000;
         }
 
         public int GetCookieIdFromWorkType(int _cookieId, TypeWorkOrder _torder,  int _martinL = 0)
@@ -457,13 +467,10 @@ namespace MyMoney
             {
                 case TypeWorkOrder.order:
                     return _cookieId + 1000000;
-                    break;
                 case TypeWorkOrder.profit:
-                    return _cookieId + 10000000;
-                    break;
+                    return _cookieId + (10000000 * (_martinL + 1));
                 case TypeWorkOrder.loss:
                     return _cookieId + (100000000 * (_martinL + 1));
-                    break;
                 default:
                     break;
             }
@@ -477,6 +484,28 @@ namespace MyMoney
             else if (_cook < 100000000) t = TypeWorkOrder.profit;
             else if (_cook > 100000000) t = TypeWorkOrder.loss;
             return t;
+        }
+        public TypeWorkOrder GetTypeOrderId(string _orderid)
+        {
+            TypeWorkOrder t = TypeWorkOrder.none;
+            int _cook = GetCookie(_orderid);
+            t = GetTypeCookie(_cook);
+            return t;
+        }
+        public double GetAveragePrice(int _cook, int _martinL, out int _countTrade)
+        {
+            double sumTrade = 0;
+            _countTrade = 0;
+            int cookId = GetCookieId(_cook);
+            foreach (int c in dicAllClaims.Keys)
+            {
+                if (c % 1000000 == cookId && c != _cook && GetTypeCookie(c) != TypeWorkOrder.profit)
+                {
+                    sumTrade += dicAllClaims[c].realPriceEnter;
+                    _countTrade++;
+                }
+            }
+            return sumTrade / _countTrade;
         }
     }
 

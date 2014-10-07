@@ -64,7 +64,7 @@ namespace MyMoney
             sqlconn = new SqlConnection(connectionstr);
             sqlconn.Open();
             if (OnConnected != null)
-                OnConnected("Соединение с базой данных установлено");
+                OnConnected("Соединение с БД установлено.");
         }
 
         public void GetAllInstruments(){
@@ -229,10 +229,10 @@ namespace MyMoney
                 {
                     ParametrsForTest pt;
                     if (dicAllProfitResult.Count < 21)
-                        pt = parametrsList[new Random().Next(0, parametrsList.Count)];
+                        pt = parametrsList[rnd.Next(0, parametrsList.Count - 1)];
                     else
                     {
-                        int o1 = rnd.Next(1, 5);
+                        int o1 = rnd.Next(1, 20);
                         int o2 = rnd.Next(1, 20);
                         if (o1 == o2)
                             o2 += 1;
@@ -270,7 +270,10 @@ namespace MyMoney
                     listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
                     listThreads.Last().IsBackground = true;
                     listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables, plStartCount - parametrsList.Count, mutationCount));
-                    parametrsList.Remove(pt);
+                    lock (lockObj)
+                    {
+                        parametrsList.Remove(pt);
+                    }
                     if (OnChangeProgress != null)
                         OnChangeProgress(0, plStartCount, plStartCount - parametrsList.Count);
                 }

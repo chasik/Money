@@ -313,8 +313,10 @@ namespace MyMoney
             if (di == null)
                 return;
 
-            if (di.actiond == ActionDeal.none)
-                e.Row.Background = new SolidColorBrush(Colors.OldLace);
+            if (di.actiond == ActionDeal.subbuy)
+                e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 220, 222, 255));
+            if (di.actiond == ActionDeal.subsell)
+                e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 255, 205, 219));
             else if (di.actiond == ActionDeal.buy && di.margin >= 0)
                 e.Row.Background = new SolidColorBrush(Colors.SkyBlue);
             else if (di.actiond == ActionDeal.buy && di.margin < 0)

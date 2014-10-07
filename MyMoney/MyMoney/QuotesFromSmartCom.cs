@@ -88,13 +88,36 @@ namespace MyMoney
             scom.ListenPortfolio(workPortfolioName);
             scom.SetMyOrder += scom_SetMyOrder;
 
-            //scom.AddTrade += scom_AddTrade;
-            //scom.UpdateOrder += scom_UpdateOrder;
-            //scom.UpdatePosition += scom_UpdatePosition;
+            scom.AddTrade += scom_AddTrade;
+            scom.UpdateOrder += scom_UpdateOrder;
+            scom.UpdatePosition += scom_UpdatePosition;
+
+            scom.OrderCancelSucceeded += scom_OrderCancelSucceeded;
 
             //scom.OrderFailed += scom_OrderFailed;
             //scom.OrderSucceeded += scom_OrderSucceeded;
             //scom.GetMyOrders(0, workPortfolioName);
+        }
+
+        void scom_OrderCancelSucceeded(string orderid)
+        {
+            TypeWorkOrder t = allClaims.GetTypeOrderId(orderid);
+            ClaimInfo c = allClaims.dicAllClaims[allClaims.GetCookie(orderid)];
+            switch (t)
+            {
+                case TypeWorkOrder.none:
+                    break;
+                case TypeWorkOrder.order:
+                    break;
+                case TypeWorkOrder.profit:
+
+                    break;
+                case TypeWorkOrder.loss:
+                    priceEnterLong = priceEnterShort = 0;
+                    break;
+                default:
+                    break;
+            }
         }
 
         void scom_SetMyOrder(int row, int nrows, string portfolio, string symbol, StOrder_State state, StOrder_Action action, StOrder_Type type, StOrder_Validity validity
@@ -120,52 +143,48 @@ namespace MyMoney
             allClaims.AddTradeNo(cookieTemp, tradeno);
 
             double realP = allClaims.SetRealPrice(cookieTemp, price);
+            int _cidProfit = 0;
+            int _cidLoss = 0;
+
             TypeWorkOrder tWorkOrder = allClaims.GetTypeCookie(cookieTemp);
 
             if (tWorkOrder == TypeWorkOrder.order) // если это вход по индикатору
             {
+                MartinLevel = 0; lotCountTemp = 1;
+                _cidProfit = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.profit);
+                _cidLoss = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.loss);
                 allClaims.ActiveCookie = cookieTemp;
                 if (amount > 0)
                 {
-                    allClaims.ProfitLevel = paramTh.profitLongValue;
-                    allClaims.LossLevel = paramTh.lossLongValue;
-                    messageInf += "priceEnterLong: " + priceEnterLong.ToString() + " new: " + realP.ToString();
-                    scom.PlaceOrder(workPortfolioName, workSymbol
-                        , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                        , realP + paramTh.profitLongValue, lotCount, 0, cookieId + 10000000); // 10 000 000
+                    allClaims.dicAllClaims[cookieTemp].ProfitLevel = paramTh.profitLongValue;
+                    allClaims.dicAllClaims[cookieTemp].LossLevel = paramTh.lossLongValue;
+                    scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                        , realP + paramTh.profitLongValue, lotCount, 0, _cidProfit); // 10 000 000
                     if (MartinLevel < paramTh.martingValue)
                     {
-                        lotCountTemp++;
-                        scom.PlaceOrder(workPortfolioName, workSymbol
-                            , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                            , realP - paramTh.lossLongValue, lotCount, 0, cookieId + 100000000); // 100 000 000
+                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                            , realP - paramTh.lossLongValue, lotCount, 0, _cidLoss); // 100 000 000
                     }
                     else
                     {
 
                     }
-                    messageInf += " realp-losslong: " + (realP - paramTh.lossLongValue).ToString() + " losslong: " + paramTh.lossLongValue.ToString();
                 }
                 if (amount < 0)
                 {
-                    allClaims.ProfitLevel = paramTh.profitShortValue;
-                    allClaims.LossLevel = paramTh.lossShortValue;
-                    messageInf += "priceEnterShort: " + priceEnterShort.ToString() + " new: " + realP.ToString();
-                    scom.PlaceOrder(workPortfolioName, workSymbol
-                        , StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                        , realP - paramTh.profitShortValue, lotCount, 0, cookieId + 10000000); // 10 000 000
+                    allClaims.dicAllClaims[cookieTemp].ProfitLevel = paramTh.profitShortValue;
+                    allClaims.dicAllClaims[cookieTemp].LossLevel = paramTh.lossShortValue;
+                    scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                        , realP - paramTh.profitShortValue, lotCount, 0, _cidProfit); // 10 000 000
                     if (MartinLevel < paramTh.martingValue)
                     {
-                        lotCountTemp++;
-                        scom.PlaceOrder(workPortfolioName, workSymbol
-                            , StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                            , realP + paramTh.lossShortValue, lotCount, 0, cookieId + 100000000); // 100 000 000
+                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                            , realP + paramTh.lossShortValue, lotCount, 0, _cidLoss); // 100 000 000
                     }
                     else
                     {
 
                     }
-                    messageInf += " realp+losshort: " + (realP + paramTh.lossShortValue).ToString() + " lossshort: " + paramTh.lossShortValue.ToString();
                 }
             }
             else if (tWorkOrder == TypeWorkOrder.profit) // если это сработал profit
@@ -175,12 +194,50 @@ namespace MyMoney
             }
             else if (tWorkOrder == TypeWorkOrder.loss) // если это сработал стоп-лосс
             {
+                string idProfitOrder = allClaims.GetOrderId(cookieTemp, TypeWorkOrder.profit, MartinLevel);
+                scom.CancelOrder(workPortfolioName, workSymbol, idProfitOrder);
+
+                lotCountTemp += lotCount;
+                int countTrade = 0;
+                double averagePrice = allClaims.GetAveragePrice(cookieTemp, MartinLevel, out countTrade);
+                int averageDelta = (int)(Math.Abs(realP - averagePrice) / (countTrade + 1) / 10) * 10;
+                int averagePriceRound = (int)((averagePrice + averageDelta) / 10) * 10;
+                int profitlevel = allClaims.dicAllClaims[cookieTemp].ProfitLevel += 2 * averageDelta;
+                int losslevel = allClaims.dicAllClaims[cookieTemp].LossLevel += averageDelta;
                 MartinLevel++;
+                _cidProfit = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.profit, MartinLevel);
+                _cidLoss = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.loss, MartinLevel);
+                messageInf = "realp: " + realP.ToString() + "  averagePrice: " + averagePrice.ToString() + "   averageDelta: " + averageDelta.ToString()
+                    + "   averagePriceRound: " + averagePriceRound.ToString() + "  profitlevel: " + profitlevel.ToString() + "  losslevel: " + losslevel.ToString();
                 if (amount > 0)
                 {
+                    scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                        , averagePriceRound + profitlevel, lotCountTemp, 0, _cidProfit); // 10 000 000
+                    if (MartinLevel < paramTh.martingValue)
+                    {
+                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                            , averagePriceRound - losslevel, lotCount, 0, _cidLoss); // 100 000 000
+                    }
+                    else
+                    {
+                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
+                            , 0, lotCountTemp, averagePriceRound - losslevel, _cidLoss); // 100 000 000
+                    }
                 }
                 if (amount < 0)
                 {
+                    scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                        , averagePriceRound - profitlevel, lotCountTemp, 0, _cidProfit); // 10 000 000
+                    if (MartinLevel < paramTh.martingValue)
+                    {
+                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                            , averagePriceRound + losslevel, lotCount, 0, _cidLoss); // 100 000 000
+                    }
+                    else
+                    {
+                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Stop, StOrder_Validity.StOrder_Validity_Day
+                            , 0, lotCountTemp, averagePriceRound + losslevel, _cidLoss); // 100 000 000
+                    }
                 }
             }
 
@@ -201,7 +258,7 @@ namespace MyMoney
             , double price, double amount, double stop, double filled, DateTime datetime, string orderid, string orderno, int status_mask, int cookie)
         {
             string messageInf = "UpdateOrder: " + cookie + "(" + orderid + " | " + orderno + ")price: " + price.ToString() + " stop: " + stop.ToString() + " filled: " + filled.ToString() + ": ";
-            allClaims.AddOrderIdAndOrderNo(cookie, action, orderid, orderno);
+            allClaims.AddOrderIdAndOrderNo(cookie, amount, action, orderid, orderno);
             switch (state) 
             {
                 case StOrder_State.StOrder_State_Pending:
@@ -314,7 +371,7 @@ namespace MyMoney
                         int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
                             , 0, lotCount, 0, _cid); // 1 000 000
-                        allClaims.Add(_cid, priceEnterLong, StOrder_Action.StOrder_Action_Buy);
+                        allClaims.Add(_cid, priceEnterLong, lotCount, StOrder_Action.StOrder_Action_Buy);
                     }
                     // вход шорт
                     else if (indicator <= -paramTh.indicatorShortValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
@@ -328,7 +385,7 @@ namespace MyMoney
                         int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
                             , 0, lotCount, 0, _cid); // 1 000 000
-                        allClaims.Add(_cid, priceEnterShort, StOrder_Action.StOrder_Action_Sell);
+                        allClaims.Add(_cid, priceEnterShort, lotCount, StOrder_Action.StOrder_Action_Sell);
                     }
                 }
             }
