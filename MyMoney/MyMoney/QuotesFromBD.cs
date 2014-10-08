@@ -228,7 +228,7 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 201)
+                    if (dicAllProfitResult.Count < 301)
                         pt = parametrsList[rnd.Next(0, parametrsList.Count - 1)];
                     else
                     {
