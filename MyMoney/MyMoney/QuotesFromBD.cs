@@ -197,7 +197,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -210,7 +210,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -228,12 +228,12 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 21)
+                    if (dicAllProfitResult.Count < 61)
                         pt = parametrsList[rnd.Next(0, parametrsList.Count - 1)];
                     else
                     {
-                        int o1 = rnd.Next(1, 20);
-                        int o2 = rnd.Next(1, 20);
+                        int o1 = rnd.Next(1, 30);
+                        int o2 = rnd.Next(1, 60);
                         if (o1 == o2)
                             o2 += 1;
                         ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
@@ -250,21 +250,22 @@ namespace MyMoney
                                 else if (o2 == 0 && dicAllProfitResult.ContainsKey(item))
                                     param2 = dicAllProfitResult[item].paramForTest;
                             }
-                        }
-                        ParametrsForTest[] ptForTest = { param1, param2 };
-                        ParametrsForTest ptTemp = new ParametrsForTest(ptForTest);
 
-                        pt = parametrsList.Find(x => x.Compare(x, ptTemp));
-                        while (pt.id == 0)
-                        {
-                            mutationCount++;
+                            ParametrsForTest[] ptForTest = { param1, param2 };
+                            ParametrsForTest ptTemp = new ParametrsForTest(ptForTest);
+
                             pt = parametrsList.Find(x => x.Compare(x, ptTemp));
-                            int mutantParamId = rnd.Next(1, 9);
-                            foreach (diapasonTestParam dp in dicDiapasonParams.Values)
-	                        {
-		                        if (dp.idParam == mutantParamId)
-                                    ptTemp.Mutation(dp);
-	                        }
+                            while (pt.id == 0)
+                            {
+                                mutationCount++;
+                                pt = parametrsList.Find(x => x.Compare(x, ptTemp));
+                                int mutantParamId = rnd.Next(1, 9);
+                                foreach (diapasonTestParam dp in dicDiapasonParams.Values)
+    	                        {
+	    	                        if (dp.idParam == mutantParamId)
+                                        ptTemp.Mutation(dp);
+	                            }
+                            }
                         }
                     }
                     listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
