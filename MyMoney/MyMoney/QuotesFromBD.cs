@@ -300,20 +300,24 @@ namespace MyMoney
             List<int> oldGlassValue = new List<int>();
             List<int> tempListForIndicator = new List<int>();
             SortedDictionary<int, int> glass = new SortedDictionary<int, int>();
-            int priceEnterLong, priceEnterShort;
-            int lotCount = 1;
-            int? bid = 0, ask = 0;
-            Dictionary<string, DataTable> dictionaryDT = (p as ParametrsForTestObj).dictionaryDT;
             ParametrsForTest paramTh = (p as ParametrsForTestObj).paramS;
-            int lossLongValueTemp = paramTh.lossLongValue, profitLongValueTemp = paramTh.profitLongValue;
-            int lossShortValueTemp = paramTh.lossShortValue, profitShortValueTemp = paramTh.profitShortValue;
+            Dictionary<string, DataTable> dictionaryDT = (p as ParametrsForTestObj).dictionaryDT;
+            int priceEnterLong, priceEnterShort;
+
             //TimeSpan timeLong = new TimeSpan();
             //TimeSpan timeShort = new TimeSpan();
             foreach (string k in dictionaryDT.Keys)
             {
+                glass.Clear();
+                oldGlassValue.Clear();
+                tempListForIndicator.Clear();
                 lastDtBadIndicator = new DateTime();
                 priceEnterLong = 0; priceEnterShort = 0;
+                int lotCount = 1;
+                int? bid = 0, ask = 0;
                 ResultOneThread resThTemp = new ResultOneThread();
+                int lossLongValueTemp = paramTh.lossLongValue, profitLongValueTemp = paramTh.profitLongValue;
+                int lossShortValueTemp = paramTh.lossShortValue, profitShortValueTemp = paramTh.profitShortValue;
                 resThTemp.shortName = k;
                 DealInfo dealTemp = null;
                 DataTable dt = dictionaryDT[k];//.Copy();
