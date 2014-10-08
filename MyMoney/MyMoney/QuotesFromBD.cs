@@ -228,12 +228,12 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 61)
+                    if (dicAllProfitResult.Count < 201)
                         pt = parametrsList[rnd.Next(0, parametrsList.Count - 1)];
                     else
                     {
-                        int o1 = rnd.Next(1, 30);
-                        int o2 = rnd.Next(1, 60);
+                        int o1 = rnd.Next(1, 150);
+                        int o2 = rnd.Next(1, 300);
                         if (o1 == o2)
                             o2 += 1;
                         ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
