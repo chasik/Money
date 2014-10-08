@@ -338,8 +338,8 @@ namespace MyMoney
             ResultBestProfitFactor compareObj = j as ResultBestProfitFactor;
             if (this.idparam == compareObj.idparam || (this.profitFactor == compareObj.profitFactor && this.margin == compareObj.margin && this.matExp == compareObj.matExp))
                 return 0;
-            if (this.matExp > compareObj.matExp)
-            //if (this.margin > compareObj.margin || this.matExp > compareObj.matExp)
+            //if (this.matExp > compareObj.matExp)
+            if (this.margin > compareObj.margin || this.matExp > compareObj.matExp)
             //if (this.margin > compareObj.margin || this.matExp > compareObj.matExp || (this.profitFactor > compareObj.profitFactor && this.profitFactor != 999))
                 return -1;
             else
