@@ -110,7 +110,7 @@ namespace MyMoney
                 case TypeWorkOrder.order:
                     break;
                 case TypeWorkOrder.profit:
-                    if (MartinLevel >= paramTh.martingValue)
+                    if (MartinLevel > paramTh.martingValue)
                     {
                         priceEnterLong = priceEnterShort = 0;
                     }

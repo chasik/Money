@@ -224,6 +224,7 @@ namespace MyMoney
         public float margin { get; set; }
         public float delt { get; set; }
         public int indicValue { get; set; }
+        public float aggreeIndV { get; set; }
         public float priceEnter { get; set; }
         public float priceExit { 
             get {

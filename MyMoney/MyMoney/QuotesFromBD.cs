@@ -197,7 +197,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(19, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -210,7 +210,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(19, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -254,18 +254,17 @@ namespace MyMoney
                             ParametrsForTest[] ptForTest = { param1, param2 };
                             ParametrsForTest ptTemp = new ParametrsForTest(ptForTest);
 
-                            pt = parametrsList.Find(x => x.Compare(x, ptTemp));
-                            while (pt.id == 0)
+                            do
                             {
                                 mutationCount++;
                                 pt = parametrsList.Find(x => x.Compare(x, ptTemp));
                                 int mutantParamId = rnd.Next(1, 9);
                                 foreach (diapasonTestParam dp in dicDiapasonParams.Values)
-    	                        {
-	    	                        if (dp.idParam == mutantParamId)
+                                {
+                                    if (dp.idParam == mutantParamId)
                                         ptTemp.Mutation(dp);
-	                            }
-                            }
+                                }
+                            } while (pt.id == 0);
                         }
                     }
                     listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
@@ -303,11 +302,13 @@ namespace MyMoney
             ParametrsForTest paramTh = (p as ParametrsForTestObj).paramS;
             Dictionary<string, DataTable> dictionaryDT = (p as ParametrsForTestObj).dictionaryDT;
             int priceEnterLong, priceEnterShort;
+            //IndicatorValuesAggregate aggreValues = new IndicatorValuesAggregate(new TimeSpan(TimeSpan.TicksPerMillisecond * 100)); // 100 мс
 
             //TimeSpan timeLong = new TimeSpan();
             //TimeSpan timeShort = new TimeSpan();
             foreach (string k in dictionaryDT.Keys)
             {
+                //aggreValues.Reset();
                 glass.Clear();
                 oldGlassValue.Clear();
                 tempListForIndicator.Clear();
@@ -345,6 +346,7 @@ namespace MyMoney
                                     resThTemp.profit += (priceEnterShort - (int)ask) * lotCount;
                                     priceEnterShort = 0;
                                     dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)ask);
+                                    //dealTemp.aggreeIndV = aggreValues.ResultAggregate;
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                 }
                                 // лосс короткая
@@ -364,6 +366,7 @@ namespace MyMoney
                                         if (dealTemp.lstSubDeal.Count > 0)
                                             dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
                                         dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, ActionDeal.subsell, (float)priceEnterShort, (float)ask, (float)delt, indicator, (float)lossShortValueTemp, (float)profitShortValueTemp));
+                                        //dealTemp.lstSubDeal.Last().aggreeIndV = aggreValues.ResultAggregate;
                                     }
                                     else
                                     {
@@ -371,6 +374,7 @@ namespace MyMoney
                                         int g = ((int)ask - priceEnterShort) * lotCount;
                                         resThTemp.loss += g;
                                         dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)ask);
+                                        //dealTemp.aggreeIndV = aggreValues.ResultAggregate;
                                         resThTemp.lstAllDeals.Add(dealTemp);
                                         priceEnterShort = 0;
                                         lotCount = 1;
@@ -390,6 +394,7 @@ namespace MyMoney
                                     resThTemp.profit += ((int)bid - priceEnterLong) * lotCount;
                                     priceEnterLong = 0;
                                     dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)bid);
+                                    //dealTemp.aggreeIndV = aggreValues.ResultAggregate;
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                 }
                                 // лосс длиная
@@ -409,6 +414,7 @@ namespace MyMoney
                                         if (dealTemp.lstSubDeal.Count > 0)
                                             dealTemp.lstSubDeal.Last().dtDealLength = dr.Field<DateTime>("dtserver").TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
                                         dealTemp.lstSubDeal.Add(new SubDealInfo(dr.Field<DateTime>("dtserver"), lotCount, ActionDeal.subbuy, (float)priceEnterLong, (float)bid, (float)delt, indicator, (float)lossLongValueTemp, (float)profitLongValueTemp));
+                                        //dealTemp.lstSubDeal.Last().aggreeIndV = aggreValues.ResultAggregate;
                                     }
                                     else
                                     {
@@ -416,6 +422,7 @@ namespace MyMoney
                                         int g = (priceEnterLong - (int)bid) * lotCount;
                                         resThTemp.loss += g;
                                         dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)bid);
+                                        //dealTemp.aggreeIndV = aggreValues.ResultAggregate;
                                         resThTemp.lstAllDeals.Add(dealTemp);
                                         priceEnterLong = 0;
                                         lotCount = 1;
@@ -493,6 +500,7 @@ namespace MyMoney
                                 {
                                     if (priceEnterLong == 0 && priceEnterShort == 0 && ddt.TotalMilliseconds > paramTh.delay)
                                     {
+                                        //aggreValues.Reset();
                                         lastDtBadIndicator = dr.Field<DateTime>("dtserver");
                                         lossLongValueTemp = paramTh.lossLongValue;
                                         profitLongValueTemp = paramTh.profitLongValue;
@@ -506,6 +514,7 @@ namespace MyMoney
                                 {
                                     if (priceEnterLong == 0 && priceEnterShort == 0 && ddt.TotalMilliseconds > paramTh.delay)
                                     {
+                                        //aggreValues.Reset();
                                         lastDtBadIndicator = dr.Field<DateTime>("dtserver");
                                         lossShortValueTemp = paramTh.lossShortValue;
                                         profitShortValueTemp = paramTh.profitShortValue;
@@ -516,6 +525,8 @@ namespace MyMoney
                                 }
                                 if (indicator < paramTh.indicatorLongValue && indicator > -paramTh.indicatorShortValue)
                                     lastDtBadIndicator = dr.Field<DateTime>("dtserver");
+                                //if (priceEnterLong != 0 || priceEnterShort != 0)
+                                //    aggreValues.AddIndicatorValueForAggregate(dr.Field<DateTime>("dtserver"), indicator);
                             }
                         }
 
@@ -542,6 +553,7 @@ namespace MyMoney
                                 resThTemp.loss += (priceEnterLong - (int)bid) * lotCount;
                             }
                             dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)bid);
+                            //dealTemp.aggreeIndV = aggreValues.ResultAggregate;
                             resThTemp.lstAllDeals.Add(dealTemp);
                             priceEnterLong = 0;
                             lotCount = 1;
@@ -559,6 +571,7 @@ namespace MyMoney
                                 resThTemp.loss += ((int)ask - priceEnterShort) * lotCount;
                             }
                             dealTemp.DoExit(dr.Field<DateTime>("dtserver"), (float)ask);
+                            //dealTemp.aggreeIndV = aggreValues.ResultAggregate;
                             resThTemp.lstAllDeals.Add(dealTemp);
                             priceEnterShort = 0;
                             lotCount = 1;
