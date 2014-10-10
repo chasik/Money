@@ -197,7 +197,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(19, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -210,7 +210,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(19, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -471,10 +471,10 @@ namespace MyMoney
                                 {
                                     sumlong += glass.ContainsKey((int)ask + i * 10)
                                         && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
-                                        ? glass[(int)ask + i * 10] : (int)(averageGlass * paramTh.averageValue);
+                                        ? glass[(int)ask + i * 10] : averageGlass;
                                     sumshort += glass.ContainsKey((int)bid - i * 10)
                                         && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
-                                        ? glass[(int)bid - i * 10] : (int)(averageGlass * paramTh.averageValue);
+                                        ? glass[(int)bid - i * 10] : averageGlass;
                                     if (sumlong + sumshort == 0) 
                                         continue;
                                     tempListForIndicator.Add((int) (sumlong - sumshort) * 100 / (sumlong + sumshort));
