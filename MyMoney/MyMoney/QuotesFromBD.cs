@@ -22,7 +22,7 @@ namespace MyMoney
         public DataTable dtAllTables { get; set; }
         public Dictionary<string, int> dictInstruments;
         public Dictionary<string, tableInfo> dictAllTables;
-        public Dictionary<string, DataTable> dicSelectedDataTables;
+        public Dictionary<string, DataTableWithCalcValues> dicSelectedDataTables;
         public List<string> selectedSessionList;
 
         public SortedDictionary<ResultBestProfitFactor, ResultOneThreadSumm> dicAllProfitResult = new SortedDictionary<ResultBestProfitFactor, ResultOneThreadSumm>();
@@ -47,7 +47,7 @@ namespace MyMoney
             dtAllTables = new DataTable();
             dictInstruments = new Dictionary<string, int>();
             dictAllTables = new Dictionary<string, tableInfo>();
-            dicSelectedDataTables = new Dictionary<string, DataTable>();
+            dicSelectedDataTables = new Dictionary<string, DataTableWithCalcValues>();
             selectedSessionList = new List<string>();
             dicDiapasonParams = new Dictionary<string, diapasonTestParam>();
             parametrsList = new List<ParametrsForTest>();
@@ -216,7 +216,7 @@ namespace MyMoney
             ";
                 DataTable dt = new DataTable();
                 dt.Load(sqlcom.ExecuteReader());
-                dicSelectedDataTables.Add(tabNam, dt);
+                dicSelectedDataTables.Add(tabNam, new DataTableWithCalcValues(dt));
             });
             if (OnChangeProgress != null)
                 OnChangeProgress(0, 0, 0, "", false);
@@ -228,12 +228,12 @@ namespace MyMoney
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
                     ParametrsForTest pt;
-                    if (dicAllProfitResult.Count < 301)
+                    if (dicAllProfitResult.Count < 1501)
                         pt = parametrsList[rnd.Next(0, parametrsList.Count - 1)];
                     else
                     {
-                        int o1 = rnd.Next(1, 150);
-                        int o2 = rnd.Next(1, 300);
+                        int o1 = rnd.Next(1, 750);
+                        int o2 = rnd.Next(1, 1500);
                         if (o1 == o2)
                             o2 += 1;
                         ParametrsForTest param1 = parametrsList[new Random().Next(0, parametrsList.Count - 1)];
@@ -300,15 +300,33 @@ namespace MyMoney
             List<int> tempListForIndicator = new List<int>();
             SortedDictionary<int, int> glass = new SortedDictionary<int, int>();
             ParametrsForTest paramTh = (p as ParametrsForTestObj).paramS;
-            Dictionary<string, DataTable> dictionaryDT = (p as ParametrsForTestObj).dictionaryDT;
+            Dictionary<string, DataTableWithCalcValues> dictionaryDT = (p as ParametrsForTestObj).dictionaryDT;
             int priceEnterLong, priceEnterShort;
             //IndicatorValuesAggregate aggreValues = new IndicatorValuesAggregate(new TimeSpan(TimeSpan.TicksPerMillisecond * 100)); // 100 мс
 
             //TimeSpan timeLong = new TimeSpan();
             //TimeSpan timeShort = new TimeSpan();
+            IndicatorValues calculatedIndidcator;
+            bool isCalculatedIndicator;
             foreach (string k in dictionaryDT.Keys)
             {
                 //aggreValues.Reset();
+                lock (lockObj)
+                {
+                    isCalculatedIndicator = true;
+                    IndicatorValues tempIval = new IndicatorValues(paramTh, ModeIndicator.glassInterest);
+                    calculatedIndidcator = (p as ParametrsForTestObj).dictionaryDT[k].indicatorvalues.Find(x => x.Compare(x, tempIval));
+
+                    if (calculatedIndidcator == null)
+                    {
+                        isCalculatedIndicator = false;
+                        (p as ParametrsForTestObj).dictionaryDT[k].indicatorvalues.Add(tempIval);
+                        calculatedIndidcator = (p as ParametrsForTestObj).dictionaryDT[k].indicatorvalues.Find(x => x.Compare(x, tempIval));
+                    }
+                }
+                while (isCalculatedIndicator && !calculatedIndidcator.CalculatedFinish) // ждем, пока другой поток завершит рассчет и затем начинаем использовать прощитанные значения
+                { }
+
                 glass.Clear();
                 oldGlassValue.Clear();
                 tempListForIndicator.Clear();
@@ -321,7 +339,7 @@ namespace MyMoney
                 int lossShortValueTemp = paramTh.lossShortValue, profitShortValueTemp = paramTh.profitShortValue;
                 resThTemp.shortName = k;
                 DealInfo dealTemp = null;
-                DataTable dt = dictionaryDT[k];//.Copy();
+                DataTable dt = dictionaryDT[k].datatable;//.Copy();
                 int indicator = 0;
                 int iterationNum = 0;
                 int? pricetick = 0;
@@ -358,7 +376,7 @@ namespace MyMoney
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
 
-                                        //profitShortValueTemp += delt; // 2 * delt;
+                                        profitShortValueTemp += 2 * delt;
                                         lossShortValueTemp += delt;
 
                                         priceEnterShort = priceEnterShort + (int)((int)ask - priceEnterShort) / lotCount;
@@ -406,7 +424,7 @@ namespace MyMoney
                                         dealTemp.lotsCount = lotCount;
                                         int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
-                                        //profitLongValueTemp += delt; // 2 * delt;
+                                        profitLongValueTemp += 2 * delt;
                                         lossLongValueTemp += delt;
 
                                         priceEnterLong = priceEnterLong - (int)(priceEnterLong - (int)bid) / lotCount;
@@ -443,48 +461,62 @@ namespace MyMoney
                             glass[updatepricegl] = updatevolumegl;
                             if (glass.Count > 40)
                             {
-                                int sumGlass = 0;
-                                // старый вариант работы стакана (до использования SortedDictionary)
-                                /*oldGlassValue.Clear();
-                                foreach (int pkey in glass.Keys)
+                                DateTime dttemp = dr.Field<DateTime>("dtserver");
+                                if (!isCalculatedIndicator)
                                 {
-                                    if (pkey > ask + paramTh.glassHeight * 10 || pkey < bid - paramTh.glassHeight * 10)
-                                        oldGlassValue.Add(pkey);
-                                    else if (pkey >= ask || pkey <= bid)
-                                        sumGlass += glass[pkey];
-                                }
-                                // удаляем из стакана значения, выпадающие за пределы глубины стакана
-                                oldGlassValue.ForEach((int i) => { glass.Remove(i); });*/
+                                    int sumGlass = 0;
+                                    // старый вариант работы стакана (до использования SortedDictionary)
+                                    /*oldGlassValue.Clear();
+                                    foreach (int pkey in glass.Keys)
+                                    {
+                                        if (pkey > ask + paramTh.glassHeight * 10 || pkey < bid - paramTh.glassHeight * 10)
+                                            oldGlassValue.Add(pkey);
+                                        else if (pkey >= ask || pkey <= bid)
+                                            sumGlass += glass[pkey];
+                                    }
+                                    // удаляем из стакана значения, выпадающие за пределы глубины стакана
+                                    oldGlassValue.ForEach((int i) => { glass.Remove(i); });*/
 
-                                // среднее значение по стакану
-                                for (int i = 0; i < paramTh.glassHeight; i++)
-                                {
-                                    sumGlass += glass.ContainsKey((int)ask + i * 10) ? glass[(int)ask + i * 10] : 0;
-                                    sumGlass += glass.ContainsKey((int)bid - i * 10) ? glass[(int)bid - i * 10] : 0;
-                                }
-                                int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
-                                int sumlong = 0, sumshort = 0;
+                                    // среднее значение по стакану
+                                    for (int i = 0; i < paramTh.glassHeight; i++)
+                                    {
+                                        sumGlass += glass.ContainsKey((int)ask + i * 10) ? glass[(int)ask + i * 10] : 0;
+                                        sumGlass += glass.ContainsKey((int)bid - i * 10) ? glass[(int)bid - i * 10] : 0;
+                                    }
+                                    int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
+                                    int sumlong = 0, sumshort = 0;
 
-                                tempListForIndicator.Clear();
-                                // новая версия, более взвешенное значение (как год назад)
-                                for (int i = 0; i < paramTh.glassHeight; i++)
-                                {
-                                    sumlong += glass.ContainsKey((int)ask + i * 10)
-                                        && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
-                                        ? glass[(int)ask + i * 10] : averageGlass;
-                                    sumshort += glass.ContainsKey((int)bid - i * 10)
-                                        && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
-                                        ? glass[(int)bid - i * 10] : averageGlass;
-                                    if (sumlong + sumshort == 0) 
-                                        continue;
-                                    tempListForIndicator.Add((int) (sumlong - sumshort) * 100 / (sumlong + sumshort));
+                                    tempListForIndicator.Clear();
+                                    // новая версия, более взвешенное значение (как год назад)
+                                    for (int i = 0; i < paramTh.glassHeight; i++)
+                                    {
+                                        sumlong += glass.ContainsKey((int)ask + i * 10)
+                                            && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
+                                            ? glass[(int)ask + i * 10] : averageGlass;
+                                        sumshort += glass.ContainsKey((int)bid - i * 10)
+                                            && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
+                                            ? glass[(int)bid - i * 10] : averageGlass;
+                                        if (sumlong + sumshort == 0)
+                                            continue;
+                                        tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
+                                    }
+                                    int s = 0;
+                                    foreach (int i in tempListForIndicator)
+                                    {
+                                        s += i;
+                                    }
+                                    indicator = (int)s / paramTh.glassHeight;
+                                    lock(lockObj)
+                                    {
+                                        if (!calculatedIndidcator.values.ContainsKey(dttemp))
+                                            calculatedIndidcator.values.Add(dttemp, indicator);
+                                    }
                                 }
-                                int s = 0;
-                                foreach (int i in tempListForIndicator)
-                                {
-                                    s += i;
-                                }
-                                indicator = (int) s / paramTh.glassHeight;
+                                else
+                                    lock (lockObj)
+                                    {
+                                        indicator = (int)calculatedIndidcator.values[dttemp];
+                                    }
                                 // старая версия индикатора
                                 /*foreach (int pkey in glass.Keys)
                                 {
@@ -580,7 +612,13 @@ namespace MyMoney
                         #endregion
                     }
                     #endregion торговля
+                } // конец цикла по строка DataTable
+                lock (lockObj)
+                {
+                    if (!calculatedIndidcator.CalculatedFinish)
+                        calculatedIndidcator.CalculatedFinish = true;
                 }
+
                 resThTemp.margin = resThTemp.profit - resThTemp.loss;
                 resThTemp.profitFac = (float)resThTemp.profit / (float)resThTemp.loss;
                 // математическое ожидание

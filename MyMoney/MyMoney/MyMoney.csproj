@@ -55,6 +55,7 @@
     </ApplicationDefinition>
     <Compile Include="AdditionalTypes.cs" />
     <Compile Include="IDataSource.cs" />
+    <Compile Include="IndicatorValues.cs" />
     <Compile Include="IndicatorValuesAggregate.cs" />
     <Compile Include="QuotesFromBD.cs" />
     <Compile Include="QuotesFromSmartCom.cs" />

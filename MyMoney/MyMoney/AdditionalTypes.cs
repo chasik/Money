@@ -147,7 +147,7 @@ namespace MyMoney
 
     public class ParametrsForTestObj
     {
-        public ParametrsForTestObj(ParametrsForTest _p, Dictionary<string, DataTable> _dictionaryDT, int _numThread = 0, int _mutationCount = 0)
+        public ParametrsForTestObj(ParametrsForTest _p, Dictionary<string, DataTableWithCalcValues> _dictionaryDT, int _numThread = 0, int _mutationCount = 0)
         {
             paramS = _p;
             dictionaryDT = _dictionaryDT;
@@ -156,7 +156,7 @@ namespace MyMoney
         }
         public int numThread;
         public ParametrsForTest paramS;
-        public Dictionary<string, DataTable> dictionaryDT;
+        public Dictionary<string, DataTableWithCalcValues> dictionaryDT;
         public int mutationCount;
     }
 

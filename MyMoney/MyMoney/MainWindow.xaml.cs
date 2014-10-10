@@ -351,7 +351,7 @@ namespace MyMoney
             SubDealInfo sd = (obj as SubDealInfo);
             DateTime dt1 = sd.datetimeEnter.Subtract(new TimeSpan(0, 3, 0));
             DateTime dt2 = sd.datetimeExit.Add(new TimeSpan(0, 3, 0));
-            tradeGraphVisual.drData = dsourceDB.dicSelectedDataTables[sd.shortName]
+            tradeGraphVisual.drData = dsourceDB.dicSelectedDataTables[sd.shortName].datatable
                 .Select("dtserver > '" + dt1.ToString()
                          + "' AND dtserver <'" + dt2.ToString() + "' AND priceTick IS NOT NULL"
                        );
@@ -368,6 +368,5 @@ namespace MyMoney
             else if (r.profitFac < 1)
                 e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 0xED, 0x99, 0xD5));
         }
-
     }
 }
