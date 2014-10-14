@@ -140,7 +140,7 @@ namespace MyMoney
         void scom_AddTrade(string portfolio, string symbol, string orderid, double price, double amount, DateTime datetime, string tradeno)
         {
             
-            string messageInf = "AddTrade: " + orderid + " | " + tradeno + ": ";
+            string messageInf = " AddTrade: (" + orderid + " | " + tradeno + ") amount: " + amount.ToString() + " ";
             int cookieTemp = allClaims.GetCookie(orderid);
             if (cookieTemp == 0)
                 cookieTemp = allClaims.GetCookie(tradeno);
@@ -158,7 +158,13 @@ namespace MyMoney
 
             TypeWorkOrder tWorkOrder = allClaims.GetTypeCookie(cookieTemp);
 
-            if (tWorkOrder == TypeWorkOrder.order) // если это вход по индикатору
+            if (tWorkOrder == TypeWorkOrder.none) 
+            {
+                MartinLevel++;
+                string idProfitOrder = allClaims.GetOrderId(cookieTemp, TypeWorkOrder.profit, MartinLevel);
+                scom.CancelOrder(workPortfolioName, workSymbol, idProfitOrder);
+            }
+            else if (tWorkOrder == TypeWorkOrder.order) // если это вход по индикатору
             {
                 MartinLevel = 0; lotCountTemp = 1;
                 _cidProfit = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.profit);
@@ -170,15 +176,9 @@ namespace MyMoney
                     allClaims.dicAllClaims[cookieTemp].LossLevel = paramTh.lossLongValue;
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , realP + paramTh.profitLongValue, lotCount, 0, _cidProfit); // 10 000 000
-                    if (MartinLevel < paramTh.martingValue)
-                    {
-                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                            , realP - paramTh.lossLongValue, lotCount, 0, _cidLoss); // 100 000 000
-                    }
-                    else
-                    {
 
-                    }
+                    scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                            , realP - paramTh.lossLongValue, lotCount, 0, _cidLoss); // 100 000 000
                 }
                 if (amount < 0)
                 {
@@ -186,15 +186,9 @@ namespace MyMoney
                     allClaims.dicAllClaims[cookieTemp].LossLevel = paramTh.lossShortValue;
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , realP - paramTh.profitShortValue, lotCount, 0, _cidProfit); // 10 000 000
-                    if (MartinLevel < paramTh.martingValue)
-                    {
-                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                            , realP + paramTh.lossShortValue, lotCount, 0, _cidLoss); // 100 000 000
-                    }
-                    else
-                    {
 
-                    }
+                    scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
+                            , realP + paramTh.lossShortValue, lotCount, 0, _cidLoss); // 100 000 000
                 }
             }
             else if (tWorkOrder == TypeWorkOrder.profit) // если это сработал profit
@@ -223,7 +217,7 @@ namespace MyMoney
                 {
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , averagePriceRound + profitlevel, lotCountTemp, 0, _cidProfit); // 10 000 000
-                    if (MartinLevel < paramTh.martingValue)
+                    if (MartinLevel <= paramTh.martingValue)
                     {
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                             , averagePriceRound - losslevel, lotCount, 0, _cidLoss); // 100 000 000
@@ -238,7 +232,7 @@ namespace MyMoney
                 {
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , averagePriceRound - profitlevel, lotCountTemp, 0, _cidProfit); // 10 000 000
-                    if (MartinLevel < paramTh.martingValue)
+                    if (MartinLevel <= paramTh.martingValue)
                     {
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                             , averagePriceRound + losslevel, lotCount, 0, _cidLoss); // 100 000 000
@@ -252,44 +246,44 @@ namespace MyMoney
             }
 
             if (OnInformation != null)
-                OnInformation(messageInf + " (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")");
+                OnInformation("(" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")" + messageInf);
         }
 
         void scom_UpdatePosition(string portfolio, string symbol, double avprice, double amount, double planned)
         {
-            string messageInf = "\tUpdatePosition: " + symbol + " avprice: " + avprice.ToString() + " amonunt: " + amount.ToString() + " planned:" + planned.ToString()
-                + " (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")";
-            if (OnInformation != null)
-                OnInformation(messageInf);
+            //string messageInf = " (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")" 
+            //    + "\tUpdatePosition: " + symbol + " avprice: " + avprice.ToString() + " amonunt: " + amount.ToString() + " planned:" + planned.ToString();
+            //if (OnInformation != null)
+            //    OnInformation(messageInf);
         }
 
         void scom_UpdateOrder(string portfolio, string symbol
             , StOrder_State state, StOrder_Action action, StOrder_Type type, StOrder_Validity validity
             , double price, double amount, double stop, double filled, DateTime datetime, string orderid, string orderno, int status_mask, int cookie)
         {
-            string messageInf = "UpdateOrder: " + cookie + "(" + orderid + " | " + orderno + ")price: " + price.ToString() + " stop: " + stop.ToString() + " filled: " + filled.ToString() + ": ";
+            string messageInf = "(" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")" 
+                + "\tUpdateOrder(" + action.ToString() + "): " + cookie + "(" + orderid + " | " + orderno + ") price: " + price.ToString() + " stop: " + stop.ToString() + " filled: " + filled.ToString() + ": ";
             allClaims.AddOrderIdAndOrderNo(cookie, amount, action, orderid, orderno);
             switch (state) 
             {
                 case StOrder_State.StOrder_State_Pending:
-                    messageInf += "Размещен у брокера (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.CreateSpecificCulture("ru-RU")) + ")";
+                    messageInf += "Размещен у брокера";
                     break;
                 case StOrder_State.StOrder_State_Open:
-                    messageInf += "Выведен на рынок (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")";
+                    messageInf += "Выведен на рынок";
                     break;
                 case StOrder_State.StOrder_State_Cancel:
-                    messageInf += "Отменён (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")";
+                    messageInf += "Отменён";
                     break;
                 case StOrder_State.StOrder_State_Filled:
-                    messageInf += "Исполнен (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")";
+                    messageInf += "Исполнен";
                     break;
                 case StOrder_State.StOrder_State_Partial:
-                    messageInf += "Исполнен частично (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")";
+                    messageInf += "Исполнен частично";
                     break;
                 default:
                     break;
             }
-
             if (OnInformation != null)
                 OnInformation(messageInf);
         }
@@ -336,19 +330,23 @@ namespace MyMoney
                         sumGlass += glass.ContainsKey(lastAsk + i * 10) ? (int) glass[lastAsk + i * 10] : 0;
                         sumGlass += glass.ContainsKey(lastBid - i * 10) ? (int) glass[lastBid - i * 10] : 0;
                     }
-                    int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
+                    //int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                     int sumlong = 0, sumshort = 0;
 
                     tempListForIndicator.Clear();
                     // новая версия, более взвешенное значение (как год назад)
                     for (int i = 0; i < paramTh.glassHeight; i++)
                     {
-                        sumlong += glass.ContainsKey((int)lastAsk + i * 10)
+                        if (glass.ContainsKey((int)lastAsk + i * 10))
+                            sumlong += (int)glass[(int)lastAsk + i * 10]; // glass.ContainsKey((int)ask + i * 10)
+                        if (glass.ContainsKey((int)lastBid - i * 10))
+                            sumshort += (int)glass[(int)lastBid - i * 10]; 
+                        /*sumlong += glass.ContainsKey((int)lastAsk + i * 10)
                             && glass[(int)lastAsk + i * 10] < averageGlass * paramTh.averageValue
                             ? (int)glass[(int)lastAsk + i * 10] : averageGlass;
                         sumshort += glass.ContainsKey((int)lastBid - i * 10)
                             && glass[(int)lastBid - i * 10] < averageGlass * paramTh.averageValue
-                            ? (int)glass[(int)lastBid - i * 10] : averageGlass;
+                            ? (int)glass[(int)lastBid - i * 10] : averageGlass;*/
                         if (sumlong + sumshort == 0)
                             continue;
                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
@@ -370,7 +368,7 @@ namespace MyMoney
                         OnChangeIndicator(indicatorTemp.ToString());
                     indicator = indicatorTemp;
                     // вход лонг
-                    if (indicator >= paramTh.indicatorLongValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
+                    if (indicator <= -paramTh.indicatorLongValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
                     {
                         lossLongValueTemp = paramTh.lossLongValue;
                         profitLongValueTemp = paramTh.profitLongValue;
@@ -384,7 +382,7 @@ namespace MyMoney
                         allClaims.Add(_cid, priceEnterLong, lotCount, StOrder_Action.StOrder_Action_Buy);
                     }
                     // вход шорт
-                    else if (indicator <= -paramTh.indicatorShortValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
+                    else if (indicator >= paramTh.indicatorShortValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
                     {
                         lossShortValueTemp = paramTh.lossShortValue;
                         profitShortValueTemp = paramTh.profitShortValue;

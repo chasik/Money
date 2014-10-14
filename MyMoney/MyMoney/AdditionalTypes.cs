@@ -483,7 +483,7 @@ namespace MyMoney
         public TypeWorkOrder GetTypeCookie(int _cook)
         {
             TypeWorkOrder t = TypeWorkOrder.none;
-            if (_cook < 10000000) t = TypeWorkOrder.order;
+            if (_cook < 10000000 && _cook > 10) t = TypeWorkOrder.order;
             else if (_cook < 100000000) t = TypeWorkOrder.profit;
             else if (_cook > 100000000) t = TypeWorkOrder.loss;
             return t;

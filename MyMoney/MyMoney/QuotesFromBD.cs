@@ -197,7 +197,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(19, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -210,13 +210,16 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(19, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
-                DataTable dt = new DataTable();
-                dt.Load(sqlcom.ExecuteReader());
-                dicSelectedDataTables.Add(tabNam, new DataTableWithCalcValues(dt));
+                if (!dicSelectedDataTables.ContainsKey(tabNam))
+                {
+                    DataTable dt = new DataTable();
+                    dt.Load(sqlcom.ExecuteReader());
+                    dicSelectedDataTables.Add(tabNam, new DataTableWithCalcValues(dt));
+                }
             });
             if (OnChangeProgress != null)
                 OnChangeProgress(0, 0, 0, "", false);
@@ -349,13 +352,13 @@ namespace MyMoney
                 foreach (DataRow dr in dt.Rows)
                 {
                     #region торговля
+                    
                     // совершена сделка
-                    if (!dr.IsNull("priceTick"))// && pricetick != (int?)dr.Field<float?>("priceTick")) // вторая часть условия - если перед этим была таже цена - пропускаем
+                    if (!dr.IsNull("priceTick") && (pricetick = (int?)dr.Field<float?>("priceTick")) > 0)// && pricetick != (int?)dr.Field<float?>("priceTick")) // вторая часть условия - если перед этим была таже цена - пропускаем
                     {
-                        pricetick = (int?)dr.Field<float?>("priceTick");
                         actiontick = dr.Field<byte?>("idaction");
                         if (actiontick == 1) ask = pricetick;
-                        if (actiontick == 2) bid = pricetick;
+                        else if (actiontick == 2) bid = pricetick;
                         if (priceEnterShort != 0 && actiontick == 1)
                         {
                             // профит короткая
@@ -476,24 +479,27 @@ namespace MyMoney
                                     oldGlassValue.ForEach((int i) => { glass.Remove(i); });*/
 
                                     // среднее значение по стакану
+                                    
                                     for (int i = 0; i < paramTh.glassHeight; i++)
                                     {
                                         sumGlass += glass.ContainsKey((int)ask + i * 10) ? glass[(int)ask + i * 10] : 0;
                                         sumGlass += glass.ContainsKey((int)bid - i * 10) ? glass[(int)bid - i * 10] : 0;
                                     }
-                                    int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
+                                    /*int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);*/
                                     int sumlong = 0, sumshort = 0;
 
                                     tempListForIndicator.Clear();
                                     // новая версия, более взвешенное значение (как год назад)
                                     for (int i = 0; i < paramTh.glassHeight; i++)
                                     {
-                                        sumlong += glass.ContainsKey((int)ask + i * 10)
-                                            && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
-                                            ? glass[(int)ask + i * 10] : averageGlass;
-                                        sumshort += glass.ContainsKey((int)bid - i * 10)
-                                            && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
-                                            ? glass[(int)bid - i * 10] : averageGlass;
+                                        if (glass.ContainsKey((int)ask + i * 10))
+                                            sumlong += glass[(int)ask + i * 10]; // glass.ContainsKey((int)ask + i * 10)
+                                         //   && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
+                                         //   ? glass[(int)ask + i * 10] : averageGlass;
+                                        if (glass.ContainsKey((int)bid - i * 10))
+                                            sumshort += glass[(int)bid - i * 10]; // glass.ContainsKey((int)bid - i * 10)
+                                         //   && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
+                                         //   ? glass[(int)bid - i * 10] : averageGlass;
                                         if (sumlong + sumshort == 0)
                                             continue;
                                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
