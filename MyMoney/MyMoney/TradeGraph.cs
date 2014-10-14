@@ -103,8 +103,8 @@ namespace MyMoney
                     MinMaxValue mm = this.GetMinMaxValues();
                     double widthBar = (graphC.ActualWidth - widthYArea) / Bars.Count / 1.3;
                     double pixelInPunkt = (mm.MaxValue - mm.MinValue) / (graphC.ActualHeight - heightXArea);
-                    if (widthBar > 10)
-                        widthBar = 10;
+                    if (widthBar > 8)
+                        widthBar = 8;
 
                     ClearWorkAreaGraph(pixelInPunkt);
 
@@ -180,7 +180,7 @@ namespace MyMoney
             {
                 Line horizontLine = new Line();
                 horizontLine.X1 = widthYArea;
-                horizontLine.X2 = graphC.ActualWidth - widthYArea;
+                horizontLine.X2 = graphC.ActualWidth;// -widthYArea;
                 horizontLine.Y1 = horizontLine.Y2 = (mm.MaxValue - y) * graphC.ActualHeight / mm.DeltaValue;
                 horizontLine.Stroke = Brushes.Black;
                 horizontLine.StrokeThickness = 1;

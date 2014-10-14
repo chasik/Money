@@ -27,6 +27,7 @@ namespace MyMoney
     public partial class MainWindow : Window
     {
         public TradeGraph tradeGraphVisual;
+        public Thread threadViewGraphDeal;
         float maxPF = 0, maxMargin = 0;
         int lastSecondReIndicator = 0;
         public ObservableCollection<ResultOneThreadSumm> allResults;
@@ -342,8 +343,11 @@ namespace MyMoney
             if (sd.parentDeal != null)
                 sd = sd.parentDeal;
             string shortN = sd.shortName;
-            Thread t = new Thread(new ParameterizedThreadStart(InitGraph));
-            t.Start(sd);
+            if (threadViewGraphDeal == null || !threadViewGraphDeal.IsAlive)
+            {
+                threadViewGraphDeal = new Thread(new ParameterizedThreadStart(InitGraph));
+                threadViewGraphDeal.Start(sd);
+            }
         }
 
         public void InitGraph(object obj)
@@ -368,5 +372,6 @@ namespace MyMoney
             else if (r.profitFac < 1)
                 e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 0xED, 0x99, 0xD5));
         }
+
     }
 }

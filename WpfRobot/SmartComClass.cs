@@ -29,7 +29,7 @@ namespace SmartComClass
         public void ConnectDataSource()
         {
             SmartC.ConfigureClient("logLevel=1");
-            SmartC.ConfigureServer("logLevel=1;pingTimeOut=10");
+            SmartC.ConfigureServer("logLevel=1;pingTimeOut=20");
             SmartC.connect(ServerIp, ServerPort, Login, Password);
         }
     }

@@ -72,7 +72,7 @@ namespace MyMoney
 
         public ParametrsForTest(ParametrsForTest[] _params)
         {
-            Random r = new Random();
+            Random r = new Random(DateTime.Now.Millisecond);
             id = 0;
             instruments = _params[r.Next(0,1)].instruments;
             glassHeight = _params[r.Next(0,1)].glassHeight;
@@ -283,7 +283,7 @@ namespace MyMoney
         public List<DealInfo> lstAllDeals = new List<DealInfo>();
         public string shortName { get; set; }
         public int idCycle { get; set; }
-        public int mutC { get; set; }
+        public string mutC { get; set; }
         public int idParam { get; set; }
         public float profitFac { get; set; }
         public int margin { get; set; }
