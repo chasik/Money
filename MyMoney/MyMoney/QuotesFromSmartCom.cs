@@ -70,9 +70,9 @@ namespace MyMoney
             scom = new SmartCOM3Lib.StServerClass();
             scom.ConfigureClient("logLevel=5;CalcPlannedPos=no;logFilePath=D:");
             scom.ConfigureServer("logLevel=5;pingTimeOut=20;logFilePath=D:");
-            scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            //scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
-            //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
+            scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
             workSymbol = "RTS-12.14_FT";
             scom.Connected += scom_Connected;
             scom.Disconnected += scom_Disconnected;
@@ -148,6 +148,12 @@ namespace MyMoney
             {
                 if (OnInformation != null)
                     OnInformation("cookietemp = 0:  " + messageInf + " (" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")");
+                if (MartinLevel == paramTh.martingValue)
+                {
+                    string idProfOrder = allClaims.GetOrderId(allClaims.ActiveCookie, TypeWorkOrder.profit, MartinLevel);
+                    MartinLevel++;
+                    scom.CancelOrder(workPortfolioName, workSymbol, idProfOrder);
+                }
                 return;
             }
             allClaims.AddTradeNo(cookieTemp, tradeno);
@@ -217,7 +223,7 @@ namespace MyMoney
                 {
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , averagePriceRound + profitlevel, lotCountTemp, 0, _cidProfit); // 10 000 000
-                    if (MartinLevel <= paramTh.martingValue)
+                    if (MartinLevel < paramTh.martingValue)
                     {
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                             , averagePriceRound - losslevel, lotCount, 0, _cidLoss); // 100 000 000
@@ -232,7 +238,7 @@ namespace MyMoney
                 {
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                         , averagePriceRound - profitlevel, lotCountTemp, 0, _cidProfit); // 10 000 000
-                    if (MartinLevel <= paramTh.martingValue)
+                    if (MartinLevel < paramTh.martingValue)
                     {
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                             , averagePriceRound + losslevel, lotCount, 0, _cidLoss); // 100 000 000
