@@ -34,6 +34,8 @@ namespace MyMoney
         public SmartCOM3Lib.StServerClass scom;
         public DataTable dtInstruments { get; set; }
         public int MartinLevel { get { return _martinlevel; } set { _martinlevel = value; } }
+        public int LongShotCount { get; set; }
+        public int ShortShotCount { get; set; }
 
         public event ConnectedHandler OnConnected;
 
@@ -68,11 +70,11 @@ namespace MyMoney
         public void ConnectToDataSource()
         {
             scom = new SmartCOM3Lib.StServerClass();
-            scom.ConfigureClient("logLevel=5;CalcPlannedPos=no;logFilePath=D:");
-            scom.ConfigureServer("logLevel=5;pingTimeOut=20;logFilePath=D:");
-            //scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            scom.ConfigureClient("logLevel=4;CalcPlannedPos=no;logFilePath=D:");
+            scom.ConfigureServer("logLevel=4;pingTimeOut=20;logFilePath=D:");
+            scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
-            scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
+            //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
             workSymbol = "RTS-12.14_FT";
             scom.Connected += scom_Connected;
             scom.Disconnected += scom_Disconnected;
@@ -371,35 +373,45 @@ namespace MyMoney
                     int indicatorTemp20 = (int)s20 / 20;
                     if (indicatorTemp != indicator && OnChangeIndicator != null)
                         //OnChangeIndicator(indicatorTemp10.ToString() + " " + indicatorTemp20.ToString() + " " + indicatorTemp.ToString());
-                        OnChangeIndicator(indicatorTemp.ToString());
+                        OnChangeIndicator(indicatorTemp.ToString() + "\t UP: " + LongShotCount.ToString() + " DOWN: " + ShortShotCount.ToString());
                     indicator = indicatorTemp;
                     // вход лонг
-                    if (indicator <= -paramTh.indicatorLongValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
+                    if (indicator <= -paramTh.indicatorLongValue)
                     {
-                        lossLongValueTemp = paramTh.lossLongValue;
-                        profitLongValueTemp = paramTh.profitLongValue;
-                        priceEnterLong = (int)ask;
-                        lotCount = 1;
-                        cookieId++;
-                        MartinLevel = 0;
-                        int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
-                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
-                            , 0, lotCount, 0, _cid); // 1 000 000
-                        allClaims.Add(_cid, priceEnterLong, lotCount, StOrder_Action.StOrder_Action_Buy);
+                        if (priceEnterLong == 0 && priceEnterShort == 0 && Trading)
+                        {
+                            LongShotCount = ShortShotCount = 0;
+                            lossLongValueTemp = paramTh.lossLongValue;
+                            profitLongValueTemp = paramTh.profitLongValue;
+                            priceEnterLong = (int)ask;
+                            lotCount = 1;
+                            cookieId++;
+                            MartinLevel = 0;
+                            int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
+                            scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
+                                , 0, lotCount, 0, _cid); // 1 000 000
+                            allClaims.Add(_cid, priceEnterLong, lotCount, StOrder_Action.StOrder_Action_Buy);
+                        }
+                        LongShotCount++;
                     }
                     // вход шорт
-                    else if (indicator >= paramTh.indicatorShortValue && priceEnterLong == 0 && priceEnterShort == 0 && Trading)
+                    else if (indicator >= paramTh.indicatorShortValue)
                     {
-                        lossShortValueTemp = paramTh.lossShortValue;
-                        profitShortValueTemp = paramTh.profitShortValue;
-                        priceEnterShort = (int)bid;
-                        lotCount = 1;
-                        cookieId++;
-                        MartinLevel = 0;
-                        int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
-                        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
-                            , 0, lotCount, 0, _cid); // 1 000 000
-                        allClaims.Add(_cid, priceEnterShort, lotCount, StOrder_Action.StOrder_Action_Sell);
+                        if (priceEnterLong == 0 && priceEnterShort == 0 && Trading)
+                        {
+                            ShortShotCount = LongShotCount = 0;
+                            lossShortValueTemp = paramTh.lossShortValue;
+                            profitShortValueTemp = paramTh.profitShortValue;
+                            priceEnterShort = (int)bid;
+                            lotCount = 1;
+                            cookieId++;
+                            MartinLevel = 0;
+                            int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
+                            scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
+                                , 0, lotCount, 0, _cid); // 1 000 000
+                            allClaims.Add(_cid, priceEnterShort, lotCount, StOrder_Action.StOrder_Action_Sell);
+                        }
+                        ShortShotCount++;
                     }
                 }
             }

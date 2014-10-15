@@ -502,7 +502,7 @@ namespace MyMoney
             int cookId = GetCookieId(_cook);
             foreach (int c in dicAllClaims.Keys)
             {
-                if (c % 1000000 == cookId && c != _cook && GetTypeCookie(c) != TypeWorkOrder.profit)
+                if (c % 1000000 == cookId && GetTypeCookie(c) != TypeWorkOrder.profit)
                 {
                     sumTrade += dicAllClaims[c].realPriceEnter;
                     _countTrade++;
