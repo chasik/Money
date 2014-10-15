@@ -349,6 +349,7 @@ namespace MyMoney
                 int iterationNum = 0;
                 int? pricetick = 0;
                 byte? actiontick = 0;
+                int martinLevelTemp = 1;
                 foreach (DataRow dr in dt.Rows)
                 {
                     #region торговля
@@ -374,9 +375,10 @@ namespace MyMoney
                             // лосс короткая
                             else if (priceEnterShort + lossShortValueTemp <= ask)
                             {
-                                if (paramTh.martingValue >= lotCount)// && indicator < 0)
+                                if (paramTh.martingValue >= martinLevelTemp)// && indicator < 0)
                                 {
-                                    lotCount++;
+                                    martinLevelTemp++;
+                                    lotCount += lotCount;
                                     dealTemp.lotsCount = lotCount;
                                     int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
 
@@ -400,6 +402,7 @@ namespace MyMoney
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                     priceEnterShort = 0;
                                     lotCount = 1;
+                                    martinLevelTemp = 1;
                                 }
                             }
                             
@@ -419,9 +422,10 @@ namespace MyMoney
                             // лосс длиная
                             else if (priceEnterLong - lossLongValueTemp >= bid)
                             {
-                                if (paramTh.martingValue >= lotCount) //&& indicator > 0)
+                                if (paramTh.martingValue >= martinLevelTemp) //&& indicator > 0)
                                 {
-                                    lotCount++;
+                                    martinLevelTemp++;
+                                    lotCount += lotCount;
                                     dealTemp.lotsCount = lotCount;
                                     int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
@@ -445,6 +449,7 @@ namespace MyMoney
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                     priceEnterLong = 0;
                                     lotCount = 1;
+                                    martinLevelTemp = 1;
                                 }
                             }
                             
