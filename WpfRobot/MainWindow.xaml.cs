@@ -108,7 +108,8 @@ namespace WpfRobot
             this.Dispatcher.BeginInvoke(DispatcherPriority.Send,
                 (ThreadStart)delegate()
             {
-                Label2.Content = symbol + " -- bid: " + bid.ToString() + " -- bidSize: " + bidsize.ToString() + " -- ask: " + ask.ToString() + " -- askSize: " + asksize.ToString();
+                if (symbol.ToLower().Contains("rts"))
+                    Label2.Content = symbol + " -- bid: " + bid.ToString() + " -- bidSize: " + bidsize.ToString() + " -- ask: " + ask.ToString() + " -- askSize: " + asksize.ToString();
             }
             );
 

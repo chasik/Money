@@ -26,12 +26,12 @@
         <TextBox x:Name="tbLossLongStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="396,212,0,0" TextWrapping="Wrap" Text="100" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
         <TextBox x:Name="tbLossLongFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="445,212,0,0" TextWrapping="Wrap" Text="250" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
         <Label Content="IndicLong:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,323,0,0" VerticalAlignment="Top" Width="82"/>
-        <TextBox x:Name="tbIndicatorLongStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="396,323,0,0" TextWrapping="Wrap" Text="60" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
-        <TextBox x:Name="tbIndicatorLongFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="445,323,0,0" TextWrapping="Wrap" Text="90" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
+        <TextBox x:Name="tbIndicatorLongStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="396,323,0,0" TextWrapping="Wrap" Text="50" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
+        <TextBox x:Name="tbIndicatorLongFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="445,323,0,0" TextWrapping="Wrap" Text="99" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
         <TextBox x:Name="tbAverageStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="502,128,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="48" TextAlignment="Right"/>
         <TextBox x:Name="tbProfitLongStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="502,185,0,0" TextWrapping="Wrap" Text="20" VerticalAlignment="Top" Width="48" TextAlignment="Right"/>
         <TextBox x:Name="tbLossLongStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="502,212,0,0" TextWrapping="Wrap" Text="20" VerticalAlignment="Top" Width="48" TextAlignment="Right"/>
-        <TextBox x:Name="tbIndicatorLongStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="502,323,0,0" TextWrapping="Wrap" Text="2" VerticalAlignment="Top" Width="48" TextAlignment="Right"/>
+        <TextBox x:Name="tbIndicatorLongStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="502,323,0,0" TextWrapping="Wrap" Text="3" VerticalAlignment="Top" Width="48" TextAlignment="Right"/>
         <Label Content="Усредняться:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,406,0,0" VerticalAlignment="Top" Width="82"/>
         <TextBox x:Name="tbMartingStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="396,406,0,0" TextWrapping="Wrap" Text="2" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
         <TextBox x:Name="tbMartingFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="445,406,0,0" TextWrapping="Wrap" Text="2" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
@@ -77,9 +77,9 @@
         <TextBox x:Name="tbProfitShortCurrent" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="324,244,0,0" TextWrapping="Wrap" Text="160" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
         <TextBox x:Name="tbLossShortCurrent" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="324,271,0,0" TextWrapping="Wrap" Text="250" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
         <Label Content="IndicShort:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,349,0,0" VerticalAlignment="Top" Width="82"/>
-        <TextBox x:Name="tbIndicatorShortStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="396,349,0,0" TextWrapping="Wrap" Text="60" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
-        <TextBox x:Name="tbIndicatorShortFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="445,349,0,0" TextWrapping="Wrap" Text="90" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
-        <TextBox x:Name="tbIndicatorShortStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="502,349,0,0" TextWrapping="Wrap" Text="2" VerticalAlignment="Top" Width="48" TextAlignment="Right"/>
+        <TextBox x:Name="tbIndicatorShortStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="396,349,0,0" TextWrapping="Wrap" Text="50" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
+        <TextBox x:Name="tbIndicatorShortFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="445,349,0,0" TextWrapping="Wrap" Text="99" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
+        <TextBox x:Name="tbIndicatorShortStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="502,349,0,0" TextWrapping="Wrap" Text="3" VerticalAlignment="Top" Width="48" TextAlignment="Right"/>
         <TextBox x:Name="tbIndicatorShortCurrent" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="324,349,0,0" TextWrapping="Wrap" Text="70" VerticalAlignment="Top" Width="44" TextAlignment="Right"/>
         <Canvas x:Name="canvasGraph" Grid.Column="1" Margin="960,223,10,0" Height="196" VerticalAlignment="Top"/>
         <Canvas x:Name="canvasIndicator" Grid.Column="1" Margin="960,424,10,0" Height="110" VerticalAlignment="Top"
