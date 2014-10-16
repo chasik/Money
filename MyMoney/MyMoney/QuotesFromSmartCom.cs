@@ -214,9 +214,15 @@ namespace MyMoney
                 double averagePrice = allClaims.GetAveragePrice(cookieTemp, MartinLevel, out countTrade);
                 int averageDelta = (int)(Math.Abs(realP - averagePrice) / (countTrade + 1) / 10) * 10;
                 int averagePriceRound = (int)((averagePrice + averageDelta) / 10) * 10;
-                int profitlevel = allClaims.dicAllClaims[cookieTemp].ProfitLevel += 2 * averageDelta;
-                int losslevel = allClaims.dicAllClaims[cookieTemp].LossLevel += averageDelta;
+
                 MartinLevel++;
+                int profitlevel = allClaims.dicAllClaims[cookieTemp].ProfitLevel += 2 * averageDelta;
+                if (MartinLevel == 1)
+                    profitlevel = (int)(allClaims.dicAllClaims[cookieTemp].ProfitLevel / 2 / 10) * 10;
+                if (MartinLevel == 2)
+                    profitlevel = (int)(allClaims.dicAllClaims[cookieTemp].ProfitLevel / 3 / 10) * 10;
+                int losslevel = allClaims.dicAllClaims[cookieTemp].LossLevel += averageDelta;
+
                 _cidProfit = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.profit, MartinLevel);
                 _cidLoss = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.loss, MartinLevel);
                 messageInf = "realp: " + realP.ToString() + "  averagePrice: " + averagePrice.ToString() + "   averageDelta: " + averageDelta.ToString()
