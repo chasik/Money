@@ -382,7 +382,7 @@ namespace MyMoney
                                     dealTemp.lotsCount = lotCount;
                                     int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
 
-                                    profitShortValueTemp += 2 * delt;
+                                    profitShortValueTemp += paramTh.profitShortValue; // 2 * delt;
                                     lossShortValueTemp += delt;
 
                                     priceEnterShort = priceEnterShort + (int)((int)ask - priceEnterShort) / lotCount;
@@ -404,6 +404,11 @@ namespace MyMoney
                                     lotCount = 1;
                                     martinLevelTemp = 1;
                                 }
+                            }
+                            // трейлим профит 
+                            else if (ask - paramTh.profitShortValue > priceEnterShort - profitShortValueTemp && profitShortValueTemp > 30)
+                            {
+                                profitShortValueTemp = priceEnterShort - (int)ask + paramTh.profitShortValue;
                             }
                             
                         }
@@ -429,7 +434,7 @@ namespace MyMoney
                                     dealTemp.lotsCount = lotCount;
                                     int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
-                                    profitLongValueTemp += 2 * delt;
+                                    profitLongValueTemp += paramTh.profitLongValue; // 2 * delt;
                                     lossLongValueTemp += delt;
 
                                     priceEnterLong = priceEnterLong - (int)(priceEnterLong - (int)bid) / lotCount;
@@ -451,6 +456,11 @@ namespace MyMoney
                                     lotCount = 1;
                                     martinLevelTemp = 1;
                                 }
+                            }
+                            // трейлим профит 
+                            else if (bid + paramTh.profitLongValue < priceEnterLong + profitLongValueTemp && profitLongValueTemp > 30)
+                            {
+                                profitLongValueTemp = (int)bid + paramTh.profitLongValue - priceEnterLong;
                             }
                             
                         }
