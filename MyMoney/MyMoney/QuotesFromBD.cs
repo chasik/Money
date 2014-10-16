@@ -378,7 +378,7 @@ namespace MyMoney
                                 if (paramTh.martingValue >= martinLevelTemp)// && indicator < 0)
                                 {
                                     martinLevelTemp++;
-                                    lotCount += lotCount;
+                                    lotCount += 1;
                                     dealTemp.lotsCount = lotCount;
                                     int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
 
@@ -425,7 +425,7 @@ namespace MyMoney
                                 if (paramTh.martingValue >= martinLevelTemp) //&& indicator > 0)
                                 {
                                     martinLevelTemp++;
-                                    lotCount += lotCount;
+                                    lotCount += 1;
                                     dealTemp.lotsCount = lotCount;
                                     int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
