@@ -89,7 +89,7 @@ namespace WpfRobot
 
         private void AddSymbol(int row, int nrows, string symbol, string short_name, string long_name, string type, int decimals, int lot_size, double punkt, double step, string sec_ext_id, string sec_exch_name, DateTime expiry_date, double days_before_expiry, double strike)
         {
-            if (symbol.ToUpper().Contains("RTS-9.14_FT")) 
+            if (symbol.ToUpper().Contains("RTS-12.14_FT")) 
             {
                 sc.SmartC.ListenBidAsks(symbol);
                 sc.SmartC.UpdateBidAsk += SmartC_UpdateBidAsk;
@@ -97,7 +97,7 @@ namespace WpfRobot
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate() { 
                     Label2.Content = row.ToString() + " " + nrows.ToString();
-                    if (symbol.ToLower().Contains("9.14_ft"))
+                    if (symbol.ToLower().Contains("12.14_ft"))
                         ComboBox1.Items.Add(symbol + "\t\t" + short_name + "\t\t" + long_name);
                 }
             );

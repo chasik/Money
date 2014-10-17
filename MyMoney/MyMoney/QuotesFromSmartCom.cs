@@ -27,10 +27,17 @@ namespace MyMoney
         public int lossLongValueTemp = 0, lossShortValueTemp = 0;
         public int profitLongValueTemp = 0, profitShortValueTemp = 0;
         public int lotCount = 1;
-        public int lotCountTemp = 1;
+        public int lotCountTemp;
 
         public int cookieId = 0;
         public AllClaimsInfo allClaims = new AllClaimsInfo();
+        public Dictionary<DateTime, int> activeAmounts = new Dictionary<DateTime, int>();
+        public List<DateTime> oldAmounts = new List<DateTime>();
+        public TimeSpan intervalT = new TimeSpan(0, 0, 30);
+        public int activeTradingVolume;
+        public int activeTradingDiraction;
+        public bool TradeAtVolume = false;
+
         public SmartCOM3Lib.StServerClass scom;
         public DataTable dtInstruments { get; set; }
         public int MartinLevel { get { return _martinlevel; } set { _martinlevel = value; } }
@@ -174,30 +181,35 @@ namespace MyMoney
             }
             else if (tWorkOrder == TypeWorkOrder.order) // если это вход по индикатору
             {
-                MartinLevel = 0; lotCountTemp = 1;
+                int pl;
+
+                MartinLevel = 0; lotCountTemp = lotCount;
                 _cidProfit = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.profit);
                 _cidLoss = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.loss);
                 allClaims.ActiveCookie = cookieTemp;
                 if (amount > 0)
                 {
+                    pl = TradeAtVolume ? 50 : paramTh.profitLongValue;
                     allClaims.dicAllClaims[cookieTemp].ProfitLevel = paramTh.profitLongValue;
                     allClaims.dicAllClaims[cookieTemp].LossLevel = paramTh.lossLongValue;
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                        , realP + paramTh.profitLongValue, lotCount, 0, _cidProfit); // 10 000 000
+                        , realP + pl, lotCount, 0, _cidProfit); // 10 000 000
 
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                             , realP - paramTh.lossLongValue, lotCount, 0, _cidLoss); // 100 000 000
                 }
                 if (amount < 0)
                 {
+                    pl = TradeAtVolume ? 50 : paramTh.profitShortValue;
                     allClaims.dicAllClaims[cookieTemp].ProfitLevel = paramTh.profitShortValue;
                     allClaims.dicAllClaims[cookieTemp].LossLevel = paramTh.lossShortValue;
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                        , realP - paramTh.profitShortValue, lotCount, 0, _cidProfit); // 10 000 000
+                        , realP - pl, lotCount, 0, _cidProfit); // 10 000 000
 
                     scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                             , realP + paramTh.lossShortValue, lotCount, 0, _cidLoss); // 100 000 000
                 }
+                TradeAtVolume = false;
             }
             else if (tWorkOrder == TypeWorkOrder.profit) // если это сработал profit
             {
@@ -206,6 +218,7 @@ namespace MyMoney
             }
             else if (tWorkOrder == TypeWorkOrder.loss) // если это сработал стоп-лосс
             {
+                activeAmounts.Clear();
                 string idProfitOrder = allClaims.GetOrderId(cookieTemp, TypeWorkOrder.profit, MartinLevel);
                 scom.CancelOrder(workPortfolioName, workSymbol, idProfitOrder);
 
@@ -314,7 +327,31 @@ namespace MyMoney
 
         void scom_AddTick(string symbol, DateTime datetime, double price, double volume, string tradeno, StOrder_Action action)
         {
+            double v = volume;
+            if (action == StOrder_Action.StOrder_Action_Sell)
+                v = -v;
+            DateTime dttemp = DateTime.Now;
+            if (!activeAmounts.ContainsKey(dttemp))
+                activeAmounts.Add(dttemp, (int)v);
+            else
+                activeAmounts[dttemp] += (int)v;
 
+            oldAmounts.Clear();
+            int s = 0, s1 = 0;
+            foreach (DateTime dt in activeAmounts.Keys)
+            {
+                if (dttemp.Subtract(dt) > intervalT)
+                    oldAmounts.Add(dt);
+                else
+                {
+                    s += Math.Abs(activeAmounts[dt]);
+                    s1 += activeAmounts[dt];
+                }
+            }
+            foreach (DateTime dt in oldAmounts)
+                activeAmounts.Remove(dt);
+            activeTradingVolume = s;
+            activeTradingDiraction = s1;
         }
 
         void scom_UpdateQuote(string symbol, DateTime datetime, double open, double high, double low, double close, double last, double volume, double size, double bid, double ask, double bidsize, double asksize, double open_int, double go_buy, double go_sell, double go_base, double go_base_backed, double high_limit, double low_limit, int trading_status, double volat, double theor_price)
@@ -379,11 +416,21 @@ namespace MyMoney
                     int indicatorTemp20 = (int)s20 / 20;
                     if (indicatorTemp != indicator && OnChangeIndicator != null)
                         //OnChangeIndicator(indicatorTemp10.ToString() + " " + indicatorTemp20.ToString() + " " + indicatorTemp.ToString());
-                        OnChangeIndicator(indicatorTemp.ToString() + "\t UP: " + LongShotCount.ToString() + " DOWN: " + ShortShotCount.ToString());
+                        OnChangeIndicator(indicatorTemp.ToString() + "\tA: " + activeTradingVolume.ToString()
+                            + "\tV: " + activeTradingDiraction.ToString() 
+                            + "\tU: " + LongShotCount.ToString() + " D: " + ShortShotCount.ToString());
                     indicator = indicatorTemp;
                     // вход лонг
-                    if (indicator <= -paramTh.indicatorLongValue)
+                    if ((activeTradingVolume < 500 && indicator <= -paramTh.indicatorLongValue)
+                        || (activeTradingVolume > 500 && indicator >= paramTh.indicatorLongValue)) // || activeTradingDiraction > 400)
                     {
+                        //if (activeTradingVolume > 400 && !TradeAtVolume)
+                        //{
+                        //    TradeAtVolume = true;
+                        //    activeAmounts.Clear();
+                        //}
+                        //else
+                            LongShotCount++;
                         if (priceEnterLong == 0 && priceEnterShort == 0 && Trading)
                         {
                             LongShotCount = ShortShotCount = 0;
@@ -398,11 +445,18 @@ namespace MyMoney
                                 , 0, lotCount, 0, _cid); // 1 000 000
                             allClaims.Add(_cid, priceEnterLong, lotCount, StOrder_Action.StOrder_Action_Buy);
                         }
-                        LongShotCount++;
                     }
                     // вход шорт
-                    else if (indicator >= paramTh.indicatorShortValue)
+                    else if ((activeTradingVolume < 500 && indicator >= paramTh.indicatorShortValue)
+                        || (activeTradingVolume > 500 && indicator <= -paramTh.indicatorShortValue)) // || activeTradingDiraction < -400)
                     {
+                        //if (activeTradingVolume < -400 && !TradeAtVolume)
+                        //{
+                        //    TradeAtVolume = true;
+                        //    activeAmounts.Clear();
+                        //}
+                        //else
+                            ShortShotCount++;
                         if (priceEnterLong == 0 && priceEnterShort == 0 && Trading)
                         {
                             ShortShotCount = LongShotCount = 0;
@@ -417,7 +471,6 @@ namespace MyMoney
                                 , 0, lotCount, 0, _cid); // 1 000 000
                             allClaims.Add(_cid, priceEnterShort, lotCount, StOrder_Action.StOrder_Action_Sell);
                         }
-                        ShortShotCount++;
                     }
                 }
             }

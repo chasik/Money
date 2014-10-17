@@ -382,7 +382,7 @@ namespace MyMoney
                                     dealTemp.lotsCount = lotCount;
                                     int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
 
-                                    profitShortValueTemp += paramTh.profitShortValue; // 2 * delt;
+                                    profitShortValueTemp = paramTh.profitShortValue + 2 * delt;
                                     lossShortValueTemp += delt;
 
                                     priceEnterShort = priceEnterShort + (int)((int)ask - priceEnterShort) / lotCount;
@@ -402,14 +402,13 @@ namespace MyMoney
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                     priceEnterShort = 0;
                                     lotCount = 1;
-                                    martinLevelTemp = 1;
                                 }
                             }
                             // трейлим профит 
-                            else if (ask - paramTh.profitShortValue > priceEnterShort - profitShortValueTemp && profitShortValueTemp > 30)
-                            {
-                                profitShortValueTemp = priceEnterShort - (int)ask + paramTh.profitShortValue;
-                            }
+                            //else if (ask - paramTh.profitShortValue > priceEnterShort - profitShortValueTemp && profitShortValueTemp > 30)
+                            //{
+                            //    profitShortValueTemp = priceEnterShort - (int)ask + paramTh.profitShortValue;
+                            //}
                             
                         }
                         else if (priceEnterLong != 0 && actiontick == 2)
@@ -434,7 +433,7 @@ namespace MyMoney
                                     dealTemp.lotsCount = lotCount;
                                     int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
-                                    profitLongValueTemp += paramTh.profitLongValue; // 2 * delt;
+                                    profitLongValueTemp = paramTh.profitLongValue + 2 * delt;
                                     lossLongValueTemp += delt;
 
                                     priceEnterLong = priceEnterLong - (int)(priceEnterLong - (int)bid) / lotCount;
@@ -454,14 +453,13 @@ namespace MyMoney
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                     priceEnterLong = 0;
                                     lotCount = 1;
-                                    martinLevelTemp = 1;
                                 }
                             }
                             // трейлим профит 
-                            else if (bid + paramTh.profitLongValue < priceEnterLong + profitLongValueTemp && profitLongValueTemp > 30)
-                            {
-                                profitLongValueTemp = (int)bid + paramTh.profitLongValue - priceEnterLong;
-                            }
+                            //else if (bid + paramTh.profitLongValue < priceEnterLong + profitLongValueTemp && profitLongValueTemp > 30)
+                            //{
+                            //    profitLongValueTemp = (int)bid + paramTh.profitLongValue - priceEnterLong;
+                            //}
                             
                         }
                     }
@@ -555,6 +553,7 @@ namespace MyMoney
                                         profitLongValueTemp = paramTh.profitLongValue;
                                         priceEnterLong = (int)ask;
                                         lotCount = 1;
+                                        martinLevelTemp = 1;
                                         dealTemp = new DealInfo(ActionDeal.buy, dr.Field<DateTime>("dtserver"), 1, priceEnterLong, indicator);
                                     }
                                 }
@@ -569,6 +568,7 @@ namespace MyMoney
                                         profitShortValueTemp = paramTh.profitShortValue;
                                         priceEnterShort = (int)bid;
                                         lotCount = 1;
+                                        martinLevelTemp = 1;
                                         dealTemp = new DealInfo(ActionDeal.sell, dr.Field<DateTime>("dtserver"), 1, priceEnterShort, indicator);
                                     }
                                 }
