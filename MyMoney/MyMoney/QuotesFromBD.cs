@@ -405,10 +405,10 @@ namespace MyMoney
                                 }
                             }
                             // трейлим профит 
-                            //else if (ask - paramTh.profitShortValue > priceEnterShort - profitShortValueTemp && profitShortValueTemp > 30)
-                            //{
-                            //    profitShortValueTemp = priceEnterShort - (int)ask + paramTh.profitShortValue;
-                            //}
+                            else if (ask - paramTh.profitShortValue > priceEnterShort - profitShortValueTemp && profitShortValueTemp > 30)
+                            {
+                                profitShortValueTemp = priceEnterShort - (int)ask + paramTh.profitShortValue;
+                            }
                             
                         }
                         else if (priceEnterLong != 0 && actiontick == 2)
@@ -456,10 +456,10 @@ namespace MyMoney
                                 }
                             }
                             // трейлим профит 
-                            //else if (bid + paramTh.profitLongValue < priceEnterLong + profitLongValueTemp && profitLongValueTemp > 30)
-                            //{
-                            //    profitLongValueTemp = (int)bid + paramTh.profitLongValue - priceEnterLong;
-                            //}
+                            else if (bid + paramTh.profitLongValue < priceEnterLong + profitLongValueTemp && profitLongValueTemp > 30)
+                            {
+                                profitLongValueTemp = (int)bid + paramTh.profitLongValue - priceEnterLong;
+                            }
                             
                         }
                     }
