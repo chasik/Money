@@ -154,9 +154,6 @@ namespace MyMoney
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    pbar1.Minimum = minval;
-                    pbar1.Maximum = maxval;
-                    pbar1.Value = val;
                     pbar2.IsIndeterminate = showProgress;
                     progressLabel.Content = val.ToString() + " / " + maxval.ToString();
                 });

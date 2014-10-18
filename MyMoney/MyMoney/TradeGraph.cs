@@ -174,7 +174,7 @@ namespace MyMoney
             graphC.Children.Add(gback);
 
             MinMaxValue mm = this.GetMinMaxValues();
-            float stepY = mm.DeltaValue > 1200 ? 500 : 100;
+            float stepY = mm.DeltaValue > 1600 ? 500 : 100;
             float remainderY = mm.MaxValue % stepY;
             for (float y = mm.MaxValue - remainderY; y > mm.MinValue; y -= stepY)
             {
@@ -186,20 +186,13 @@ namespace MyMoney
                 horizontLine.StrokeThickness = 1;
                 horizontLine.SnapsToDevicePixels = true;
                 graphC.Children.Add(horizontLine);
-            }
-            /*int workAHeight = (int)(graphC.ActualHeight - heightXArea);
-            int stepGridY = (int) (workAHeight * 500 / (mm.MaxValue - mm.MinValue));
-
-            float hm = mm.MaxValue % 500;
-            for (int y = (int)(hm / _pixelInPunkt); y < workAHeight; y += stepGridY)
-            {
                 TextBlock t = new TextBlock();
-                t.Text = (mm.MaxValue - y * _pixelInPunkt).ToString();
+                t.Text = y.ToString("### ###");
                 t.FontSize = 9;
                 graphC.Children.Add(t);
-                Canvas.SetLeft(t, 0);
-                Canvas.SetTop(t, y);
-            }*/
+                Canvas.SetLeft(t, 25);
+                Canvas.SetTop(t, (mm.MaxValue - y) * graphC.ActualHeight / mm.DeltaValue - 5);
+            }
         }
     }
 

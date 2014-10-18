@@ -327,9 +327,17 @@ namespace MyMoney
 
         void scom_AddTick(string symbol, DateTime datetime, double price, double volume, string tradeno, StOrder_Action action)
         {
-            double v = volume;
-            if (action == StOrder_Action.StOrder_Action_Sell)
-                v = -v;
+            double v = 0;
+            if (action == StOrder_Action.StOrder_Action_Buy)
+            {
+                v = volume;
+                lastAsk = price;
+            }
+            else if (action == StOrder_Action.StOrder_Action_Sell)
+            {
+                v = -volume;
+                lastBid = price;
+            }
             DateTime dttemp = DateTime.Now;
             if (!activeAmounts.ContainsKey(dttemp))
                 activeAmounts.Add(dttemp, (int)v);
@@ -361,26 +369,22 @@ namespace MyMoney
 
         void scom_UpdateBidAsk(string symbol, int row, int nrows, double bid, double bidsize, double ask, double asksize)
         {
-            if (!glass.ContainsKey(bid) || !glass.ContainsKey(ask))
-            {
-                if (!glass.ContainsKey(bid))
-                    glass.Add(bid, bidsize);
-                if (!glass.ContainsKey(ask))
-                    glass.Add(ask, asksize);
-            }
-            else if (glass[bid] != bidsize || glass[ask] != asksize)
+            if (!glass.ContainsKey(bid)) { glass.Add(bid, bidsize); return; }
+            if (!glass.ContainsKey(ask)) { glass.Add(ask, asksize); return; }
+
+            if (glass[bid] != bidsize || glass[ask] != asksize)
             {
                 glass[bid] = bidsize;
                 glass[ask] = asksize;
                 if (glass.Count > 40)
                 {
-                    int sumGlass = 0;
+                    //int sumGlass = 0;
                     // среднее значение по стакану
-                    for (int i = 0; i < paramTh.glassHeight; i++)
-                    {
-                        sumGlass += glass.ContainsKey(lastAsk + i * 10) ? (int) glass[lastAsk + i * 10] : 0;
-                        sumGlass += glass.ContainsKey(lastBid - i * 10) ? (int) glass[lastBid - i * 10] : 0;
-                    }
+                    //for (int i = 0; i < paramTh.glassHeight; i++)
+                    //{
+                    //    sumGlass += glass.ContainsKey(lastAsk + i * 10) ? (int) glass[lastAsk + i * 10] : 0;
+                    //    sumGlass += glass.ContainsKey(lastBid - i * 10) ? (int) glass[lastBid - i * 10] : 0;
+                    //}
                     //int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                     int sumlong = 0, sumshort = 0;
 
@@ -389,7 +393,7 @@ namespace MyMoney
                     for (int i = 0; i < paramTh.glassHeight; i++)
                     {
                         if (glass.ContainsKey((int)lastAsk + i * 10))
-                            sumlong += (int)glass[(int)lastAsk + i * 10]; // glass.ContainsKey((int)ask + i * 10)
+                            sumlong += (int)glass[(int)lastAsk + i * 10];
                         if (glass.ContainsKey((int)lastBid - i * 10))
                             sumshort += (int)glass[(int)lastBid - i * 10]; 
                         /*sumlong += glass.ContainsKey((int)lastAsk + i * 10)
@@ -402,27 +406,21 @@ namespace MyMoney
                             continue;
                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
                     }
-                    int s = 0, s10 = 0, s20 = 0;
-                    int ii = 0;
+                    int s = 0;
                     foreach (int ivalue in tempListForIndicator)
                     {
-                        ii++;
-                        if (ii < 11) s10 += ivalue;
-                        if (ii < 21) s20 += ivalue;
                         s += ivalue;
                     }
                     int indicatorTemp = (int) s / paramTh.glassHeight;
-                    int indicatorTemp10 = (int)s10 / 10;
-                    int indicatorTemp20 = (int)s20 / 20;
                     if (indicatorTemp != indicator && OnChangeIndicator != null)
-                        //OnChangeIndicator(indicatorTemp10.ToString() + " " + indicatorTemp20.ToString() + " " + indicatorTemp.ToString());
                         OnChangeIndicator(indicatorTemp.ToString() + "\tA: " + activeTradingVolume.ToString()
                             + "\tV: " + activeTradingDiraction.ToString() 
                             + "\tU: " + LongShotCount.ToString() + " D: " + ShortShotCount.ToString());
                     indicator = indicatorTemp;
                     // вход лонг
-                    if ((activeTradingVolume < 500 && indicator <= -paramTh.indicatorLongValue)
-                        || (activeTradingVolume > 500 && indicator >= paramTh.indicatorLongValue)) // || activeTradingDiraction > 400)
+                    if (indicator <= -paramTh.indicatorLongValue)
+                    //if ((activeTradingVolume < 500 && indicator <= -paramTh.indicatorLongValue)
+                    //    || (activeTradingVolume > 500 && indicator >= paramTh.indicatorLongValue)) // || activeTradingDiraction > 400)
                     {
                         //if (activeTradingVolume > 400 && !TradeAtVolume)
                         //{
@@ -447,8 +445,9 @@ namespace MyMoney
                         }
                     }
                     // вход шорт
-                    else if ((activeTradingVolume < 500 && indicator >= paramTh.indicatorShortValue)
-                        || (activeTradingVolume > 500 && indicator <= -paramTh.indicatorShortValue)) // || activeTradingDiraction < -400)
+                    else if (indicator >= paramTh.indicatorShortValue)
+                    //else if ((activeTradingVolume < 500 && indicator >= paramTh.indicatorShortValue)
+                    //    || (activeTradingVolume > 500 && indicator <= -paramTh.indicatorShortValue)) // || activeTradingDiraction < -400)
                     {
                         //if (activeTradingVolume < -400 && !TradeAtVolume)
                         //{

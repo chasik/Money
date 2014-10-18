@@ -383,7 +383,7 @@ namespace MyMoney
                                     int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
 
                                     profitShortValueTemp = paramTh.profitShortValue + 2 * delt;
-                                    lossShortValueTemp += delt;
+                                    lossShortValueTemp   = paramTh.lossShortValue + delt;
 
                                     priceEnterShort = priceEnterShort + (int)((int)ask - priceEnterShort) / lotCount;
 
@@ -405,7 +405,7 @@ namespace MyMoney
                                 }
                             }
                             // трейлим профит 
-                            //else if (ask - paramTh.profitShortValue > priceEnterShort - profitShortValueTemp && profitShortValueTemp > 30)
+                            //else if ((ask - paramTh.profitShortValue - 20 > priceEnterShort - profitShortValueTemp) && profitShortValueTemp > 20)
                             //{
                             //    profitShortValueTemp = priceEnterShort - (int)ask + paramTh.profitShortValue;
                             //}
@@ -434,7 +434,7 @@ namespace MyMoney
                                     int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
                                     profitLongValueTemp = paramTh.profitLongValue + 2 * delt;
-                                    lossLongValueTemp += delt;
+                                    lossLongValueTemp   = paramTh.lossLongValue + delt;
 
                                     priceEnterLong = priceEnterLong - (int)(priceEnterLong - (int)bid) / lotCount;
 
@@ -456,7 +456,7 @@ namespace MyMoney
                                 }
                             }
                             // трейлим профит 
-                            //else if (bid + paramTh.profitLongValue < priceEnterLong + profitLongValueTemp && profitLongValueTemp > 30)
+                            //else if ((bid + paramTh.profitLongValue < priceEnterLong + profitLongValueTemp - 20) && profitLongValueTemp > 20)
                             //{
                             //    profitLongValueTemp = (int)bid + paramTh.profitLongValue - priceEnterLong;
                             //}
@@ -478,7 +478,7 @@ namespace MyMoney
                                 DateTime dttemp = dr.Field<DateTime>("dtserver");
                                 if (!isCalculatedIndicator)
                                 {
-                                    int sumGlass = 0;
+                                    //int sumGlass = 0;
                                     // старый вариант работы стакана (до использования SortedDictionary)
                                     /*oldGlassValue.Clear();
                                     foreach (int pkey in glass.Keys)
@@ -493,12 +493,12 @@ namespace MyMoney
 
                                     // среднее значение по стакану
                                     
-                                    for (int i = 0; i < paramTh.glassHeight; i++)
-                                    {
-                                        sumGlass += glass.ContainsKey((int)ask + i * 10) ? glass[(int)ask + i * 10] : 0;
-                                        sumGlass += glass.ContainsKey((int)bid - i * 10) ? glass[(int)bid - i * 10] : 0;
-                                    }
-                                    /*int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);*/
+                                    //for (int i = 0; i < paramTh.glassHeight; i++)
+                                    //{
+                                    //    sumGlass += glass.ContainsKey((int)ask + i * 10) ? glass[(int)ask + i * 10] : 0;
+                                    //    sumGlass += glass.ContainsKey((int)bid - i * 10) ? glass[(int)bid - i * 10] : 0;
+                                    //}
+                                    //int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                                     int sumlong = 0, sumshort = 0;
 
                                     tempListForIndicator.Clear();
@@ -506,13 +506,15 @@ namespace MyMoney
                                     for (int i = 0; i < paramTh.glassHeight; i++)
                                     {
                                         if (glass.ContainsKey((int)ask + i * 10))
-                                            sumlong += glass[(int)ask + i * 10]; // glass.ContainsKey((int)ask + i * 10)
-                                         //   && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
-                                         //   ? glass[(int)ask + i * 10] : averageGlass;
+                                            sumlong += glass[(int)ask + i * 10];
+                                        //sumlong += glass.ContainsKey((int)ask + i * 10)
+                                        //    && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
+                                        //    ? glass[(int)ask + i * 10] : averageGlass;
                                         if (glass.ContainsKey((int)bid - i * 10))
-                                            sumshort += glass[(int)bid - i * 10]; // glass.ContainsKey((int)bid - i * 10)
-                                         //   && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
-                                         //   ? glass[(int)bid - i * 10] : averageGlass;
+                                            sumshort += glass[(int)bid - i * 10]; 
+                                        //sumshort += glass.ContainsKey((int)bid - i * 10)
+                                        //    && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
+                                        //    ? glass[(int)bid - i * 10] : averageGlass;
                                         if (sumlong + sumshort == 0)
                                             continue;
                                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
