@@ -54,6 +54,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AdditionalTypes.cs" />
+    <Compile Include="GlassGraph.cs" />
     <Compile Include="IDataSource.cs" />
     <Compile Include="IndicatorValues.cs" />
     <Compile Include="IndicatorValuesAggregate.cs" />

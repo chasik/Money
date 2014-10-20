@@ -13,6 +13,7 @@ namespace MyMoney
     public class QuotesFromSmartCom : IDataSource
     {
         public delegate void ChangeIndicator(string _value);
+        public delegate void ChangeGlass(double _p, double _v, ActionGlassItem _a);
 
         public Boolean Trading = false;
         private int _martinlevel = 0;
@@ -49,6 +50,7 @@ namespace MyMoney
         public event GetInstrumentsHandler OnGetInstruments;
 
         public event ChangeIndicator OnChangeIndicator;
+        public event ChangeGlass OnChangeGlass;
 
         public event GetInformation OnInformation;
 
@@ -369,6 +371,11 @@ namespace MyMoney
 
         void scom_UpdateBidAsk(string symbol, int row, int nrows, double bid, double bidsize, double ask, double asksize)
         {
+            if (OnChangeGlass != null)
+            {
+                OnChangeGlass(ask, asksize, ActionGlassItem.buy);
+                OnChangeGlass(bid, bidsize, ActionGlassItem.sell);
+            }
             if (!glass.ContainsKey(bid)) { glass.Add(bid, bidsize); return; }
             if (!glass.ContainsKey(ask)) { glass.Add(ask, asksize); return; }
 
