@@ -27,8 +27,10 @@ namespace MyMoney
             UpBrush.Color = Color.FromArgb(255, 255, 228, 225);
             DownBrush = new SolidColorBrush();
             DownBrush.Color = Color.FromArgb(255, 152, 251, 152);
+            ZeroBrush = new SolidColorBrush();
+            ZeroBrush.Color = Color.FromArgb(255, 252, 252, 252);
         }
-        public void ChangeValues(double _price, double _volume, ActionGlassItem _action)
+        public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
         {
             if (GlassValues.ContainsKey(_price))
             {
@@ -40,11 +42,31 @@ namespace MyMoney
                         canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                             (ThreadStart)delegate()
                             {
+                                double minAsk = GetMinAsk();
+                                double maxBid = GetMaxBid();
                                 GlassValues[_price].tbVolume.Text = _volume.ToString();
                                 if (_action == ActionGlassItem.buy)
+                                {
                                     GlassValues[_price].rectMain.Fill = UpBrush;
-                                else if (_action == ActionGlassItem.buy)
+                                    if (_row == 0)
+                                        for(double j = _price - StepGlass; j >= GetMinAsk(); j = j - StepGlass)
+                                        {
+                                            GlassValues[j].action = ActionGlassItem.zero;
+                                            GlassValues[j].rectMain.Fill = ZeroBrush;
+                                            GlassValues[j].tbVolume.Text = "";
+                                        }
+                                }
+                                else if (_action == ActionGlassItem.sell)
+                                {
                                     GlassValues[_price].rectMain.Fill = DownBrush;
+                                    if (_row == 0)
+                                        for (double j = _price + StepGlass; j <= GetMaxBid(); j = j + StepGlass)
+                                        {
+                                            GlassValues[j].action = ActionGlassItem.zero;
+                                            GlassValues[j].rectMain.Fill = ZeroBrush;
+                                            GlassValues[j].tbVolume.Text = "";
+                                        }
+                                }
                             });
                 }
             }
@@ -53,6 +75,10 @@ namespace MyMoney
                 GlassValues.Add(_price, new GlassItem(_volume, _action));
                 RebuildGlass();
             }
+        }
+        public void AddTick(double _price, double _volume, ActionGlassItem _action)
+        {
+
         }
         public void RebuildGlass()
         {
@@ -142,6 +168,7 @@ namespace MyMoney
 
         public SolidColorBrush UpBrush;
         public SolidColorBrush DownBrush;
+        public SolidColorBrush ZeroBrush;
     }
 
     public class GlassItem

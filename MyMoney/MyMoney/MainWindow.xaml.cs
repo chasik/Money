@@ -107,6 +107,7 @@ namespace MyMoney
                     , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
                 (dsource as QuotesFromSmartCom).OnChangeIndicator += MainWindow_OnChangeIndicator;
                 (dsource as QuotesFromSmartCom).OnChangeGlass += GlassVisual.ChangeValues;
+                (dsource as QuotesFromSmartCom).OnAddTick += GlassVisual.AddTick;
             }
             dsource.ConnectToDataSource();
             dsource.OnInformation += dsource_OnInformation;

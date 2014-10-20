@@ -13,7 +13,8 @@ namespace MyMoney
     public class QuotesFromSmartCom : IDataSource
     {
         public delegate void ChangeIndicator(string _value);
-        public delegate void ChangeGlass(double _p, double _v, ActionGlassItem _a);
+        public delegate void ChangeGlass(double _p, double _v, int _row, ActionGlassItem _a);
+        public delegate void AddTick(double _p, double _v, ActionGlassItem _a);
 
         public Boolean Trading = false;
         private int _martinlevel = 0;
@@ -51,6 +52,7 @@ namespace MyMoney
 
         public event ChangeIndicator OnChangeIndicator;
         public event ChangeGlass OnChangeGlass;
+        public event AddTick OnAddTick;
 
         public event GetInformation OnInformation;
 
@@ -333,12 +335,14 @@ namespace MyMoney
             if (action == StOrder_Action.StOrder_Action_Buy)
             {
                 v = volume;
-                lastAsk = price;
+                if (OnAddTick != null)
+                    OnAddTick(price, volume, ActionGlassItem.buy);
             }
             else if (action == StOrder_Action.StOrder_Action_Sell)
             {
                 v = -volume;
-                lastBid = price;
+                if (OnAddTick != null)
+                    OnAddTick(price, volume, ActionGlassItem.sell);
             }
             DateTime dttemp = DateTime.Now;
             if (!activeAmounts.ContainsKey(dttemp))
@@ -373,8 +377,12 @@ namespace MyMoney
         {
             if (OnChangeGlass != null)
             {
-                OnChangeGlass(ask, asksize, ActionGlassItem.buy);
-                OnChangeGlass(bid, bidsize, ActionGlassItem.sell);
+                OnChangeGlass(ask, asksize, row, ActionGlassItem.buy);
+                OnChangeGlass(bid, bidsize, row, ActionGlassItem.sell);
+            }
+            if (row == 0)
+            {
+                lastAsk = ask; lastBid = bid;
             }
             if (!glass.ContainsKey(bid)) { glass.Add(bid, bidsize); return; }
             if (!glass.ContainsKey(ask)) { glass.Add(ask, asksize); return; }
