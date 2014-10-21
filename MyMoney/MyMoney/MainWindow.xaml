@@ -90,7 +90,9 @@
         <TextBox x:Name="tbDelayFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="409,380,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="32" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
         <TextBox x:Name="tbDelayStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="446,380,0,0" TextWrapping="Wrap" Text="2000" VerticalAlignment="Top" Width="28" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
         <TextBox x:Name="tbDelayCurrent" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="324,380,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="33" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
-        <Canvas x:Name="glassCanvas" Grid.Column="1" HorizontalAlignment="Left" Margin="479,10,0,18" Width="253"/>
+        <Canvas x:Name="glassCanvas" Grid.Column="1" HorizontalAlignment="Left" Margin="479,0,0,0" Width="253">
+            <Rectangle x:Name="indicatorRect" Fill="#FF155FFF" Height="741" Canvas.Left="205" Stroke="Black" Width="48"/>
+        </Canvas>
 
     </Grid>
 </Window>

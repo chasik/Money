@@ -45,7 +45,7 @@ namespace MyMoney
 
             InitializeComponent();
             tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
-            GlassVisual = new GlassGraph(glassCanvas, 10);
+            GlassVisual = new GlassGraph(glassCanvas, indicatorRect, 10);
 
             allResults = new ObservableCollection<ResultOneThreadSumm>();
             detailResults = new ObservableCollection<ResultOneThread>();
@@ -107,6 +107,7 @@ namespace MyMoney
                     , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
                 (dsource as QuotesFromSmartCom).OnChangeIndicator += MainWindow_OnChangeIndicator;
                 (dsource as QuotesFromSmartCom).OnChangeGlass += GlassVisual.ChangeValues;
+                (dsource as QuotesFromSmartCom).OnChangeVisualIndicator += GlassVisual.ChangeVisualIndicator;
                 (dsource as QuotesFromSmartCom).OnAddTick += GlassVisual.AddTick;
             }
             dsource.ConnectToDataSource();

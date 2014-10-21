@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -20,7 +21,7 @@ namespace MyMoney
     };
     public class GlassGraph
     {
-        public GlassGraph(Canvas _c, double _step)
+        public GlassGraph(Canvas _c, Rectangle _indicatorRect, double _step)
         {
             canvas = _c;
             StepGlass = _step;
@@ -30,6 +31,17 @@ namespace MyMoney
             DownBrush.Color = Color.FromArgb(255, 152, 251, 152);
             ZeroBrush = new SolidColorBrush();
             ZeroBrush.Color = Color.FromArgb(255, 252, 252, 252);
+            GradientBrushForIndicator = new LinearGradientBrush();
+            GradientBrushForIndicator.StartPoint = new Point(0, 0);
+            GradientBrushForIndicator.EndPoint = new Point(0, 1);
+            GradientStop gs1 = new GradientStop(Colors.Blue, 0.2);
+            GradientStop gs2 = new GradientStop(Colors.Red, 0.6);
+            GradientBrushForIndicator.GradientStops.Add(gs1);
+            GradientBrushForIndicator.GradientStops.Add(gs2);
+
+
+            _indicatorRect.Fill = GradientBrushForIndicator;
+            indicatorRect = _indicatorRect;
         }
         public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -113,6 +125,24 @@ namespace MyMoney
         {
 
         }
+        public void ChangeVisualIndicator(List<int> _listind)
+        {
+            canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate()
+                {
+                    GradientBrushForIndicator.GradientStops.Clear();
+                    int ival = 0;
+                    int s = 0;
+                    int j = 0; // счетчик
+                    for (int i = 1; i <= _listind.Count; i++)
+                    {
+                        s += _listind[i - 1];
+                        ival = s / i;
+                        GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Colors.Blue : Colors.Red, (double)i / 50));
+                    }
+                    //indicatorRect.Fill = ;
+                });
+        }
         public void RebuildGlass()
         {
             lastMinAsk = GetMinAsk();
@@ -120,7 +150,7 @@ namespace MyMoney
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    canvas.Children.Clear();
+                    canvas.Children.RemoveRange(1, canvas.Children.Count - 1);
                     double centerPrice = lastMaxBid;
                     double st;
                     centerCanvas = (int)(canvas.ActualHeight / 2);
@@ -214,6 +244,8 @@ namespace MyMoney
         public SolidColorBrush UpBrush;
         public SolidColorBrush DownBrush;
         public SolidColorBrush ZeroBrush;
+        public LinearGradientBrush GradientBrushForIndicator;
+        public Rectangle indicatorRect;
 
         public object objLock = new Object();
     }
