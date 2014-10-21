@@ -45,6 +45,34 @@ namespace MyMoney
                             {
                                 double minAsk = GetMinAsk();
                                 double maxBid = GetMaxBid();
+                                // сотрим, далеко ли "уполз" стакан
+                                double deltaAsk = minAsk - lastMinAsk;
+                                if (Math.Abs(deltaAsk) > 100)
+                                {
+                                    lock (objLock)
+                                    {
+                                        foreach (GlassItem gi in GlassValues.Values)
+                                        {
+                                            if (gi.rectMain != null)
+                                            {
+                                                double top = Canvas.GetTop(gi.rectMain);
+                                                gi.rectMain.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(800)));
+                                            }
+                                            if (gi.tbVolume != null)
+                                            {
+                                                double top = Canvas.GetTop(gi.tbVolume);
+                                                gi.tbVolume.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(800)));
+                                            }
+                                            if (gi.tbPrice != null)
+                                            {
+                                                double top = Canvas.GetTop(gi.tbPrice);
+                                                gi.tbPrice.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(800)));
+                                            }
+                                        }
+                                    }
+                                    lastMinAsk = minAsk;
+                                    lastMaxBid = maxBid;
+                                }
                                 GlassValues[_price].tbVolume.Text = _volume.ToString();
                                 if (_action == ActionGlassItem.buy)
                                 {
@@ -68,8 +96,8 @@ namespace MyMoney
                                             GlassValues[j].tbVolume.Text = "";
                                         }
                                 }
-                                GlassValues[_price].tbVolume.BeginAnimation(Canvas.LeftProperty, new DoubleAnimation(5, 50, TimeSpan.FromMilliseconds(10000)));
-                            });
+                                //GlassValues[_price].tbVolume.BeginAnimation(Canvas.LeftProperty, new DoubleAnimation(5, 50, TimeSpan.FromMilliseconds(10000)));
+                                });
                 }
             }
             else
@@ -87,21 +115,21 @@ namespace MyMoney
         }
         public void RebuildGlass()
         {
-            double minAsk = GetMinAsk();
-            double maxBid = GetMaxBid();
+            lastMinAsk = GetMinAsk();
+            lastMaxBid = GetMaxBid();
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
                     canvas.Children.Clear();
-                    double centerPrice = maxBid;
+                    double centerPrice = lastMaxBid;
                     double st;
                     centerCanvas = (int)(canvas.ActualHeight / 2);
-                    for (int i = 0; i <= centerCanvas / 15; i++)
+                    for (int i = 0; i <= (int)(GlassValues.Count / 2); i++)
                     {
                         st = centerPrice + i * StepGlass;
-                        DrawItem(i, minAsk, maxBid);
-                        if (i != 0) 
-                            DrawItem(-i, minAsk, maxBid);
+                        DrawItem(i, lastMinAsk, lastMaxBid);
+                        if (i != 0)
+                            DrawItem(-i, lastMinAsk, lastMaxBid);
                     }
                 });
         }
@@ -116,15 +144,15 @@ namespace MyMoney
                 block.Fill = DownBrush;
             block.SnapsToDevicePixels = true;
             block.Width = canvas.ActualWidth / 6 * 3;
-            block.Height = 15;
+            block.Height = 14;
             Canvas.SetLeft(block, 0);
-            Canvas.SetTop(block, centerCanvas - i * 15);
+            Canvas.SetTop(block, centerCanvas - i * 14);
             TextBlock t = new TextBlock();
             if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
                 t.Text = (_maxBid + i * StepGlass).ToString("### ###");
             t.FontSize = 9;
             Canvas.SetLeft(t, canvas.ActualWidth / 6 * 3 - 38);
-            Canvas.SetTop(t, centerCanvas - i * 15 + 1);
+            Canvas.SetTop(t, centerCanvas - i * 14 + 1);
             TextBlock t1 = new TextBlock();
             if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
             {
@@ -139,7 +167,7 @@ namespace MyMoney
 
             t1.FontSize = 9;
             Canvas.SetLeft(t1, 5);
-            Canvas.SetTop(t1, centerCanvas - i * 15 + 1);
+            Canvas.SetTop(t1, centerCanvas - i * 14 + 1);
             canvas.Children.Add(block);
             canvas.Children.Add(t);
             canvas.Children.Add(t1);
@@ -180,6 +208,8 @@ namespace MyMoney
         public double StepGlass = 0;
         public Canvas canvas;
         public int centerCanvas;
+        private double lastMinAsk;
+        private double lastMaxBid;
 
         public SolidColorBrush UpBrush;
         public SolidColorBrush DownBrush;
