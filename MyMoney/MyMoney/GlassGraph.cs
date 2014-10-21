@@ -125,7 +125,7 @@ namespace MyMoney
         {
 
         }
-        public void ChangeVisualIndicator(List<int> _listind)
+        public void ChangeVisualIndicator(int[] _arrind)
         {
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
@@ -133,14 +133,14 @@ namespace MyMoney
                     GradientBrushForIndicator.GradientStops.Clear();
                     int ival = 0;
                     int s = 0;
-                    int j = 0; // счетчик
-                    for (int i = 1; i <= _listind.Count; i++)
+                    for (int i = 0; i < _arrind.Length; i++)
                     {
-                        s += _listind[i - 1];
-                        ival = s / i;
-                        GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Colors.Blue : Colors.Red, (double)i / 50));
+                        s += _arrind[i];
+                        ival = s / (i + 1);
+                        byte b = Convert.ToByte(Math.Abs(ival + 50));
+                        byte b1 = Convert.ToByte(Math.Abs(ival) + 100);
+                        GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b1, 255) : Color.FromRgb(255, b, 0), 1 - (double)i / 50));
                     }
-                    //indicatorRect.Fill = ;
                 });
         }
         public void RebuildGlass()

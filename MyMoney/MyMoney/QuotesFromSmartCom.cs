@@ -15,9 +15,7 @@ namespace MyMoney
         public delegate void ChangeIndicator(string _value);
         public delegate void ChangeGlass(double _p, double _v, int _row, ActionGlassItem _a);
         public delegate void AddTick(double _p, double _v, ActionGlassItem _a);
-        public delegate void ChangeVisualIndicator(List<int> _ind);
-
-        public object objLock = new Object();
+        public delegate void ChangeVisualIndicator(int[] _ind);
 
         public Boolean Trading = false;
         private int _martinlevel = 0;
@@ -87,8 +85,8 @@ namespace MyMoney
             scom = new SmartCOM3Lib.StServerClass();
             scom.ConfigureClient("logLevel=4;CalcPlannedPos=no;logFilePath=D:");
             scom.ConfigureServer("logLevel=4;pingTimeOut=20;logFilePath=D:");
-            //scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
-            scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
+            scom.connect("mx2.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
             workSymbol = "RTS-12.14_FT";
             scom.Connected += scom_Connected;
@@ -406,10 +404,7 @@ namespace MyMoney
                     //}
                     //int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                     int sumlong = 0, sumshort = 0;
-                    lock (objLock)
-                    {
-                        tempListForIndicator.Clear();
-                    }
+                    tempListForIndicator.Clear();
                     // новая версия, более взвешенное значение (как год назад)
                     for (int i = 0; i < 50; i++)
                     {
@@ -429,14 +424,12 @@ namespace MyMoney
                     }
 
                     if (OnChangeVisualIndicator != null)
-                        lock (objLock)
-                        {
-                            OnChangeVisualIndicator(tempListForIndicator);
-                        }
+                        OnChangeVisualIndicator(tempListForIndicator.ToArray());
+
                     int s = 0;
-                    foreach (int ivalue in tempListForIndicator)
+                    for (int i = 0; i < paramTh.glassHeight; i++ )
                     {
-                        s += ivalue;
+                        s += tempListForIndicator[i];
                     }
                     int indicatorTemp = (int) s / paramTh.glassHeight;
                     if (indicatorTemp != indicator && OnChangeIndicator != null)
