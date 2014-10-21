@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -36,41 +37,39 @@ namespace MyMoney
             {
                 if (GlassValues[_price].volume != _volume || GlassValues[_price].action != _action)
                 {
-                    lock (objLock)
-                    {
-                        GlassValues[_price].volume = _volume;
-                        GlassValues[_price].action = _action;
-                        if (GlassValues[_price].rectMain != null)
-                            canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
-                                (ThreadStart)delegate()
+                    GlassValues[_price].volume = _volume;
+                    GlassValues[_price].action = _action;
+                    if (GlassValues[_price].rectMain != null)
+                        canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                            (ThreadStart)delegate()
+                            {
+                                double minAsk = GetMinAsk();
+                                double maxBid = GetMaxBid();
+                                GlassValues[_price].tbVolume.Text = _volume.ToString();
+                                if (_action == ActionGlassItem.buy)
                                 {
-                                    double minAsk = GetMinAsk();
-                                    double maxBid = GetMaxBid();
-                                    GlassValues[_price].tbVolume.Text = _volume.ToString();
-                                    if (_action == ActionGlassItem.buy)
-                                    {
-                                        GlassValues[_price].rectMain.Fill = UpBrush;
-                                        if (_row == 0)
-                                            for (double j = _price - StepGlass; j >= GetMinAsk(); j = j - StepGlass)
-                                            {
-                                                GlassValues[j].action = ActionGlassItem.zero;
-                                                GlassValues[j].rectMain.Fill = ZeroBrush;
-                                                GlassValues[j].tbVolume.Text = "";
-                                            }
-                                    }
-                                    else if (_action == ActionGlassItem.sell)
-                                    {
-                                        GlassValues[_price].rectMain.Fill = DownBrush;
-                                        if (_row == 0)
-                                            for (double j = _price + StepGlass; j <= GetMaxBid(); j = j + StepGlass)
-                                            {
-                                                GlassValues[j].action = ActionGlassItem.zero;
-                                                GlassValues[j].rectMain.Fill = ZeroBrush;
-                                                GlassValues[j].tbVolume.Text = "";
-                                            }
-                                    }
-                                });
-                    }
+                                    GlassValues[_price].rectMain.Fill = UpBrush;
+                                    if (_row == 0)
+                                        for (double j = _price - StepGlass; j >= GetMinAsk(); j = j - StepGlass)
+                                        {
+                                            GlassValues[j].action = ActionGlassItem.zero;
+                                            GlassValues[j].rectMain.Fill = ZeroBrush;
+                                            GlassValues[j].tbVolume.Text = "";
+                                        }
+                                }
+                                else if (_action == ActionGlassItem.sell)
+                                {
+                                    GlassValues[_price].rectMain.Fill = DownBrush;
+                                    if (_row == 0)
+                                        for (double j = _price + StepGlass; j <= GetMaxBid(); j = j + StepGlass)
+                                        {
+                                            GlassValues[j].action = ActionGlassItem.zero;
+                                            GlassValues[j].rectMain.Fill = ZeroBrush;
+                                            GlassValues[j].tbVolume.Text = "";
+                                        }
+                                }
+                                GlassValues[_price].tbVolume.BeginAnimation(Canvas.LeftProperty, new DoubleAnimation(5, 50, TimeSpan.FromMilliseconds(10000)));
+                            });
                 }
             }
             else
