@@ -36,43 +36,49 @@ namespace MyMoney
             {
                 if (GlassValues[_price].volume != _volume || GlassValues[_price].action != _action)
                 {
-                    GlassValues[_price].volume = _volume;
-                    GlassValues[_price].action = _action;
-                    if (GlassValues[_price].rectMain != null)
-                        canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
-                            (ThreadStart)delegate()
-                            {
-                                double minAsk = GetMinAsk();
-                                double maxBid = GetMaxBid();
-                                GlassValues[_price].tbVolume.Text = _volume.ToString();
-                                if (_action == ActionGlassItem.buy)
+                    lock (objLock)
+                    {
+                        GlassValues[_price].volume = _volume;
+                        GlassValues[_price].action = _action;
+                        if (GlassValues[_price].rectMain != null)
+                            canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                                (ThreadStart)delegate()
                                 {
-                                    GlassValues[_price].rectMain.Fill = UpBrush;
-                                    if (_row == 0)
-                                        for(double j = _price - StepGlass; j >= GetMinAsk(); j = j - StepGlass)
-                                        {
-                                            GlassValues[j].action = ActionGlassItem.zero;
-                                            GlassValues[j].rectMain.Fill = ZeroBrush;
-                                            GlassValues[j].tbVolume.Text = "";
-                                        }
-                                }
-                                else if (_action == ActionGlassItem.sell)
-                                {
-                                    GlassValues[_price].rectMain.Fill = DownBrush;
-                                    if (_row == 0)
-                                        for (double j = _price + StepGlass; j <= GetMaxBid(); j = j + StepGlass)
-                                        {
-                                            GlassValues[j].action = ActionGlassItem.zero;
-                                            GlassValues[j].rectMain.Fill = ZeroBrush;
-                                            GlassValues[j].tbVolume.Text = "";
-                                        }
-                                }
-                            });
+                                    double minAsk = GetMinAsk();
+                                    double maxBid = GetMaxBid();
+                                    GlassValues[_price].tbVolume.Text = _volume.ToString();
+                                    if (_action == ActionGlassItem.buy)
+                                    {
+                                        GlassValues[_price].rectMain.Fill = UpBrush;
+                                        if (_row == 0)
+                                            for (double j = _price - StepGlass; j >= GetMinAsk(); j = j - StepGlass)
+                                            {
+                                                GlassValues[j].action = ActionGlassItem.zero;
+                                                GlassValues[j].rectMain.Fill = ZeroBrush;
+                                                GlassValues[j].tbVolume.Text = "";
+                                            }
+                                    }
+                                    else if (_action == ActionGlassItem.sell)
+                                    {
+                                        GlassValues[_price].rectMain.Fill = DownBrush;
+                                        if (_row == 0)
+                                            for (double j = _price + StepGlass; j <= GetMaxBid(); j = j + StepGlass)
+                                            {
+                                                GlassValues[j].action = ActionGlassItem.zero;
+                                                GlassValues[j].rectMain.Fill = ZeroBrush;
+                                                GlassValues[j].tbVolume.Text = "";
+                                            }
+                                    }
+                                });
+                    }
                 }
             }
             else
             {
-                GlassValues.Add(_price, new GlassItem(_volume, _action));
+                lock (objLock)
+                {
+                    GlassValues.Add(_price, new GlassItem(_volume, _action));
+                }
                 RebuildGlass();
             }
         }
@@ -124,9 +130,12 @@ namespace MyMoney
             if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
             {
                 t1.Text = GlassValues[_maxBid + i * StepGlass].volume.ToString();
-                GlassValues[_maxBid + i * StepGlass].rectMain = block;
-                GlassValues[_maxBid + i * StepGlass].tbPrice = t;
-                GlassValues[_maxBid + i * StepGlass].tbVolume = t1;
+                lock (objLock)
+                {
+                    GlassValues[_maxBid + i * StepGlass].rectMain = block;
+                    GlassValues[_maxBid + i * StepGlass].tbPrice = t;
+                    GlassValues[_maxBid + i * StepGlass].tbVolume = t1;
+                }
             }
 
             t1.FontSize = 9;
@@ -143,20 +152,27 @@ namespace MyMoney
         private double GetMinAsk()
         {
             double _minA = 1000000;
-            foreach (double p in GlassValues.Keys)
+            lock (objLock)
             {
-                if (GlassValues[p].action == ActionGlassItem.buy && p < _minA)
-                    _minA = p;
+                foreach (double p in GlassValues.Keys)
+                {
+                    if (GlassValues[p].action == ActionGlassItem.buy && p < _minA)
+                        _minA = p;
+                }                
             }
+
             return _minA;
         }
         private double GetMaxBid()
         {
             double _maxB = -1000000;
-            foreach (double p in GlassValues.Keys)
+            lock (objLock)
             {
-                if (GlassValues[p].action == ActionGlassItem.sell && p > _maxB)
-                    _maxB = p;
+                foreach (double p in GlassValues.Keys)
+                {
+                    if (GlassValues[p].action == ActionGlassItem.sell && p > _maxB)
+                        _maxB = p;
+                }
             }
             return _maxB;
         }
@@ -169,6 +185,8 @@ namespace MyMoney
         public SolidColorBrush UpBrush;
         public SolidColorBrush DownBrush;
         public SolidColorBrush ZeroBrush;
+
+        public object objLock = new Object();
     }
 
     public class GlassItem

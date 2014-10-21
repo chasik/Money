@@ -83,8 +83,8 @@ namespace MyMoney
             scom = new SmartCOM3Lib.StServerClass();
             scom.ConfigureClient("logLevel=4;CalcPlannedPos=no;logFilePath=D:");
             scom.ConfigureServer("logLevel=4;pingTimeOut=20;logFilePath=D:");
-            scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
-            //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
+            //scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
             workSymbol = "RTS-12.14_FT";
             scom.Connected += scom_Connected;
