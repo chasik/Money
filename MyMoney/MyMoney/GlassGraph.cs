@@ -21,7 +21,7 @@ namespace MyMoney
     };
     public class GlassGraph
     {
-        public GlassGraph(Canvas _c, Rectangle _indicatorRect, double _step)
+        public GlassGraph(Canvas _c, Rectangle _indicatorRect, Rectangle _indicatorRect2, double _step)
         {
             canvas = _c;
             StepGlass = _step;
@@ -34,14 +34,13 @@ namespace MyMoney
             GradientBrushForIndicator = new LinearGradientBrush();
             GradientBrushForIndicator.StartPoint = new Point(0, 0);
             GradientBrushForIndicator.EndPoint = new Point(0, 1);
-            GradientStop gs1 = new GradientStop(Colors.Blue, 0.2);
-            GradientStop gs2 = new GradientStop(Colors.Red, 0.6);
-            GradientBrushForIndicator.GradientStops.Add(gs1);
-            GradientBrushForIndicator.GradientStops.Add(gs2);
+            GradientBrushForIndicator2 = new LinearGradientBrush();
+            GradientBrushForIndicator2.StartPoint = new Point(0, 0);
+            GradientBrushForIndicator2.EndPoint = new Point(0, 1);
 
 
             _indicatorRect.Fill = GradientBrushForIndicator;
-            indicatorRect = _indicatorRect;
+            _indicatorRect2.Fill = GradientBrushForIndicator2;
         }
         public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -131,15 +130,21 @@ namespace MyMoney
                 (ThreadStart)delegate()
                 {
                     GradientBrushForIndicator.GradientStops.Clear();
-                    int ival = 0;
+                    GradientBrushForIndicator2.GradientStops.Clear();
+                    int ival = 0, ival2 = 0;
                     int s = 0;
                     for (int i = 0; i < _arrind.Length; i++)
                     {
                         s += _arrind[i];
-                        ival = s / (i + 1);
+                        //ival = s / (i + 1);
+                        ival = _arrind[i];
+                        ival2 = s / (i + 1);
                         byte b = Convert.ToByte(Math.Abs(ival + 50));
                         byte b1 = Convert.ToByte(Math.Abs(ival) + 100);
+                        byte b2 = Convert.ToByte(Math.Abs(ival2 + 50));
+                        byte b22 = Convert.ToByte(Math.Abs(ival2) + 100);
                         GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b1, 255) : Color.FromRgb(255, b, 0), 1 - (double)i / 50));
+                        GradientBrushForIndicator2.GradientStops.Add(new GradientStop(ival2 > 0 ? Color.FromRgb(0, b22, 255) : Color.FromRgb(255, b2, 0), 1 - (double)i / 50));
                     }
                 });
         }
@@ -150,7 +155,7 @@ namespace MyMoney
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    canvas.Children.RemoveRange(1, canvas.Children.Count - 1);
+                    canvas.Children.RemoveRange(2, canvas.Children.Count - 2);
                     double centerPrice = lastMaxBid;
                     double st;
                     centerCanvas = (int)(canvas.ActualHeight / 2);
@@ -245,7 +250,7 @@ namespace MyMoney
         public SolidColorBrush DownBrush;
         public SolidColorBrush ZeroBrush;
         public LinearGradientBrush GradientBrushForIndicator;
-        public Rectangle indicatorRect;
+        public LinearGradientBrush GradientBrushForIndicator2;
 
         public object objLock = new Object();
     }

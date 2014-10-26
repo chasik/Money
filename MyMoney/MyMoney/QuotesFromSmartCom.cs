@@ -13,9 +13,6 @@ namespace MyMoney
     public class QuotesFromSmartCom : IDataSource
     {
         public delegate void ChangeIndicator(string _value);
-        public delegate void ChangeGlass(double _p, double _v, int _row, ActionGlassItem _a);
-        public delegate void AddTick(double _p, double _v, ActionGlassItem _a);
-        public delegate void ChangeVisualIndicator(int[] _ind);
 
         public Boolean Trading = false;
         private int _martinlevel = 0;
@@ -48,15 +45,13 @@ namespace MyMoney
         public int ShortShotCount { get; set; }
 
         public event ConnectedHandler OnConnected;
-
         public event GetInstrumentsHandler OnGetInstruments;
-
         public event ChangeIndicator OnChangeIndicator;
+        public event GetInformation OnInformation;
+
         public event ChangeGlass OnChangeGlass;
         public event ChangeVisualIndicator OnChangeVisualIndicator;
         public event AddTick OnAddTick;
-
-        public event GetInformation OnInformation;
 
         SortedDictionary<double, double> glass = new SortedDictionary<double, double>();
         List<int> tempListForIndicator = new List<int>();
@@ -431,14 +426,15 @@ namespace MyMoney
                     {
                         s += tempListForIndicator[i];
                     }
-                    int indicatorTemp = (int) s / paramTh.glassHeight;
+                    //int indicatorTemp = (int) s / paramTh.glassHeight;
+                    int indicatorTemp = tempListForIndicator[paramTh.glassHeight - 1];
                     if (indicatorTemp != indicator && OnChangeIndicator != null)
                         OnChangeIndicator(indicatorTemp.ToString() + "\tA: " + activeTradingVolume.ToString()
                             + "\tV: " + activeTradingDiraction.ToString() 
                             + "\tU: " + LongShotCount.ToString() + " D: " + ShortShotCount.ToString());
                     indicator = indicatorTemp;
                     // вход лонг
-                    if (indicator <= -paramTh.indicatorLongValue)
+                    if (indicator >= paramTh.indicatorLongValue)
                     //if ((activeTradingVolume < 500 && indicator <= -paramTh.indicatorLongValue)
                     //    || (activeTradingVolume > 500 && indicator >= paramTh.indicatorLongValue)) // || activeTradingDiraction > 400)
                     {
@@ -465,7 +461,7 @@ namespace MyMoney
                         }
                     }
                     // вход шорт
-                    else if (indicator >= paramTh.indicatorShortValue)
+                    else if (indicator <= -paramTh.indicatorShortValue)
                     //else if ((activeTradingVolume < 500 && indicator >= paramTh.indicatorShortValue)
                     //    || (activeTradingVolume > 500 && indicator <= -paramTh.indicatorShortValue)) // || activeTradingDiraction < -400)
                     {

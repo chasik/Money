@@ -166,8 +166,8 @@ namespace WpfRobot
             if (updatebid)
             {
                 new SqlCommand("INSERT INTO [" + tablesnames["bidask"] + "]"
-                                 + " (price, volume)"
-                                 + " VALUES (" + bidstr + ", " + bidsizestr + ");"
+                                 + " (price, volume, row, typeprice)"
+                                 + " VALUES (" + bidstr + ", " + bidsizestr + ", " + row + ", 2);"
                     , sqlconn).ExecuteNonQueryAsync();
             }
 
@@ -186,8 +186,8 @@ namespace WpfRobot
             if (updateask)
             {
                 new SqlCommand("INSERT INTO [" + tablesnames["bidask"] + "]"
-                                 + " (price, volume)"
-                                 + " VALUES (" + askstr + ", " + asksizestr + ");"
+                                 + " (price, volume, row, typeprice)"
+                                 + " VALUES (" + bidstr + ", " + bidsizestr + ", " + row + ", 1);"
                     , sqlconn).ExecuteNonQueryAsync();
             }
 
@@ -257,7 +257,9 @@ namespace WpfRobot
                             cretabq = @"idbidask int not null IDENTITY(1,1),
                                         dtserver datetime2 DEFAULT SYSDATETIME(),
                                         price real,
-                                        volume real";
+                                        volume real,
+                                        row int,
+                                        typeprice int";
                             break;
                         case "quotes":
                             cretabq = @"idquote int not null IDENTITY(1,1),

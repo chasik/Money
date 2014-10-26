@@ -15,6 +15,8 @@ namespace MyMoney
     {
         private object lockObj = new Object();
         public int countThreads = 0;
+        private bool _dovisual = false;
+
         private List<Thread> listThreads;
         private SqlConnection sqlconn;
         private SqlCommand sqlcommand = new SqlCommand();
@@ -41,6 +43,10 @@ namespace MyMoney
         public event GetInstrumentsHandler OnGetInstruments;
         public event ThreadStarted OnThreadTesterStart;
         public event GetInformation OnInformation;
+
+        public event ChangeGlass OnChangeGlass;
+        public event ChangeVisualIndicator OnChangeVisualIndicator;
+        public event AddTick OnAddTick;
         public QuotesFromBD() 
         {
             dtInstruments = new DataTable();
@@ -53,7 +59,18 @@ namespace MyMoney
             parametrsList = new List<ParametrsForTest>();
             listThreads = new List<Thread>();
         }
-
+        public bool DoVisualisation
+        {
+            get
+            {
+                return _dovisual;
+            }
+            set
+            {
+                _dovisual = value;
+                if (value) countThreads = 1;
+            }
+        }
         public void ConnectToDataSource()
         {
             new Thread(new ThreadStart(ThreadConnect)).Start();
@@ -197,7 +214,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(11, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -210,7 +227,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(11, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -353,7 +370,7 @@ namespace MyMoney
                 foreach (DataRow dr in dt.Rows)
                 {
                     #region торговля
-                    
+                    Thread.Sleep(100);
                     // совершена сделка
                     if (!dr.IsNull("priceTick") && (pricetick = (int?)dr.Field<float?>("priceTick")) > 0)// && pricetick != (int?)dr.Field<float?>("priceTick")) // вторая часть условия - если перед этим была таже цена - пропускаем
                     {
@@ -468,6 +485,18 @@ namespace MyMoney
                     {
                         int updatepricegl = (int)dr.Field<float?>("price");
                         int updatevolumegl = (int)dr.Field<float?>("volume");
+                        if (DoVisualisation && OnChangeGlass != null)
+                        {
+                            int row = 10;
+                            if (ask == updatepricegl || bid == updatepricegl)
+                                row = 0;
+                            ActionGlassItem act = ActionGlassItem.zero;
+                            if (updatepricegl >= ask)
+                                act = ActionGlassItem.buy;
+                            else if (updatepricegl <= bid)
+                                act = ActionGlassItem.sell;
+                            OnChangeGlass(updatepricegl, updatevolumegl, row, act);
+                        }
                         if (!glass.ContainsKey(updatepricegl))
                             glass.Add(updatepricegl, updatevolumegl);
                         else

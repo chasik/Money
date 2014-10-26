@@ -45,7 +45,7 @@ namespace MyMoney
 
             InitializeComponent();
             tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
-            GlassVisual = new GlassGraph(glassCanvas, indicatorRect, 10);
+            GlassVisual = new GlassGraph(glassCanvas, indicatorRect, indicatorRect2, 10);
 
             allResults = new ObservableCollection<ResultOneThreadSumm>();
             detailResults = new ObservableCollection<ResultOneThread>();
@@ -106,12 +106,13 @@ namespace MyMoney
                     , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
                     , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
                 (dsource as QuotesFromSmartCom).OnChangeIndicator += MainWindow_OnChangeIndicator;
-                (dsource as QuotesFromSmartCom).OnChangeGlass += GlassVisual.ChangeValues;
-                (dsource as QuotesFromSmartCom).OnChangeVisualIndicator += GlassVisual.ChangeVisualIndicator;
-                (dsource as QuotesFromSmartCom).OnAddTick += GlassVisual.AddTick;
             }
             dsource.ConnectToDataSource();
             dsource.OnInformation += dsource_OnInformation;
+
+            (dsource).OnChangeGlass += GlassVisual.ChangeValues;
+            (dsource).OnChangeVisualIndicator += GlassVisual.ChangeVisualIndicator;
+            (dsource).OnAddTick += GlassVisual.AddTick;
         }
 
         void dsource_OnInformation(string _mess)
@@ -254,6 +255,7 @@ namespace MyMoney
                 }
 
                 dsourceDB.countThreads = int.Parse(tbThreadCount.Text);
+                dsourceDB.DoVisualisation = (bool)chbVisualisationTest.IsChecked;
 
                 dsourceDB.dicDiapasonParams.Clear();
                 dsourceDB.dicDiapasonParams.Add("glassHeight", new diapasonTestParam(1, tbGlassStart.Text, tbGlassFinish.Text, tbGlassStep.Text));
