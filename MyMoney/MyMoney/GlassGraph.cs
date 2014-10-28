@@ -21,7 +21,7 @@ namespace MyMoney
     };
     public class GlassGraph
     {
-        public GlassGraph(Canvas _c, Rectangle _indicatorRect, Rectangle _indicatorRect2, double _step)
+        public GlassGraph(Canvas _c, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
         {
             canvas = _c;
             StepGlass = _step;
@@ -31,16 +31,27 @@ namespace MyMoney
             DownBrush.Color = Color.FromArgb(255, 152, 251, 152);
             ZeroBrush = new SolidColorBrush();
             ZeroBrush.Color = Color.FromArgb(255, 252, 252, 252);
+
             GradientBrushForIndicator = new LinearGradientBrush();
             GradientBrushForIndicator.StartPoint = new Point(0, 0);
             GradientBrushForIndicator.EndPoint = new Point(0, 1);
+
             GradientBrushForIndicator2 = new LinearGradientBrush();
             GradientBrushForIndicator2.StartPoint = new Point(0, 0);
             GradientBrushForIndicator2.EndPoint = new Point(0, 1);
 
+            GradientBrushForIndicatorAverage = new LinearGradientBrush();
+            GradientBrushForIndicatorAverage.StartPoint = new Point(0, 0);
+            GradientBrushForIndicatorAverage.EndPoint = new Point(0, 1);
+
+            GradientBrushForIndicatorAverage2 = new LinearGradientBrush();
+            GradientBrushForIndicatorAverage2.StartPoint = new Point(0, 0);
+            GradientBrushForIndicatorAverage2.EndPoint = new Point(0, 1);
 
             _indicatorRect.Fill = GradientBrushForIndicator;
             _indicatorRect2.Fill = GradientBrushForIndicator2;
+            _indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
+            _indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
         }
         public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -124,27 +135,41 @@ namespace MyMoney
         {
 
         }
-        public void ChangeVisualIndicator(int[] _arrind)
+        public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage)
         {
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
                     GradientBrushForIndicator.GradientStops.Clear();
                     GradientBrushForIndicator2.GradientStops.Clear();
-                    int ival = 0, ival2 = 0;
-                    int s = 0;
+                    GradientBrushForIndicatorAverage.GradientStops.Clear();
+                    GradientBrushForIndicatorAverage2.GradientStops.Clear();
+                    int ival = 0, ival2 = 0, ivalAvr = 0, ivalAvr2 = 0;
+                    int s = 0, sa = 0;
                     for (int i = 0; i < _arrind.Length; i++)
                     {
                         s += _arrind[i];
+                        sa += _arrindAverage[i];
                         //ival = s / (i + 1);
                         ival = _arrind[i];
                         ival2 = s / (i + 1);
-                        byte b = Convert.ToByte(Math.Abs(ival + 50));
-                        byte b1 = Convert.ToByte(Math.Abs(ival) + 100);
-                        byte b2 = Convert.ToByte(Math.Abs(ival2 + 50));
-                        byte b22 = Convert.ToByte(Math.Abs(ival2) + 100);
+                        ivalAvr = _arrindAverage[i];
+                        ivalAvr2 = sa / (i + 1);
+
+                        byte b = Convert.ToByte(Math.Abs(ival + 100));
+                        byte b1 = Convert.ToByte(Math.Abs(ival) + 150);
+                        byte b2 = Convert.ToByte(Math.Abs(ival2 + 100));
+                        byte b22 = Convert.ToByte(Math.Abs(ival2) + 150);
+                        byte ba = Convert.ToByte(Math.Abs(ivalAvr + 100));
+                        byte ba1 = Convert.ToByte(Math.Abs(ivalAvr) + 150);
+                        byte ba2 = Convert.ToByte(Math.Abs(ivalAvr2 + 100));
+                        byte ba22 = Convert.ToByte(Math.Abs(ivalAvr2) + 150);
+
                         GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b1, 255) : Color.FromRgb(255, b, 0), 1 - (double)i / 50));
                         GradientBrushForIndicator2.GradientStops.Add(new GradientStop(ival2 > 0 ? Color.FromRgb(0, b22, 255) : Color.FromRgb(255, b2, 0), 1 - (double)i / 50));
+
+                        GradientBrushForIndicatorAverage.GradientStops.Add(new GradientStop(ivalAvr > 0 ? Color.FromRgb(0, ba1, 255) : Color.FromRgb(255, ba, 0), 1 - (double)i / 50));
+                        GradientBrushForIndicatorAverage2.GradientStops.Add(new GradientStop(ivalAvr2 > 0 ? Color.FromRgb(0, ba22, 255) : Color.FromRgb(255, ba2, 0), 1 - (double)i / 50));
                     }
                 });
         }
@@ -155,7 +180,7 @@ namespace MyMoney
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    canvas.Children.RemoveRange(2, canvas.Children.Count - 2);
+                    canvas.Children.RemoveRange(4, canvas.Children.Count - 42);
                     double centerPrice = lastMaxBid;
                     double st;
                     centerCanvas = (int)(canvas.ActualHeight / 2);
@@ -251,6 +276,8 @@ namespace MyMoney
         public SolidColorBrush ZeroBrush;
         public LinearGradientBrush GradientBrushForIndicator;
         public LinearGradientBrush GradientBrushForIndicator2;
+        public LinearGradientBrush GradientBrushForIndicatorAverage;
+        public LinearGradientBrush GradientBrushForIndicatorAverage2;
 
         public object objLock = new Object();
     }

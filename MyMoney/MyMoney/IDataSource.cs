@@ -13,7 +13,7 @@ namespace MyMoney
     public delegate void GetInformation(string _mess);
     public delegate void ChangeGlass(double _p, double _v, int _row, ActionGlassItem _a);
     public delegate void AddTick(double _p, double _v, ActionGlassItem _a);
-    public delegate void ChangeVisualIndicator(int[] _ind);
+    public delegate void ChangeVisualIndicator(int[] _ind, int[] _indAverage);
 
     public interface IDataSource
     {

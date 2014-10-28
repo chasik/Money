@@ -55,6 +55,7 @@ namespace MyMoney
 
         SortedDictionary<double, double> glass = new SortedDictionary<double, double>();
         List<int> tempListForIndicator = new List<int>();
+        List<int> tempListForIndicatorAverage = new List<int>();
 
         ParametrsForTest _paramTh = new ParametrsForTest();
         public ParametrsForTest paramTh {
@@ -80,7 +81,7 @@ namespace MyMoney
             scom = new SmartCOM3Lib.StServerClass();
             scom.ConfigureClient("logLevel=4;CalcPlannedPos=no;logFilePath=D:");
             scom.ConfigureServer("logLevel=4;pingTimeOut=20;logFilePath=D:");
-            scom.connect("mx2.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
             workSymbol = "RTS-12.14_FT";
@@ -390,16 +391,18 @@ namespace MyMoney
                 glass[ask] = asksize;
                 if (glass.Count > 40)
                 {
-                    //int sumGlass = 0;
+                    int sumGlass = 0;
                     // среднее значение по стакану
-                    //for (int i = 0; i < paramTh.glassHeight; i++)
-                    //{
-                    //    sumGlass += glass.ContainsKey(lastAsk + i * 10) ? (int) glass[lastAsk + i * 10] : 0;
-                    //    sumGlass += glass.ContainsKey(lastBid - i * 10) ? (int) glass[lastBid - i * 10] : 0;
-                    //}
-                    //int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
+                    for (int i = 0; i < 50; i++)
+                    {
+                        sumGlass += glass.ContainsKey(lastAsk + i * 10) ? (int) glass[lastAsk + i * 10] : 0;
+                        sumGlass += glass.ContainsKey(lastBid - i * 10) ? (int) glass[lastBid - i * 10] : 0;
+                    }
+                    int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                     int sumlong = 0, sumshort = 0;
+                    int sumlongAverage = 0, sumshortAverage = 0;
                     tempListForIndicator.Clear();
+                    tempListForIndicatorAverage.Clear();
                     // новая версия, более взвешенное значение (как год назад)
                     for (int i = 0; i < 50; i++)
                     {
@@ -407,19 +410,20 @@ namespace MyMoney
                             sumlong += (int)glass[(int)lastAsk + i * 10];
                         if (glass.ContainsKey((int)lastBid - i * 10))
                             sumshort += (int)glass[(int)lastBid - i * 10]; 
-                        /*sumlong += glass.ContainsKey((int)lastAsk + i * 10)
+                        sumlongAverage += glass.ContainsKey((int)lastAsk + i * 10)
                             && glass[(int)lastAsk + i * 10] < averageGlass * paramTh.averageValue
-                            ? (int)glass[(int)lastAsk + i * 10] : averageGlass;
-                        sumshort += glass.ContainsKey((int)lastBid - i * 10)
+                            ? (int)glass[(int)lastAsk + i * 10] : averageGlass * (int)paramTh.averageValue;
+                        sumshortAverage += glass.ContainsKey((int)lastBid - i * 10)
                             && glass[(int)lastBid - i * 10] < averageGlass * paramTh.averageValue
-                            ? (int)glass[(int)lastBid - i * 10] : averageGlass;*/
+                            ? (int)glass[(int)lastBid - i * 10] : averageGlass * (int)paramTh.averageValue;
                         if (sumlong + sumshort == 0)
                             continue;
                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
+                        tempListForIndicatorAverage.Add((int)(sumlongAverage - sumshortAverage) * 100 / (sumlongAverage + sumshortAverage));
                     }
 
                     if (OnChangeVisualIndicator != null)
-                        OnChangeVisualIndicator(tempListForIndicator.ToArray());
+                        OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray());
 
                     int s = 0;
                     for (int i = 0; i < paramTh.glassHeight; i++ )
