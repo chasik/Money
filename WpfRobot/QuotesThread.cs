@@ -54,8 +54,8 @@ namespace WpfRobot
             login = _login;
             password = _password;
 
-            //smartCom = new SmartCom("mx.ittrade.ru", 8443, login, password);
-            smartCom = new SmartCom("st1.ittrade.ru", 8090, login, password);
+            smartCom = new SmartCom("mx.ittrade.ru", 8443, login, password);
+            //smartCom = new SmartCom("st1.ittrade.ru", 8090, login, password);
             smartCom.SmartC.Connected       += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConnected);
             smartCom.SmartC.Disconnected    += new SmartCOM3Lib._IStClient_DisconnectedEventHandler(this.ShowDisconnected);
             smartCom.SmartC.AddSymbol       += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
@@ -187,7 +187,7 @@ namespace WpfRobot
             {
                 new SqlCommand("INSERT INTO [" + tablesnames["bidask"] + "]"
                                  + " (price, volume, row, typeprice)"
-                                 + " VALUES (" + bidstr + ", " + bidsizestr + ", " + row + ", 1);"
+                                 + " VALUES (" + askstr + ", " + asksizestr + ", " + row + ", 1);"
                     , sqlconn).ExecuteNonQueryAsync();
             }
 

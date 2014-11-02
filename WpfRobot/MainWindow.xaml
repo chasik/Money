@@ -15,7 +15,6 @@
         </Grid.ColumnDefinitions>
         <TextBox x:Name="LoginBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="BP12800" VerticalAlignment="Top" Width="120"/>
         <PasswordBox x:Name="PassBox" HorizontalAlignment="Left" Margin="191,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.4,-0.2" Width="115" Password="8GVZ7Z" Height="23"/>
-        <Button Content="Button" HorizontalAlignment="Left" Height="23" Margin="359,10,0,0" VerticalAlignment="Top" Width="122" Click="Button_Click" Grid.ColumnSpan="2"/>
         <Label x:Name="Label1" Content="Label" HorizontalAlignment="Left" Margin="11,38,0,0" VerticalAlignment="Top" Width="664" Grid.ColumnSpan="3"/>
         <Label x:Name="Label2" Content="Label" HorizontalAlignment="Left" Margin="10,69,0,0" VerticalAlignment="Top" Width="670" Grid.ColumnSpan="3"/>
         <ComboBox x:Name="ComboBox1" HorizontalAlignment="Left" Margin="11,112,0,0" VerticalAlignment="Top" Width="634" Grid.ColumnSpan="3"/>

@@ -51,17 +51,7 @@ namespace WpfRobot
                 //break;
             }
         }
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            (sender as Button).IsEnabled = false;
-            sc = new SmartCom("mx.ittrade.ru", 8443, LoginBox.Text, PassBox.Password);
-            sc.SmartC.Connected     += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConnected);
-            sc.SmartC.Disconnected  += new SmartCOM3Lib._IStClient_DisconnectedEventHandler(this.ShowDisconnected);
-            sc.SmartC.AddPortfolio  += new SmartCOM3Lib._IStClient_AddPortfolioEventHandler(this.AddPortfolio);
-            sc.SmartC.AddSymbol     += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
 
-            sc.ConnectDataSource();
-        }
 
         public void ShowConnected() {
             sc.SmartC.GetPrortfolioList();

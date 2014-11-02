@@ -100,8 +100,10 @@ namespace MyMoney
                                 {
                                     GlassValues[_price].rectMain.Fill = UpBrush;
                                     if (_row == 0)
-                                        for (double j = _price - StepGlass; j >= GetMinAsk(); j = j - StepGlass)
+                                        for (double j = _price - StepGlass; j >= minAsk; j = j - StepGlass)
                                         {
+                                            if (!GlassValues.ContainsKey(j) || GlassValues[j].rectMain == null)
+                                                continue;
                                             GlassValues[j].action = ActionGlassItem.zero;
                                             GlassValues[j].rectMain.Fill = ZeroBrush;
                                             GlassValues[j].tbVolume.Text = "";
@@ -111,8 +113,10 @@ namespace MyMoney
                                 {
                                     GlassValues[_price].rectMain.Fill = DownBrush;
                                     if (_row == 0)
-                                        for (double j = _price + StepGlass; j <= GetMaxBid(); j = j + StepGlass)
+                                        for (double j = _price + StepGlass; j <= maxBid; j = j + StepGlass)
                                         {
+                                            if (!GlassValues.ContainsKey(j) || GlassValues[j].rectMain == null)
+                                                continue;
                                             GlassValues[j].action = ActionGlassItem.zero;
                                             GlassValues[j].rectMain.Fill = ZeroBrush;
                                             GlassValues[j].tbVolume.Text = "";

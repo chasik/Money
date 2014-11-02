@@ -33,6 +33,7 @@ namespace MyMoney
         public string isntrumentName;
         public string tableType;
         public string dateTable;
+        public DateTime dtTable;
         public int dayNum;
         public int monthNum;
         public int yearNum;

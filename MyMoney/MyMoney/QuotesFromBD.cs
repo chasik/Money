@@ -23,7 +23,7 @@ namespace MyMoney
         public DataTable dtInstruments { get; set; }
         public DataTable dtAllTables { get; set; }
         public Dictionary<string, int> dictInstruments;
-        public Dictionary<string, tableInfo> dictAllTables;
+        public SortedDictionary<string, tableInfo> dictAllTables;
         public Dictionary<string, DataTableWithCalcValues> dicSelectedDataTables;
         public List<string> selectedSessionList;
 
@@ -52,7 +52,7 @@ namespace MyMoney
             dtInstruments = new DataTable();
             dtAllTables = new DataTable();
             dictInstruments = new Dictionary<string, int>();
-            dictAllTables = new Dictionary<string, tableInfo>();
+            dictAllTables = new SortedDictionary<string, tableInfo>();
             dicSelectedDataTables = new Dictionary<string, DataTableWithCalcValues>();
             selectedSessionList = new List<string>();
             dicDiapasonParams = new Dictionary<string, diapasonTestParam>();
@@ -117,10 +117,11 @@ namespace MyMoney
             {
                 dictAllTables.Clear();
                 sqlcommand.CommandText = @"
-                    select at.idtable, at.idinstrument, i.name, tt.name as typetname, convert(date, at.datecre) as shortdate, at.datecre from alltables at 
-	                    join instruments i on at.idinstrument = i.idinstrument
-	                    join typetable tt on at.idtypetable = tt.idtypetable
-                    where at.idinstrument in (" + idinstINstr + ")";
+                    SELECT at.idtable, at.idinstrument, i.name, tt.name as typetname, convert(date, at.datecre) as shortdate, at.datecre 
+                    FROM alltables at 
+	                    JOIN instruments i ON at.idinstrument = i.idinstrument
+	                    JOIN typetable tt ON at.idtypetable = tt.idtypetable
+                    WHERE at.idinstrument IN (" + idinstINstr + ")";
                 dtAllTables.Clear();
                 dtAllTables.Load(sqlcommand.ExecuteReader());
 
@@ -137,6 +138,7 @@ namespace MyMoney
                         ti.shortName = sname;
                         ti.fullName = lname;
                         ti.dateTable = item["shortdate"].ToString().Remove(10);
+                        ti.dtTable = DateTime.Parse(item["datecre"].ToString());
                         ti.dayNum = int.Parse(mc[0].Groups[2].ToString());
                         ti.monthNum = int.Parse(mc[0].Groups[3].ToString());
                         ti.yearNum = int.Parse(mc[0].Groups[4].ToString());
@@ -212,22 +214,22 @@ namespace MyMoney
                 sqlcom.Connection = connectionTh;
                 sqlcom.CommandTimeout = 300;
                 sqlcom.CommandText = @"
-                SELECT dtserver, price as price, volume as volume, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
+                SELECT dtserver, price as price, volume as volume, row as rownum, typeprice, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(11, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(12, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
-                SELECT dtserver, null as price, null as volume, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
+                SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_quotes] rts2 
 	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
               */
             + @"
   	            UNION ALL
 
-                SELECT dtserver, null as price, null as volume, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
+                SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(11, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(12, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -370,13 +372,11 @@ namespace MyMoney
                 foreach (DataRow dr in dt.Rows)
                 {
                     #region торговля
-                    Thread.Sleep(100);
+                    Thread.Sleep(200);
                     // совершена сделка
                     if (!dr.IsNull("priceTick") && (pricetick = (int?)dr.Field<float?>("priceTick")) > 0)// && pricetick != (int?)dr.Field<float?>("priceTick")) // вторая часть условия - если перед этим была таже цена - пропускаем
                     {
                         actiontick = dr.Field<byte?>("idaction");
-                        if (actiontick == 1) ask = pricetick;
-                        else if (actiontick == 2) bid = pricetick;
                         if (priceEnterShort != 0 && actiontick == 1)
                         {
                             // профит короткая
@@ -485,17 +485,20 @@ namespace MyMoney
                     {
                         int updatepricegl = (int)dr.Field<float?>("price");
                         int updatevolumegl = (int)dr.Field<float?>("volume");
+                        int rownum = (int)dr.Field<int?>("rownum");
+                        int typeprice = (int)dr.Field<int?>("typeprice");
+                        if (rownum == 0)
+                        {
+                            if (typeprice == 1)         ask = updatepricegl;
+                            else if (typeprice == 2)    bid = updatepricegl;
+                        }
                         if (DoVisualisation && OnChangeGlass != null)
                         {
-                            int row = 10;
-                            if (ask == updatepricegl || bid == updatepricegl)
-                                row = 0;
                             ActionGlassItem act = ActionGlassItem.zero;
-                            if (updatepricegl >= ask)
-                                act = ActionGlassItem.buy;
-                            else if (updatepricegl <= bid)
-                                act = ActionGlassItem.sell;
-                            OnChangeGlass(updatepricegl, updatevolumegl, row, act);
+                            if (typeprice == 1)         act = ActionGlassItem.buy;
+                            else if (typeprice == 2)    act = ActionGlassItem.sell;
+
+                            OnChangeGlass(updatepricegl, updatevolumegl, rownum, act);
                         }
                         if (!glass.ContainsKey(updatepricegl))
                             glass.Add(updatepricegl, updatevolumegl);
@@ -613,8 +616,6 @@ namespace MyMoney
                     }
                     //else if (!dr.IsNull("bid"))
                     //{
-                    //    bid = (int?)dr.Field<float?>("bid");
-                    //    ask = (int?)dr.Field<float?>("ask");
                     //}
                     iterationNum++;
                     if (iterationNum == dt.Rows.Count)
