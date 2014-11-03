@@ -393,7 +393,7 @@ namespace MyMoney
                 {
                     int sumGlass = 0;
                     // среднее значение по стакану
-                    for (int i = 0; i < 50; i++)
+                    for (int i = 0; i < paramTh.glassHeight; i++)
                     {
                         sumGlass += glass.ContainsKey(lastAsk + i * 10) ? (int) glass[lastAsk + i * 10] : 0;
                         sumGlass += glass.ContainsKey(lastBid - i * 10) ? (int) glass[lastBid - i * 10] : 0;
@@ -404,7 +404,7 @@ namespace MyMoney
                     tempListForIndicator.Clear();
                     tempListForIndicatorAverage.Clear();
                     // новая версия, более взвешенное значение (как год назад)
-                    for (int i = 0; i < 50; i++)
+                    for (int i = 0; i < paramTh.glassHeight; i++)
                     {
                         if (glass.ContainsKey((int)lastAsk + i * 10))
                             sumlong += (int)glass[(int)lastAsk + i * 10];
@@ -438,7 +438,7 @@ namespace MyMoney
                             + "\tU: " + LongShotCount.ToString() + " D: " + ShortShotCount.ToString());
                     indicator = indicatorTemp;
                     // вход лонг
-                    if (indicator >= paramTh.indicatorLongValue)
+                    if (indicator <= -paramTh.indicatorLongValue)
                     //if ((activeTradingVolume < 500 && indicator <= -paramTh.indicatorLongValue)
                     //    || (activeTradingVolume > 500 && indicator >= paramTh.indicatorLongValue)) // || activeTradingDiraction > 400)
                     {
@@ -465,7 +465,7 @@ namespace MyMoney
                         }
                     }
                     // вход шорт
-                    else if (indicator <= -paramTh.indicatorShortValue)
+                    else if (indicator >= paramTh.indicatorShortValue)
                     //else if ((activeTradingVolume < 500 && indicator >= paramTh.indicatorShortValue)
                     //    || (activeTradingVolume > 500 && indicator <= -paramTh.indicatorShortValue)) // || activeTradingDiraction < -400)
                     {
