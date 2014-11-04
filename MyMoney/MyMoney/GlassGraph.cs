@@ -21,9 +21,11 @@ namespace MyMoney
     };
     public class GlassGraph
     {
-        public GlassGraph(Canvas _c, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
+        public GlassGraph(Canvas _c, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
         {
             canvas = _c;
+            ribboncanvas = _ribbon;
+
             StepGlass = _step;
             UpBrush = new SolidColorBrush();
             UpBrush.Color = Color.FromArgb(255, 255, 228, 225);
@@ -137,7 +139,24 @@ namespace MyMoney
         }
         public void AddTick(double _price, double _volume, ActionGlassItem _action)
         {
-
+            ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate()
+                {
+                    listGradient.Add(GradientBrushForIndicatorAverage2.Clone());
+                    if (listGradient.Count > queueRect.Count)
+                        listGradient.RemoveRange(0, listGradient.Count - queueRect.Count);
+                    //TimeSpan ts = DateTime.Now.TimeOfDay;
+                    int x = 0;
+                    foreach (Rectangle r in queueRect)
+                    {
+                        x++;
+                        if (x > queueRect.Count - listGradient.Count)
+                            r.Fill = listGradient[listGradient.Count - queueRect.Count + x - 1];
+                    }
+                    //TimeSpan ts2 = DateTime.Now.TimeOfDay.Subtract(ts);
+                    //double l = ts2.TotalMilliseconds;
+                }
+            );
         }
         public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage)
         {
@@ -207,15 +226,15 @@ namespace MyMoney
             else
                 block.Fill = DownBrush;
             block.SnapsToDevicePixels = true;
-            block.Width = canvas.ActualWidth / 6 * 3;
+            block.Width = 110;
             block.Height = 14;
-            Canvas.SetLeft(block, 0);
+            Canvas.SetLeft(block, canvas.ActualWidth - 110 - 120);
             Canvas.SetTop(block, centerCanvas - i * 14);
             TextBlock t = new TextBlock();
             if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
                 t.Text = (_maxBid + i * StepGlass).ToString("### ###");
             t.FontSize = 9;
-            Canvas.SetLeft(t, canvas.ActualWidth / 6 * 3 - 38);
+            Canvas.SetLeft(t, canvas.ActualWidth - 40 - 120);
             Canvas.SetTop(t, centerCanvas - i * 14 + 1);
             TextBlock t1 = new TextBlock();
             if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
@@ -230,7 +249,7 @@ namespace MyMoney
             }
 
             t1.FontSize = 9;
-            Canvas.SetLeft(t1, 5);
+            Canvas.SetLeft(t1, canvas.ActualWidth - 105 - 120);
             Canvas.SetTop(t1, centerCanvas - i * 14 + 1);
             canvas.Children.Add(block);
             canvas.Children.Add(t);
@@ -267,10 +286,31 @@ namespace MyMoney
             }
             return _maxB;
         }
+        public void CreateQueueForRibbon()
+        {
+            ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate()
+                {
+                    for (int x = 0; x < ribboncanvas.ActualWidth; x++)
+                    {
+                        Rectangle r = new Rectangle();
+                        r.Fill = DownBrush;
+                        //r.SnapsToDevicePixels = true;
+                        r.Width = 1;
+                        r.Height = ribboncanvas.ActualHeight;
+                        Canvas.SetLeft(r, x);
+                        Canvas.SetTop(r, 0);
+                        ribboncanvas.Children.Add(r);
+                        queueRect.Enqueue(r);
+                    }
+                }
+            );
+        }
 
         public SortedDictionary<double, GlassItem> GlassValues = new SortedDictionary<double, GlassItem>();
         public double StepGlass = 0;
         public Canvas canvas;
+        public Canvas ribboncanvas;
         public int centerCanvas;
         private double lastMinAsk;
         private double lastMaxBid;
@@ -284,6 +324,8 @@ namespace MyMoney
         public LinearGradientBrush GradientBrushForIndicatorAverage2;
 
         public object objLock = new Object();
+        public Queue<Rectangle> queueRect = new Queue<Rectangle>();
+        public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
     }
 
     public class GlassItem

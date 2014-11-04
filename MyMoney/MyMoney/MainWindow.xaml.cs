@@ -45,7 +45,7 @@ namespace MyMoney
 
             InitializeComponent();
             tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
-            GlassVisual = new GlassGraph(glassCanvas, indicatorRect, indicatorRect2, indicatorAverageRect, indicatorAverageRect2, 10);
+            GlassVisual = new GlassGraph(glassCanvas, canvasIndicator, indicatorRect, indicatorRect2, indicatorAverageRect, indicatorAverageRect2, 10);
 
             allResults = new ObservableCollection<ResultOneThreadSumm>();
             detailResults = new ObservableCollection<ResultOneThread>();
@@ -119,6 +119,7 @@ namespace MyMoney
         {
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate() {
+                    tbInformation.Clear();
                     tbInformation.AppendText(_mess + "\r\n");
             });
         }
@@ -375,6 +376,30 @@ namespace MyMoney
                 e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 0x90, 0xDC, 0xED));
             else if (r.profitFac < 1)
                 e.Row.Background = new SolidColorBrush(Color.FromArgb(255, 0xED, 0x99, 0xD5));
+        }
+
+        private void speedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            speedLabel.Content = e.NewValue.ToString();
+            if (dsource is QuotesFromBD && (dsource as QuotesFromBD).DoVisualisation)
+                (dsource as QuotesFromBD).SpeedVisualisation = e.NewValue;
+        }
+
+        private void glassCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (e.HeightChanged)
+            {
+                indicatorRect.Height = e.NewSize.Height;
+                indicatorRect2.Height = e.NewSize.Height;
+                indicatorAverageRect.Height = e.NewSize.Height;
+                indicatorAverageRect2.Height = e.NewSize.Height;
+            }
+        }
+
+        private void MyWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (GlassVisual != null && GlassVisual.ribboncanvas != null)
+                GlassVisual.CreateQueueForRibbon();
         }
 
     }
