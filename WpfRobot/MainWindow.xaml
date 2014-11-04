@@ -15,10 +15,10 @@
         </Grid.ColumnDefinitions>
         <TextBox x:Name="LoginBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="BP12800" VerticalAlignment="Top" Width="120"/>
         <PasswordBox x:Name="PassBox" HorizontalAlignment="Left" Margin="191,10,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.4,-0.2" Width="115" Password="8GVZ7Z" Height="23"/>
-        <Label x:Name="Label1" Content="Label" HorizontalAlignment="Left" Margin="11,38,0,0" VerticalAlignment="Top" Width="664" Grid.ColumnSpan="3"/>
-        <Label x:Name="Label2" Content="Label" HorizontalAlignment="Left" Margin="10,69,0,0" VerticalAlignment="Top" Width="670" Grid.ColumnSpan="3"/>
+        <Label x:Name="Label1" Content="Label" HorizontalAlignment="Left" Margin="11,38,0,0" VerticalAlignment="Top" Width="785" Grid.ColumnSpan="3"/>
+        <Label x:Name="Label2" Content="Label" HorizontalAlignment="Left" Margin="10,81,0,0" VerticalAlignment="Top" Width="635" Grid.ColumnSpan="3"/>
         <ComboBox x:Name="ComboBox1" HorizontalAlignment="Left" Margin="11,112,0,0" VerticalAlignment="Top" Width="634" Grid.ColumnSpan="3"/>
-        <TextBox x:Name="textBox1" Grid.ColumnSpan="3" HorizontalAlignment="Left" Height="251" Margin="12,141,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="633" RenderTransformOrigin="0.5,0.5">
+        <TextBox x:Name="textBox1" Grid.ColumnSpan="3" HorizontalAlignment="Left" Height="306" Margin="12,141,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="633" RenderTransformOrigin="0.5,0.5">
             <TextBox.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -29,7 +29,7 @@
             </TextBox.RenderTransform>
         </TextBox>
         <ListBox x:Name="InstrumentsList" Grid.Column="2" HorizontalAlignment="Left" Height="136" Margin="97,69,0,0" VerticalAlignment="Top" Width="276"/>
-        <Button x:Name="StartThreadsButton" Content="Запустить потоки" Click="StartThreadsButton_Click" Grid.Column="2" HorizontalAlignment="Left" Margin="248,15,0,0" VerticalAlignment="Top" Width="125"/>
+        <Button x:Name="StartThreadsButton" Content="Запустить потоки" Click="StartThreadsButton_Click" Grid.Column="2" HorizontalAlignment="Left" Margin="248,10,0,0" VerticalAlignment="Top" Width="125" Height="54"/>
         <Button Content="Проверка" Grid.Column="2" HorizontalAlignment="Left" Margin="298,421,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_1"/>
 
     </Grid>

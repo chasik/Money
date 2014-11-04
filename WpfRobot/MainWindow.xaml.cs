@@ -26,14 +26,14 @@ namespace WpfRobot
     public partial class MainWindow : Window
     {
 
-        SmartCom sc = null, sc1 = null;
+        SmartCom sc = null;
         private List<QuotesThread> _quotesThreads = new List<QuotesThread>();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            InstrumentsList.Items.Add("MICEX");
+            //InstrumentsList.Items.Add("MICEX");
             InstrumentsList.Items.Add("RTS-12.14_FT");
             //InstrumentsList.Items.Add("Si-12.14_FT");
             //InstrumentsList.Items.Add("GOLD-12.14_FT");
@@ -46,10 +46,20 @@ namespace WpfRobot
             foreach (string s in InstrumentsList.Items)
             {
                 var q = new QuotesThread(this, s, "BP12800", "8GVZ7Z");
-                
+                q.OnBeforeStart += q_OnBeforeStart;
                 _quotesThreads.Add(q);
                 //break;
             }
+        }
+
+        void q_OnBeforeStart(TimeSpan t)
+        {
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate()
+                {   
+                    Label1.Content = t.ToString(@"hh\:mm\:ss");
+                }
+            );
         }
 
 

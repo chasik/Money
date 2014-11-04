@@ -25,7 +25,6 @@ namespace SmartComClass
             this.Password = password;
             SmartC = new SC3Lib.StServerClass();
         }
-
         public void ConnectDataSource()
         {
             SmartC.ConfigureClient("logLevel=1");

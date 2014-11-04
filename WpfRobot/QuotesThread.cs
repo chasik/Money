@@ -10,6 +10,7 @@ using System.Data.SqlClient;
 using SmartComClass;
 using System.Windows.Threading;
 using SmartCOM3Lib;
+using System.Timers;
 
 namespace WpfRobot
 {
@@ -20,19 +21,14 @@ namespace WpfRobot
         private string login = "";
         private string password = "";
         private bool instrumentIsFound = false;
+        public System.Timers.Timer timer;
+        public TimeSpan timeOfStart = new TimeSpan(9, 59, 55);
 
-        Dictionary<string, string> tablesnames = new Dictionary<string, string>() { 
-            {"ticks", ""},
-            {"bidask", ""}, 
-            {"quotes", ""}
-        };
+        Dictionary<string, string> tablesnames = new Dictionary<string, string>() { {"ticks", ""}, {"bidask", ""}, {"quotes", ""} };
 
         Dictionary<string, string> glass = new Dictionary<string, string>();
 
-        Dictionary<string, string> lastprice = new Dictionary<string, string>() { 
-            {"lastbid", ""},
-            {"lastask", ""}
-        };
+        Dictionary<string, string> lastprice = new Dictionary<string, string>() { {"lastbid", ""}, {"lastask", ""} };
 
         private SmartCom smartCom;
         private SqlConnection sqlconn;
@@ -41,6 +37,8 @@ namespace WpfRobot
         public int IdInstrument { get { return _idinstrument; } set { _idinstrument = value; } }
 
         public MainWindow SmartWindow;
+        public delegate void BeforeStart(TimeSpan t);
+        public event BeforeStart OnBeforeStart;
 
         public QuotesThread(MainWindow _mw, string _instrument, string _login, string _password) 
         {
@@ -54,14 +52,11 @@ namespace WpfRobot
             login = _login;
             password = _password;
 
-            smartCom = new SmartCom("mx.ittrade.ru", 8443, login, password);
-            //smartCom = new SmartCom("st1.ittrade.ru", 8090, login, password);
-            smartCom.SmartC.Connected       += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConnected);
-            smartCom.SmartC.Disconnected    += new SmartCOM3Lib._IStClient_DisconnectedEventHandler(this.ShowDisconnected);
-            smartCom.SmartC.AddSymbol       += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
-            smartCom.ConnectDataSource();
+            timer = new System.Timers.Timer(1000);
+            timer.Elapsed += timer_callback;
+            timer.Enabled = true;
+            //smartCom.ConnectDataSource();
         }
-
 
         private void ShowConnected()
         {
@@ -76,7 +71,18 @@ namespace WpfRobot
 
         private void ShowDisconnected(string _reason)
         {
-            MessageBox.Show("Отключение. Причина: " + _reason);
+            SmartWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate()
+                {
+                    SmartWindow.textBox1.AppendText(DateTime.Now.TimeOfDay.ToString() + "  Отключение. Причина: " + _reason + "\r\n");
+                    SmartWindow.textBox1.AppendText("Переподключение в ... " + DateTime.Now.TimeOfDay.Add(new TimeSpan(TimeSpan.TicksPerMillisecond * 10000)) + "\r\n");
+                }
+            );
+            smartCom.SmartC = new SmartCOM3Lib.StServerClass();
+            smartCom.SmartC.Connected += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConnected);
+            smartCom.SmartC.Disconnected += new SmartCOM3Lib._IStClient_DisconnectedEventHandler(this.ShowDisconnected);
+            smartCom.SmartC.AddSymbol += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
+            Thread.Sleep(10000);
             smartCom.ConnectDataSource();
         }
 
@@ -138,7 +144,8 @@ namespace WpfRobot
             SmartWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    SmartWindow.Label2.Content = instrument + "\t" + symbol + "\t" + bid.ToString() + "\t" + ask.ToString() + "\n";
+                    if (row == 0 && symbol.ToLower().Contains("rts"))
+                        SmartWindow.Label2.Content = instrument + "\t" + symbol + "\t" + bid.ToString() + "\t" + ask.ToString() + "\n";
                 }
             );
             if (tablesnames["bidask"] == "")
@@ -319,7 +326,28 @@ namespace WpfRobot
                                         JOIN instruments i ON i.idinstrument = a.idinstrument AND i.idinstrument = " + IdInstrument.ToString()
                     , sqlconn).ExecuteScalar();
         }
-
+        private void timer_callback(object ot, ElapsedEventArgs e)
+        {
+            TimeSpan currentTime = DateTime.Now.TimeOfDay;
+            if (currentTime < timeOfStart && OnBeforeStart != null)
+                OnBeforeStart(currentTime.Subtract(timeOfStart));
+            else
+            {
+                timer.Stop();
+                SmartWindow.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                    (ThreadStart)delegate()
+                    {
+                        SmartWindow.Label1.Content = "Старт! " + DateTime.Now.TimeOfDay.ToString();
+                        smartCom = new SmartCom("mx.ittrade.ru", 8443, login, password);
+                        //smartCom = new SmartCom("st1.ittrade.ru", 8090, login, password);
+                        smartCom.SmartC.Connected += new SmartCOM3Lib._IStClient_ConnectedEventHandler(this.ShowConnected);
+                        smartCom.SmartC.Disconnected += new SmartCOM3Lib._IStClient_DisconnectedEventHandler(this.ShowDisconnected);
+                        smartCom.SmartC.AddSymbol += new SmartCOM3Lib._IStClient_AddSymbolEventHandler(this.AddSymbol);
+                        smartCom.ConnectDataSource();
+                    }
+                );
+            }
+        }
     }
 }
 

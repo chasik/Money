@@ -78,17 +78,17 @@ namespace MyMoney
                                             if (gi.rectMain != null)
                                             {
                                                 double top = Canvas.GetTop(gi.rectMain);
-                                                gi.rectMain.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(800)));
+                                                gi.rectMain.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(300)));
                                             }
                                             if (gi.tbVolume != null)
                                             {
                                                 double top = Canvas.GetTop(gi.tbVolume);
-                                                gi.tbVolume.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(800)));
+                                                gi.tbVolume.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(300)));
                                             }
                                             if (gi.tbPrice != null)
                                             {
                                                 double top = Canvas.GetTop(gi.tbPrice);
-                                                gi.tbPrice.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(800)));
+                                                gi.tbPrice.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(300)));
                                             }
                                         }
                                     }
