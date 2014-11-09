@@ -58,7 +58,7 @@
         </DataGrid>
         <TextBox x:Name="filterTextBox" Grid.Column="1" HorizontalAlignment="Left" Height="23" Margin="4,59,0,0" TextWrapping="Wrap" Text="RTS-" VerticalAlignment="Top" Width="228"/>
         <DataGrid x:Name="dgResultDeals" Grid.Column="1" Margin="737,539,10,10" FontFamily="Tahoma" FontSize="9" LoadingRow="dgResultDeals_LoadingRow" SelectionChanged="dgResultDeals_SelectionChanged"/>
-        <DataGrid x:Name="dgResultDetail" Grid.Column="1" Margin="0,223,10,0" Height="311" VerticalAlignment="Top" AutoGenerateColumns="False" FontFamily="Tahoma" FontSize="9" SelectionChanged="dgResultDetail_SelectionChanged" HorizontalAlignment="Right" Width="400"/>
+        <DataGrid x:Name="dgResultDetail" Grid.Column="1" Margin="0,223,10,0" Height="311" VerticalAlignment="Top" AutoGenerateColumns="False" FontFamily="Tahoma" FontSize="9" SelectionChanged="dgResultDetail_SelectionChanged" HorizontalAlignment="Right" Width="358"/>
         <Label Content="ProfitShort:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,242,0,0" VerticalAlignment="Top" Width="82" FontSize="11" FontFamily="Roboto Th"/>
         <TextBox x:Name="tbProfitShortStart" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="374,244,0,0" TextWrapping="Wrap" Text="80" VerticalAlignment="Top" Width="30" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
         <Label Content="LossShort:" Grid.Column="1" HorizontalAlignment="Left" Margin="237,271,0,0" VerticalAlignment="Top" Width="82" FontSize="11" FontFamily="Roboto Th" RenderTransformOrigin="0.512,1.783"/>
@@ -80,8 +80,8 @@
         <TextBox x:Name="tbIndicatorShortFinish" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="409,349,0,0" TextWrapping="Wrap" Text="86" VerticalAlignment="Top" Width="32" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
         <TextBox x:Name="tbIndicatorShortStep" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="446,349,0,0" TextWrapping="Wrap" Text="3" VerticalAlignment="Top" Width="28" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
         <TextBox x:Name="tbIndicatorShortCurrent" Grid.Column="1" HorizontalAlignment="Left" Height="21" Margin="324,349,0,0" TextWrapping="Wrap" Text="68" VerticalAlignment="Top" Width="33" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
-        <Canvas x:Name="canvasGraph" Grid.Column="1" Margin="737,223,415,0" Height="218" VerticalAlignment="Top" Background="#FFCF9393"/>
-        <Canvas x:Name="canvasIndicator" Grid.Column="1" Margin="737,446,415,0" Height="88" VerticalAlignment="Top"
+        <Canvas x:Name="canvasGraph" Grid.Column="1" Margin="737,223,373,0" Height="218" VerticalAlignment="Top" Background="#FFCF9393"/>
+        <Canvas x:Name="canvasIndicator" Grid.Column="1" Margin="737,446,373,0" Height="88" VerticalAlignment="Top"
 >
             <Canvas.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

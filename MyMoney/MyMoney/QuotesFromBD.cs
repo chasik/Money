@@ -17,6 +17,16 @@ namespace MyMoney
         public int countThreads = 0;
         private bool _dovisual = false;
         private double speedvisual = 0;
+
+        ParametrsForTest _paramTh = new ParametrsForTest();
+        public ParametrsForTest paramTh
+        {
+            get { return _paramTh; }
+            set
+            {
+                _paramTh = value;
+            }
+        }
         public double SpeedVisualisation
         {
             get { return speedvisual; }
@@ -222,7 +232,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, row as rownum, typeprice, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 5, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(10, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(10, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -235,7 +245,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 5, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(10, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(10, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -251,12 +261,20 @@ namespace MyMoney
             int plStartCount = parametrsList.Count;
             Random rnd = new Random(DateTime.Now.Millisecond);
             int startPopulationCount = 1000;
-            while (parametrsList.Count > 0)
+            int mutationCount = 0;
+
+            ParametrsForTest pt;
+            if (DoVisualisation)
             {
-                int mutationCount = 0;
+                listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
+                listThreads.Last().IsBackground = true;
+                listThreads.Last().Start(new ParametrsForTestObj(paramTh, dicSelectedDataTables));
+            }
+            while (parametrsList.Count > 0 && !DoVisualisation)
+            {
+                mutationCount = 0;
                 while (listThreads.Count < countThreads && parametrsList.Count > 0)
                 {
-                    ParametrsForTest pt;
                     if (dicAllProfitResult.Count < startPopulationCount)
                         pt = parametrsList[rnd.Next(0, parametrsList.Count - 1)];
                     else
@@ -395,7 +413,7 @@ namespace MyMoney
                     if (!dr.IsNull("priceTick") && (pricetick = (int?)dr.Field<float?>("priceTick")) > 0)// && pricetick != (int?)dr.Field<float?>("priceTick")) // вторая часть условия - если перед этим была таже цена - пропускаем
                     {
                         actiontick = dr.Field<byte?>("idaction");
-                        if (OnAddTick != null)
+                        if (OnAddTick != null && DoVisualisation)
                             OnAddTick((double)pricetick, (double)dr.Field<float?>("volumetick"), actiontick == 1 ? ActionGlassItem.sell : ActionGlassItem.buy);
                         if (priceEnterShort != 0 && actiontick == 1)
                         {
@@ -585,7 +603,7 @@ namespace MyMoney
                                 }
                                 else
                                     indicator = (int)calculatedIndidcator.values[dttemp];
-                                if (OnChangeVisualIndicator != null)
+                                if (OnChangeVisualIndicator != null && DoVisualisation)
                                     OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicator.ToArray());
                                 // старая версия индикатора
                                 /*foreach (int pkey in glass.Keys)

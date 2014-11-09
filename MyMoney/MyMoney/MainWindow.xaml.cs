@@ -94,6 +94,12 @@ namespace MyMoney
                 (dsource as QuotesFromBD).OnThreadTesterStart += new ThreadStarted(ThreadTesterStarted);
                 (dsource as QuotesFromBD).OnChangeProgress += MainWindow_OnChangeProgress;
                 (dsource as QuotesFromBD).OnFinishOneThread += MainWindow_OnFinishOneThread;
+                (dsource as QuotesFromBD).paramTh = new ParametrsForTest(0, new List<string> { }
+                    , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
+                    , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
+                    , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
+                    , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
+                    , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
             }
             else
             {
