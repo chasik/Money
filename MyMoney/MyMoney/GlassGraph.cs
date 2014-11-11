@@ -21,10 +21,11 @@ namespace MyMoney
     };
     public class GlassGraph
     {
-        public GlassGraph(Canvas _c, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
+        public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
         {
             canvas = _c;
             ribboncanvas = _ribbon;
+            tickGraphCanvas = _g;
 
             StepGlass = _step;
             UpBrush = new SolidColorBrush();
@@ -54,6 +55,15 @@ namespace MyMoney
             _indicatorRect2.Fill = GradientBrushForIndicator2;
             _indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
             _indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
+
+            tickGraph = new Polyline();
+            tickGraph.Stroke = System.Windows.Media.Brushes.SlateGray;
+            tickGraph.StrokeThickness = 2;
+            Point p1 = new Point(0, 100);
+            Point p2 = new Point(600, 100);
+            tickGraph.Points.Add(p1);
+            tickGraph.Points.Add(p2);
+            tickGraphCanvas.Children.Add(tickGraph);
         }
         public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -142,10 +152,12 @@ namespace MyMoney
             ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    listGradient.Add(GradientBrushForIndicatorAverage2.Clone());
+                    listTicksPrice.Add(_price);
+                    if (listTicksPrice.Count > queueRect.Count)
+                        listTicksPrice.RemoveRange(0, listTicksPrice.Count - queueRect.Count);
+                    listGradient.Add(GradientBrushForIndicator.Clone());
                     if (listGradient.Count > queueRect.Count)
                         listGradient.RemoveRange(0, listGradient.Count - queueRect.Count);
-                    //TimeSpan ts = DateTime.Now.TimeOfDay;
                     int x = 0;
                     foreach (Rectangle r in queueRect)
                     {
@@ -153,8 +165,18 @@ namespace MyMoney
                         if (x > queueRect.Count - listGradient.Count)
                             r.Fill = listGradient[listGradient.Count - queueRect.Count + x - 1];
                     }
-                    //TimeSpan ts2 = DateTime.Now.TimeOfDay.Subtract(ts);
-                    //double l = ts2.TotalMilliseconds;
+                    x = 0;
+                    tickGraph.Points.Clear();
+                    Random rr = new Random((int)DateTime.Now.TimeOfDay.TotalMilliseconds);
+                    double maxp = listTicksPrice.Max();
+                    double minp = listTicksPrice.Min();
+                    double delta = maxp - minp;
+                    double onePixelPrice = delta / tickGraphCanvas.ActualHeight;
+                    foreach (double p in listTicksPrice)
+                    {
+                        x++;
+                        tickGraph.Points.Add(new Point((double)x, (maxp - p) / onePixelPrice));
+                    }
                 }
             );
         }
@@ -179,14 +201,14 @@ namespace MyMoney
                         ivalAvr = _arrindAverage[i];
                         ivalAvr2 = sa / (i + 1);
 
-                        byte b = Convert.ToByte(Math.Abs(ival + 100));
-                        byte b1 = Convert.ToByte(Math.Abs(ival) + 150);
-                        byte b2 = Convert.ToByte(Math.Abs(ival2 + 100));
-                        byte b22 = Convert.ToByte(Math.Abs(ival2) + 150);
-                        byte ba = Convert.ToByte(Math.Abs(ivalAvr + 100));
-                        byte ba1 = Convert.ToByte(Math.Abs(ivalAvr) + 150);
-                        byte ba2 = Convert.ToByte(Math.Abs(ivalAvr2 + 100));
-                        byte ba22 = Convert.ToByte(Math.Abs(ivalAvr2) + 150);
+                        byte b = Convert.ToByte(Math.Abs(Math.Abs(3 * ival) > 255 ? 255 : 3 * ival) + 0);
+                        byte b1 = Convert.ToByte(Math.Abs(Math.Abs(3 * ival) > 255 ? 255 : 3 * ival) + 0);
+                        byte b2 = Convert.ToByte(Math.Abs(Math.Abs(3 * ival2) > 255 ? 255 : 3 * ival2) + 0);
+                        byte b22 = Convert.ToByte(Math.Abs(Math.Abs(3 * ival2) > 255 ? 255 : 3 * ival2) + 0);
+                        byte ba = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr) > 255 ? 255 : 3 * ivalAvr) + 0);
+                        byte ba1 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr) > 255 ? 255 : 3 * ivalAvr) + 0);
+                        byte ba2 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr2) > 255 ? 255 : 3 * ivalAvr2) + 0);
+                        byte ba22 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr2) > 255 ? 255 : 3 * ivalAvr2) + 0);
 
                         GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b1, 255) : Color.FromRgb(255, b, 0), 1 - (double)i / 50));
                         GradientBrushForIndicator2.GradientStops.Add(new GradientStop(ival2 > 0 ? Color.FromRgb(0, b22, 255) : Color.FromRgb(255, b2, 0), 1 - (double)i / 50));
@@ -311,6 +333,7 @@ namespace MyMoney
         public double StepGlass = 0;
         public Canvas canvas;
         public Canvas ribboncanvas;
+        public Canvas tickGraphCanvas;
         public int centerCanvas;
         private double lastMinAsk;
         private double lastMaxBid;
@@ -322,10 +345,12 @@ namespace MyMoney
         public LinearGradientBrush GradientBrushForIndicator2;
         public LinearGradientBrush GradientBrushForIndicatorAverage;
         public LinearGradientBrush GradientBrushForIndicatorAverage2;
+        public Polyline tickGraph;
 
         public object objLock = new Object();
         public Queue<Rectangle> queueRect = new Queue<Rectangle>();
         public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
+        public List<double> listTicksPrice = new List<double>();
     }
 
     public class GlassItem
