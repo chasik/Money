@@ -25,7 +25,7 @@ namespace MyMoney
         {
             canvas = _c;
             ribboncanvas = _ribbon;
-            tickGraphCanvas = _g;
+            tickGraphCanvas = _ribbon;
 
             StepGlass = _step;
             UpBrush = new SolidColorBrush();
@@ -57,13 +57,14 @@ namespace MyMoney
             _indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
 
             tickGraph = new Polyline();
-            tickGraph.Stroke = System.Windows.Media.Brushes.SlateGray;
+            tickGraph.Stroke = System.Windows.Media.Brushes.Black;
             tickGraph.StrokeThickness = 2;
             Point p1 = new Point(0, 100);
             Point p2 = new Point(600, 100);
             tickGraph.Points.Add(p1);
             tickGraph.Points.Add(p2);
             tickGraphCanvas.Children.Add(tickGraph);
+            Canvas.SetZIndex(tickGraph, 1);
         }
         public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
         {
