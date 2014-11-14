@@ -59,12 +59,9 @@ namespace MyMoney
             tickGraph = new Polyline();
             tickGraph.Stroke = System.Windows.Media.Brushes.Black;
             tickGraph.StrokeThickness = 2;
-            Point p1 = new Point(0, 100);
-            Point p2 = new Point(600, 100);
-            tickGraph.Points.Add(p1);
-            tickGraph.Points.Add(p2);
+
             tickGraphCanvas.Children.Add(tickGraph);
-            Canvas.SetZIndex(tickGraph, 1);
+            Canvas.SetZIndex(tickGraph, 2);
         }
         public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -153,6 +150,8 @@ namespace MyMoney
             ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
+                    if (_price == lastPriceTick)
+                        return;
                     listTicksPrice.Add(_price);
                     if (listTicksPrice.Count > queueRect.Count)
                         listTicksPrice.RemoveRange(0, listTicksPrice.Count - queueRect.Count);
@@ -176,8 +175,9 @@ namespace MyMoney
                     foreach (double p in listTicksPrice)
                     {
                         x++;
-                        tickGraph.Points.Add(new Point((double)x, (maxp - p) / onePixelPrice));
+                        tickGraph.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listTicksPrice.Count - 1), (maxp - p) / onePixelPrice));
                     }
+                    lastPriceTick = _price;
                 }
             );
         }
@@ -338,6 +338,7 @@ namespace MyMoney
         public int centerCanvas;
         private double lastMinAsk;
         private double lastMaxBid;
+        private double lastPriceTick;
 
         public SolidColorBrush UpBrush;
         public SolidColorBrush DownBrush;
