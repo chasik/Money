@@ -58,6 +58,7 @@ namespace MyMoney
 
             tickGraph = new Polyline();
             tickGraph.Stroke = System.Windows.Media.Brushes.Black;
+            tickGraph.SnapsToDevicePixels = true;
             tickGraph.StrokeThickness = 2;
 
             tickGraphCanvas.Children.Add(tickGraph);
@@ -152,12 +153,74 @@ namespace MyMoney
                 {
                     if (_price == lastPriceTick)
                         return;
-                    listTicksPrice.Add(_price);
-                    if (listTicksPrice.Count > queueRect.Count)
-                        listTicksPrice.RemoveRange(0, listTicksPrice.Count - queueRect.Count);
+                    
+                    for (int i = 0; i < listGradient.Count - queueRect.Count; i++)
+                        listGradient.RemoveRange(0, 1);
+
+                    for (int i = 0; i < listArrayValues.Count - queueRect.Count; i++)
+                    {
+                        int snegative = 0, spositive = 0;
+                        double priceentertrade = listTicksPrice[0];
+                        double priceexittrade = 0;
+                        for (int j = 0; j < 25 && j < listArrayValues[0].Length; j++)
+                        {
+                            if (listArrayValues[0][j] > 0)
+                                spositive += listArrayValues[0][j];
+                            else
+                                snegative += listArrayValues[0][j];
+                        }
+                        bool endtrade = false;
+                        int jj = 0;
+                        while (!endtrade)
+                        { 
+                            jj++;
+                            if (Math.Abs(priceentertrade - listTicksPrice[jj]) > 50)
+                            {
+                                priceexittrade = listTicksPrice[jj];
+                                endtrade = true;
+                            }
+                        }
+                        // Добавляем значения в resultsribbon для анализа
+                        int percentDelta = (spositive + Math.Abs(snegative));
+                        if (percentDelta != 0)
+                        {
+                            if (spositive > Math.Abs(snegative))
+                                percentDelta = 100 * spositive / percentDelta;
+                            else
+                                percentDelta = 100 * snegative / percentDelta;
+                        }
+                        int spp = 0, sll = 0;
+                        /*if (Math.Abs(percentDelta) >= 99 && (percentDelta > 0 && lastactiond != ActionGlassItem.buy || percentDelta <= 0 && lastactiond != ActionGlassItem.sell))
+                        {*/
+                            if (!resultsribbon.ContainsKey(percentDelta))
+                                resultsribbon.Add(percentDelta, new ResTestLocal(percentDelta, priceentertrade - priceexittrade));
+                            else
+                                resultsribbon[percentDelta].AddValues(percentDelta, priceentertrade - priceexittrade);
+                            if (percentDelta > 0)
+                                lastactiond = ActionGlassItem.buy;
+                            else
+                                lastactiond = ActionGlassItem.sell;
+                            foreach (int rr3 in resultsribbon.Keys)
+                            {
+                                spp += resultsribbon[rr3].profitCount;
+                                sll += resultsribbon[rr3].lossCount;
+                            }
+                        /*}*/
+
+                         listArrayValues.RemoveRange(0, 1);
+                    }
+
+                    for (int i = 0; i < listTicksPrice.Count - queueRect.Count; i++)
+                        listTicksPrice.RemoveRange(0, 1);
+
+                   
                     listGradient.Add(GradientBrushForIndicator.Clone());
-                    if (listGradient.Count > queueRect.Count)
-                        listGradient.RemoveRange(0, listGradient.Count - queueRect.Count);
+                    listTicksPrice.Add(_price);
+                    int[] _glassvaluesarray = { };
+                    Array.Resize(ref _glassvaluesarray, atemp.Length);
+                    atemp.CopyTo(_glassvaluesarray, 0);
+                    listArrayValues.Add(_glassvaluesarray);
+
                     int x = 0;
                     foreach (Rectangle r in queueRect)
                     {
@@ -183,6 +246,8 @@ namespace MyMoney
         }
         public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage)
         {
+            Array.Resize(ref atemp, _arrind.Length);
+            _arrind.CopyTo(atemp, 0);
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
@@ -339,6 +404,8 @@ namespace MyMoney
         private double lastMinAsk;
         private double lastMaxBid;
         private double lastPriceTick;
+        private int[] atemp = { };
+        private ActionGlassItem lastactiond = ActionGlassItem.zero;
 
         public SolidColorBrush UpBrush;
         public SolidColorBrush DownBrush;
@@ -353,6 +420,10 @@ namespace MyMoney
         public Queue<Rectangle> queueRect = new Queue<Rectangle>();
         public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
         public List<double> listTicksPrice = new List<double>();
+        public List<int[]> listArrayValues = new List<int[]>();
+
+
+        public SortedDictionary<int, ResTestLocal> resultsribbon = new SortedDictionary<int, ResTestLocal>();
     }
 
     public class GlassItem
@@ -367,5 +438,24 @@ namespace MyMoney
         public Rectangle rectMain;
         public TextBlock tbVolume;
         public TextBlock tbPrice;
+    }
+    public class ResTestLocal
+    {
+        public ResTestLocal(int _key, double _deltaprice) 
+        {
+            if ((_key < 0 && _deltaprice < 0) || (_key > 0 && _deltaprice > 0))
+                profitCount++;
+            else 
+                lossCount++;
+        }
+        public void AddValues(int _key, double _deltaprice)
+        {
+            if ((_key < 0 && _deltaprice < 0) || (_key > 0 && _deltaprice > 0))
+                profitCount++;
+            else
+                lossCount++;
+        }
+        public int profitCount = 0;
+        public int lossCount = 0;
     }
 }

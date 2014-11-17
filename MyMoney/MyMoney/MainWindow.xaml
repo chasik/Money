@@ -89,6 +89,7 @@
                     <GradientStop Color="#FF762222" Offset="1"/>
                 </LinearGradientBrush>
             </Canvas.Background>
+            <Rectangle Fill="White" Height="80" Stroke="Black" Width="1506" Panel.ZIndex="1" Opacity="0.505" IsEnabled="False"/>
         </Canvas>
         <TextBox x:Name="tbInformation" Grid.Column="1" HorizontalAlignment="Left" Margin="258,0,0,451" TextWrapping="Wrap" Width="464" FontFamily="Arial" FontSize="9" Height="45" VerticalAlignment="Bottom"/>
         <CheckBox x:Name="chbTrading" Content="Торговать" Grid.Column="1" HorizontalAlignment="Left" Margin="650,40,0,0" VerticalAlignment="Top" Width="84"/>
