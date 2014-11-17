@@ -166,17 +166,21 @@ namespace MyMoney
                     for (int j = 0; j < atemp.Length; j++)
                     {
                         if (atemp[j] > 0)
-                            spositive += atemp[j];
+                            //spositive += atemp[j];
+                            spositive++;
                         else
-                            snegative += atemp[j];
-                        if (j == 33)
+                            //snegative += atemp[j];
+                            snegative++;
+                        if (j == 17)
                         { 
+                            percentDelta = spositive + snegative;
+                            GlValues25 = (int)(100 * Math.Max(spositive, snegative) / percentDelta) * (spositive > snegative ? 1 : -1);
+                        } else if (j == atemp.Length - 1)
+                        {
                             percentDelta = (spositive + Math.Abs(snegative));
-                            GlValues25 = (int)(100 * (spositive + snegative) / percentDelta);
+                            GlValues = (int)(100 * Math.Max(spositive, snegative) / percentDelta) * (spositive > snegative ? 1 : -1);
                         }
                     }
-                    percentDelta = (spositive + Math.Abs(snegative));
-                    GlValues = (int)(100 * (spositive + snegative) / percentDelta);
 
                     for (int i = 0; i < listGradient.Count - queueRect.Count; i++)
                         listGradient.RemoveRange(0, 1);
