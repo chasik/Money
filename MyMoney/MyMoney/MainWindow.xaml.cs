@@ -46,6 +46,8 @@ namespace MyMoney
             InitializeComponent();
             tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
             GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, indicatorAverageRect, indicatorAverageRect2, 10);
+            GlassVisual.tbGlassValue = tbValuesGlass;
+            GlassVisual.tbGlassValue25 = tbValuesGlass25;
 
             allResults = new ObservableCollection<ResultOneThreadSumm>();
             detailResults = new ObservableCollection<ResultOneThread>();

@@ -56,13 +56,20 @@ namespace MyMoney
             _indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
             _indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
 
-            tickGraph = new Polyline();
-            tickGraph.Stroke = System.Windows.Media.Brushes.Black;
-            tickGraph.SnapsToDevicePixels = true;
-            tickGraph.StrokeThickness = 2;
+            tickGraphAsk = new Polyline();
+            tickGraphAsk.Stroke = System.Windows.Media.Brushes.Maroon;
+            tickGraphAsk.SnapsToDevicePixels = true;
+            tickGraphAsk.StrokeThickness = 2;
 
-            tickGraphCanvas.Children.Add(tickGraph);
-            Canvas.SetZIndex(tickGraph, 2);
+            tickGraphBid = new Polyline();
+            tickGraphBid.Stroke = System.Windows.Media.Brushes.Navy;
+            tickGraphBid.SnapsToDevicePixels = true;
+            tickGraphBid.StrokeThickness = 2;
+
+            tickGraphCanvas.Children.Add(tickGraphAsk);
+            tickGraphCanvas.Children.Add(tickGraphBid);
+            Canvas.SetZIndex(tickGraphAsk, 3);
+            Canvas.SetZIndex(tickGraphBid, 2);
         }
         public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -151,16 +158,33 @@ namespace MyMoney
             ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    if (_price == lastPriceTick)
+                    if (_price == lastPriceTick && _action == lastActionTick)
                         return;
-                    
+
+                    int snegative = 0, spositive = 0;
+                    int percentDelta = 1;
+                    for (int j = 0; j < atemp.Length; j++)
+                    {
+                        if (atemp[j] > 0)
+                            spositive += atemp[j];
+                        else
+                            snegative += atemp[j];
+                        if (j == 33)
+                        { 
+                            percentDelta = (spositive + Math.Abs(snegative));
+                            GlValues25 = (int)(100 * (spositive + snegative) / percentDelta);
+                        }
+                    }
+                    percentDelta = (spositive + Math.Abs(snegative));
+                    GlValues = (int)(100 * (spositive + snegative) / percentDelta);
+
                     for (int i = 0; i < listGradient.Count - queueRect.Count; i++)
                         listGradient.RemoveRange(0, 1);
 
                     for (int i = 0; i < listArrayValues.Count - queueRect.Count; i++)
                     {
-                        int snegative = 0, spositive = 0;
-                        double priceentertrade = listTicksPrice[0];
+                        /*int snegative = 0, spositive = 0;
+                        double priceentertrade = listTicksPriceAsk[0];
                         double priceexittrade = 0;
                         for (int j = 0; j < 25 && j < listArrayValues[0].Length; j++)
                         {
@@ -174,9 +198,9 @@ namespace MyMoney
                         while (!endtrade)
                         { 
                             jj++;
-                            if (Math.Abs(priceentertrade - listTicksPrice[jj]) > 50)
+                            if (Math.Abs(priceentertrade - listTicksPriceAsk[jj]) > 50)
                             {
-                                priceexittrade = listTicksPrice[jj];
+                                priceexittrade = listTicksPriceAsk[jj];
                                 endtrade = true;
                             }
                         }
@@ -190,8 +214,8 @@ namespace MyMoney
                                 percentDelta = 100 * snegative / percentDelta;
                         }
                         int spp = 0, sll = 0;
-                        /*if (Math.Abs(percentDelta) >= 99 && (percentDelta > 0 && lastactiond != ActionGlassItem.buy || percentDelta <= 0 && lastactiond != ActionGlassItem.sell))
-                        {*/
+                        if (Math.Abs(percentDelta) >= 99 && (percentDelta > 0 && lastactiond != ActionGlassItem.buy || percentDelta <= 0 && lastactiond != ActionGlassItem.sell))
+                        {
                             if (!resultsribbon.ContainsKey(percentDelta))
                                 resultsribbon.Add(percentDelta, new ResTestLocal(percentDelta, priceentertrade - priceexittrade));
                             else
@@ -205,17 +229,23 @@ namespace MyMoney
                                 spp += resultsribbon[rr3].profitCount;
                                 sll += resultsribbon[rr3].lossCount;
                             }
-                        /*}*/
+                        }*/
 
-                         listArrayValues.RemoveRange(0, 1);
+                        listArrayValues.RemoveRange(0, 1);
                     }
 
-                    for (int i = 0; i < listTicksPrice.Count - queueRect.Count; i++)
-                        listTicksPrice.RemoveRange(0, 1);
+                    for (int i = 0; i < listTicksPriceAsk.Count - queueRect.Count; i++)
+                    {
+                        listTicksPriceAsk.RemoveRange(0, 1);
+                        listTicksPriceBid.RemoveRange(0, 1);
+                    }
 
                    
                     listGradient.Add(GradientBrushForIndicator.Clone());
-                    listTicksPrice.Add(_price);
+                    if (lastPriceAsk == 0) lastPriceAsk = _price;
+                    if (lastPriceBid == 0) lastPriceBid = _price;
+                    listTicksPriceAsk.Add(lastPriceAsk);
+                    listTicksPriceBid.Add(lastPriceBid);
                     int[] _glassvaluesarray = { };
                     Array.Resize(ref _glassvaluesarray, atemp.Length);
                     atemp.CopyTo(_glassvaluesarray, 0);
@@ -229,18 +259,30 @@ namespace MyMoney
                             r.Fill = listGradient[listGradient.Count - queueRect.Count + x - 1];
                     }
                     x = 0;
-                    tickGraph.Points.Clear();
+                    tickGraphAsk.Points.Clear();
+                    tickGraphBid.Points.Clear();
                     Random rr = new Random((int)DateTime.Now.TimeOfDay.TotalMilliseconds);
-                    double maxp = listTicksPrice.Max();
-                    double minp = listTicksPrice.Min();
+                    double maxp = listTicksPriceAsk.Max();
+                    double minp = listTicksPriceBid.Min();
                     double delta = maxp - minp;
                     double onePixelPrice = delta / tickGraphCanvas.ActualHeight;
-                    foreach (double p in listTicksPrice)
+                    foreach (double p in listTicksPriceAsk)
                     {
                         x++;
-                        tickGraph.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listTicksPrice.Count - 1), (maxp - p) / onePixelPrice));
+                        tickGraphAsk.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listTicksPriceAsk.Count - 1), (maxp - p) / onePixelPrice));
+                    }
+                    x = 0;
+                    foreach (double p in listTicksPriceBid)
+                    {
+                        x++;
+                        tickGraphBid.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listTicksPriceBid.Count - 1), (maxp - p) / onePixelPrice));
                     }
                     lastPriceTick = _price;
+                    if (_action == ActionGlassItem.buy)
+                        lastPriceAsk = _price;
+                    else if (_action == ActionGlassItem.sell)
+                            lastPriceBid = _price;
+                    lastActionTick = _action;
                 }
             );
         }
@@ -307,23 +349,23 @@ namespace MyMoney
         public void DrawItem(int i, double _minAsk, double _maxBid)
         {
             Rectangle block = new Rectangle();
-            block.StrokeThickness = 0.3;
-            block.Stroke = Brushes.Black;
+            //block.StrokeThickness = 0.3;
+            //block.Stroke = Brushes.Black;
             if (i > 0)
                 block.Fill = UpBrush;
             else
                 block.Fill = DownBrush;
             block.SnapsToDevicePixels = true;
             block.Width = 110;
-            block.Height = 14;
+            block.Height = 12;
             Canvas.SetLeft(block, canvas.ActualWidth - 110 - 120);
-            Canvas.SetTop(block, centerCanvas - i * 14);
+            Canvas.SetTop(block, centerCanvas - i * 12);
             TextBlock t = new TextBlock();
             if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
                 t.Text = (_maxBid + i * StepGlass).ToString("### ###");
             t.FontSize = 9;
             Canvas.SetLeft(t, canvas.ActualWidth - 40 - 120);
-            Canvas.SetTop(t, centerCanvas - i * 14 + 1);
+            Canvas.SetTop(t, centerCanvas - i * 12);
             TextBlock t1 = new TextBlock();
             if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
             {
@@ -338,7 +380,7 @@ namespace MyMoney
 
             t1.FontSize = 9;
             Canvas.SetLeft(t1, canvas.ActualWidth - 105 - 120);
-            Canvas.SetTop(t1, centerCanvas - i * 14 + 1);
+            Canvas.SetTop(t1, centerCanvas - i * 12);
             canvas.Children.Add(block);
             canvas.Children.Add(t);
             canvas.Children.Add(t1);
@@ -395,6 +437,33 @@ namespace MyMoney
             );
         }
 
+        public int GlValues
+        {
+            get{ return glvalues; }
+            set{ 
+                glvalues = value;
+                if (value < 0)
+                    tbGlassValue.Foreground = Brushes.Red;
+                else
+                    tbGlassValue.Foreground = Brushes.Blue;
+                if (tbGlassValue != null)
+                    tbGlassValue.Text = glvalues.ToString() + "%";
+            }
+        }
+        public int GlValues25
+        {
+            get { return glvalues25; }
+            set { 
+                glvalues25 = value;
+                if (value < 0)
+                    tbGlassValue25.Foreground = Brushes.Red;
+                else
+                    tbGlassValue25.Foreground = Brushes.Blue;
+                if (tbGlassValue25 != null)
+                    tbGlassValue25.Text = glvalues25.ToString() + "%";
+            }
+        }
+
         public SortedDictionary<double, GlassItem> GlassValues = new SortedDictionary<double, GlassItem>();
         public double StepGlass = 0;
         public Canvas canvas;
@@ -403,9 +472,10 @@ namespace MyMoney
         public int centerCanvas;
         private double lastMinAsk;
         private double lastMaxBid;
-        private double lastPriceTick;
+        private double lastPriceTick, lastPriceAsk, lastPriceBid;
+        private int glvalues, glvalues25;
+        private ActionGlassItem lastActionTick;
         private int[] atemp = { };
-        private ActionGlassItem lastactiond = ActionGlassItem.zero;
 
         public SolidColorBrush UpBrush;
         public SolidColorBrush DownBrush;
@@ -414,12 +484,16 @@ namespace MyMoney
         public LinearGradientBrush GradientBrushForIndicator2;
         public LinearGradientBrush GradientBrushForIndicatorAverage;
         public LinearGradientBrush GradientBrushForIndicatorAverage2;
-        public Polyline tickGraph;
+        public Polyline tickGraphAsk, tickGraphBid;
+
+        public TextBlock tbGlassValue;
+        public TextBlock tbGlassValue25;
 
         public object objLock = new Object();
         public Queue<Rectangle> queueRect = new Queue<Rectangle>();
         public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
-        public List<double> listTicksPrice = new List<double>();
+        public List<double> listTicksPriceAsk = new List<double>();
+        public List<double> listTicksPriceBid = new List<double>();
         public List<int[]> listArrayValues = new List<int[]>();
 
 
