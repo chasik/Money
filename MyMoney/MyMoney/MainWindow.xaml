@@ -106,8 +106,8 @@
         <Canvas x:Name="glassCanvas" Grid.RowSpan="2" Grid.Column="2" HorizontalAlignment="Left" Margin="0,0,0,0" Width="252" SizeChanged="glassCanvas_SizeChanged" Grid.ColumnSpan="2">
             <Canvas.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="#FF469AFF" Offset="0"/>
-                    <GradientStop Color="#FFC5DDF9" Offset="1"/>
+                    <GradientStop Color="#FFE9F2FD" Offset="0"/>
+                    <GradientStop Color="White" Offset="1"/>
                 </LinearGradientBrush>
             </Canvas.Background>
             <Rectangle x:Name="indicatorRect" Fill="#FF155FFF" Canvas.Left="221" Stroke="Black" Width="22" Height="929"/>

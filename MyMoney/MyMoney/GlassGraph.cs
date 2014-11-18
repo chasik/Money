@@ -28,43 +28,23 @@ namespace MyMoney
             tickGraphCanvas = _ribbon;
 
             StepGlass = _step;
-            UpBrush = new SolidColorBrush();
-            UpBrush.Color = Color.FromArgb(255, 255, 228, 225);
-            DownBrush = new SolidColorBrush();
-            DownBrush.Color = Color.FromArgb(255, 152, 251, 152);
-            ZeroBrush = new SolidColorBrush();
-            ZeroBrush.Color = Color.FromArgb(255, 252, 252, 252);
+            UpBrush = new SolidColorBrush { Color = Color.FromArgb(255, 255, 228, 225) };
+            DownBrush = new SolidColorBrush { Color = Color.FromArgb(255, 152, 251, 152) };
+            ZeroBrush = new SolidColorBrush { Color = Color.FromArgb(255, 252, 252, 252) };
 
-            GradientBrushForIndicator = new LinearGradientBrush();
-            GradientBrushForIndicator.StartPoint = new Point(0, 0);
-            GradientBrushForIndicator.EndPoint = new Point(0, 1);
+            GradientBrushForIndicator = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
+            GradientBrushForIndicator2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
 
-            GradientBrushForIndicator2 = new LinearGradientBrush();
-            GradientBrushForIndicator2.StartPoint = new Point(0, 0);
-            GradientBrushForIndicator2.EndPoint = new Point(0, 1);
-
-            GradientBrushForIndicatorAverage = new LinearGradientBrush();
-            GradientBrushForIndicatorAverage.StartPoint = new Point(0, 0);
-            GradientBrushForIndicatorAverage.EndPoint = new Point(0, 1);
-
-            GradientBrushForIndicatorAverage2 = new LinearGradientBrush();
-            GradientBrushForIndicatorAverage2.StartPoint = new Point(0, 0);
-            GradientBrushForIndicatorAverage2.EndPoint = new Point(0, 1);
+            GradientBrushForIndicatorAverage = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
+            GradientBrushForIndicatorAverage2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
 
             _indicatorRect.Fill = GradientBrushForIndicator;
             _indicatorRect2.Fill = GradientBrushForIndicator2;
             _indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
             _indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
 
-            tickGraphAsk = new Polyline();
-            tickGraphAsk.Stroke = System.Windows.Media.Brushes.Maroon;
-            tickGraphAsk.SnapsToDevicePixels = true;
-            tickGraphAsk.StrokeThickness = 2;
-
-            tickGraphBid = new Polyline();
-            tickGraphBid.Stroke = System.Windows.Media.Brushes.Navy;
-            tickGraphBid.SnapsToDevicePixels = true;
-            tickGraphBid.StrokeThickness = 2;
+            tickGraphAsk = new Polyline { Stroke = Brushes.Maroon, SnapsToDevicePixels = true, StrokeThickness = 2 };
+            tickGraphBid = new Polyline { Stroke = Brushes.Navy, SnapsToDevicePixels = true, StrokeThickness = 2 };
 
             tickGraphCanvas.Children.Add(tickGraphAsk);
             tickGraphCanvas.Children.Add(tickGraphBid);
@@ -87,7 +67,7 @@ namespace MyMoney
                                 double maxBid = GetMaxBid();
                                 // сотрим, далеко ли "уполз" стакан
                                 double deltaAsk = minAsk - lastMinAsk;
-                                if (Math.Abs(deltaAsk) > 100)
+                                if (Math.Abs(deltaAsk) > 150)
                                 {
                                     lock (objLock)
                                     {
@@ -107,6 +87,11 @@ namespace MyMoney
                                             {
                                                 double top = Canvas.GetTop(gi.tbPrice);
                                                 gi.tbPrice.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(300)));
+                                            }
+                                            if (gi.line100 != null)
+                                            {
+                                                double top = Canvas.GetTop(gi.line100);
+                                                gi.line100.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(300)));
                                             }
                                         }
                                     }
@@ -352,42 +337,56 @@ namespace MyMoney
         }
         public void DrawItem(int i, double _minAsk, double _maxBid)
         {
-            Rectangle block = new Rectangle();
-            //block.StrokeThickness = 0.3;
-            //block.Stroke = Brushes.Black;
+            Rectangle block = new Rectangle { SnapsToDevicePixels = true, Width = 110, Height = 12 };
             if (i > 0)
                 block.Fill = UpBrush;
             else
                 block.Fill = DownBrush;
-            block.SnapsToDevicePixels = true;
-            block.Width = 110;
-            block.Height = 12;
-            Canvas.SetLeft(block, canvas.ActualWidth - 110 - 120);
-            Canvas.SetTop(block, centerCanvas - i * 12);
-            TextBlock t = new TextBlock();
-            if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
-                t.Text = (_maxBid + i * StepGlass).ToString("### ###");
-            t.FontSize = 9;
+
+            TextBlock t = new TextBlock { FontSize = 10 };
+            TextBlock t1 = new TextBlock { FontSize = 10 };
+
+            Canvas.SetLeft(block, canvas.ActualWidth - 108 - 120);
+            Canvas.SetTop(block, centerCanvas - i * 12 + 1);
+            Canvas.SetZIndex(block, 0);
+
             Canvas.SetLeft(t, canvas.ActualWidth - 40 - 120);
             Canvas.SetTop(t, centerCanvas - i * 12);
-            TextBlock t1 = new TextBlock();
+            Canvas.SetZIndex(t, 10);
+
+            Canvas.SetLeft(t1, canvas.ActualWidth - 105 - 120);
+            Canvas.SetTop(t1, centerCanvas - i * 12);
+            Canvas.SetZIndex(t1, 10);
+
+            canvas.Children.Add(block);
+            canvas.Children.Add(t);
+            canvas.Children.Add(t1);
+
+            Line line100 = null;
+            if ((_maxBid + i * 10) % 100 == 0)
+            {
+                line100 = new Line { X2 = canvas.ActualWidth - 111, Stroke = Brushes.Silver, StrokeThickness = 1 };
+                t.FontWeight = System.Windows.FontWeights.Black;
+                Canvas.SetTop(line100, centerCanvas - i * 12 + 8);
+                Canvas.SetZIndex(t, 5);
+                canvas.Children.Add(line100);
+            }
+
             if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
             {
+                t.Text = (_maxBid + i * StepGlass).ToString("### ###");
                 t1.Text = GlassValues[_maxBid + i * StepGlass].volume.ToString();
                 lock (objLock)
                 {
                     GlassValues[_maxBid + i * StepGlass].rectMain = block;
                     GlassValues[_maxBid + i * StepGlass].tbPrice = t;
                     GlassValues[_maxBid + i * StepGlass].tbVolume = t1;
+                    if (line100 != null)
+                        GlassValues[_maxBid + i * StepGlass].line100 = line100;
                 }
             }
 
-            t1.FontSize = 9;
-            Canvas.SetLeft(t1, canvas.ActualWidth - 105 - 120);
-            Canvas.SetTop(t1, centerCanvas - i * 12);
-            canvas.Children.Add(block);
-            canvas.Children.Add(t);
-            canvas.Children.Add(t1);
+
         }
         public void ChangeBidAsk(double _ask, double _bid)
         {
@@ -516,6 +515,7 @@ namespace MyMoney
         public Rectangle rectMain;
         public TextBlock tbVolume;
         public TextBlock tbPrice;
+        public Line line100;
     }
     public class ResTestLocal
     {
