@@ -96,7 +96,7 @@ namespace MyMoney
                 (dsource as QuotesFromBD).OnThreadTesterStart += new ThreadStarted(ThreadTesterStarted);
                 (dsource as QuotesFromBD).OnChangeProgress += MainWindow_OnChangeProgress;
                 (dsource as QuotesFromBD).OnFinishOneThread += MainWindow_OnFinishOneThread;
-                (dsource as QuotesFromBD).paramTh = new ParametrsForTest(0, new List<string> { }
+                (dsource as QuotesFromBD).paramTh = new ParametrsForTest(0, new List<string>{}
                     , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
                     , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
                     , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
@@ -200,7 +200,8 @@ namespace MyMoney
                     this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                         (ThreadStart)delegate()
                         {
-                            listBox1.Items.Add(dr["name"]);
+                            if (dr["name"].ToString().ToUpper().Contains(filterTextBox.Text.ToUpper()))
+                                listBox1.Items.Add(dr["name"]);
                         }
                     );
                 }

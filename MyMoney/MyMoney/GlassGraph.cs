@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -40,11 +41,12 @@ namespace MyMoney
 
             _indicatorRect.Fill = GradientBrushForIndicator;
             _indicatorRect2.Fill = GradientBrushForIndicator2;
+
             _indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
             _indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
 
-            tickGraphAsk = new Polyline { Stroke = Brushes.Maroon, SnapsToDevicePixels = true, StrokeThickness = 2 };
-            tickGraphBid = new Polyline { Stroke = Brushes.Navy, SnapsToDevicePixels = true, StrokeThickness = 2 };
+            tickGraphAsk = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 0, 110) }, StrokeThickness = 2, SnapsToDevicePixels = true };
+            tickGraphBid = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(110, 0, 0) }, StrokeThickness = 2, SnapsToDevicePixels = true };
 
             tickGraphCanvas.Children.Add(tickGraphAsk);
             tickGraphCanvas.Children.Add(tickGraphBid);
@@ -143,27 +145,35 @@ namespace MyMoney
             ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    if (_price == lastPriceTick && _action == lastActionTick)
+                    if (_price == lastPriceTick)// && _action == lastActionTick)
                         return;
 
                     int snegative = 0, spositive = 0;
+                    int sumnegative = 0, sumpositive = 0;
                     int percentDelta = 1;
                     for (int j = 0; j < atemp.Length; j++)
                     {
                         if (atemp[j] > 0)
-                            //spositive += atemp[j];
+                        {
+                            sumpositive += atemp[j];
                             spositive++;
+                        }
                         else
-                            //snegative += atemp[j];
+                        {
+                            sumnegative += atemp[j];
                             snegative++;
+                        }
                         if (j == 17)
                         { 
                             percentDelta = spositive + snegative;
                             GlValues25 = (int)(100 * Math.Max(spositive, snegative) / percentDelta) * (spositive > snegative ? 1 : -1);
-                        } else if (j == atemp.Length - 1)
+                            tbGlassValue25.Text += "\r\n" + (sumpositive + sumnegative).ToString();
+                        } 
+                        else if (j == atemp.Length - 1) // если последняя итерация
                         {
                             percentDelta = (spositive + Math.Abs(snegative));
                             GlValues = (int)(100 * Math.Max(spositive, snegative) / percentDelta) * (spositive > snegative ? 1 : -1);
+                            tbGlassValue.Text += "\r\n" + (sumpositive + sumnegative).ToString();
                         }
                     }
 
@@ -251,8 +261,8 @@ namespace MyMoney
                     tickGraphAsk.Points.Clear();
                     tickGraphBid.Points.Clear();
                     Random rr = new Random((int)DateTime.Now.TimeOfDay.TotalMilliseconds);
-                    double maxp = listTicksPriceAsk.Max();
-                    double minp = listTicksPriceBid.Min();
+                    double maxp = listTicksPriceAsk.Max() + 20;
+                    double minp = listTicksPriceBid.Min() - 20;
                     double delta = maxp - minp;
                     double onePixelPrice = delta / tickGraphCanvas.ActualHeight;
                     foreach (double p in listTicksPriceAsk)
@@ -297,6 +307,9 @@ namespace MyMoney
                         ival2 = s / (i + 1);
                         ivalAvr = _arrindAverage[i];
                         ivalAvr2 = sa / (i + 1);
+                        // выводим на градиенте значения индикатора ival
+                        if (i % 5 == 0)
+                            ChangeTextValue(i, ival);
 
                         byte b = Convert.ToByte(Math.Abs(Math.Abs(3 * ival) > 255 ? 255 : 3 * ival) + 0);
                         byte b1 = Convert.ToByte(Math.Abs(Math.Abs(3 * ival) > 255 ? 255 : 3 * ival) + 0);
@@ -322,7 +335,7 @@ namespace MyMoney
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    canvas.Children.RemoveRange(4, canvas.Children.Count - 42);
+                    canvas.Children.RemoveRange(14, canvas.Children.Count - 14);
                     double centerPrice = lastMaxBid;
                     double st;
                     centerCanvas = (int)(canvas.ActualHeight / 2);
@@ -385,8 +398,32 @@ namespace MyMoney
                         GlassValues[_maxBid + i * StepGlass].line100 = line100;
                 }
             }
-
-
+        }
+        //
+        // Создание и дальнешее изменение текстовых надписей на градиенте индикатора
+        //
+        private void ChangeTextValue(int i, int v)
+        {
+            if (!dicTBForIndicators.ContainsKey(i))
+            {
+                if (dicTBForIndicators.Count == 0)
+                    canvas.Children.RemoveRange(4, canvas.Children.Count - 4);
+                TextBlock tb = new TextBlock { Text = v.ToString(), FontSize = 11, FontWeight = FontWeights.Bold
+                                                , Foreground = Brushes.White, Width = 22, HorizontalAlignment = HorizontalAlignment.Right, SnapsToDevicePixels = true};
+                //tb.Effect = new DropShadowEffect { Color = Colors.Black, Direction = 310, ShadowDepth = 2 };
+                dicTBForIndicators.Add(i, new IndicatorValuesTextBlock { value = v, textblock = tb });
+                Canvas.SetTop(tb, canvas.ActualHeight - 20 - canvas.ActualHeight / 50 * i);
+                Canvas.SetLeft(tb, canvas.ActualWidth - 30);
+                Canvas.SetZIndex(tb, 100);
+                canvas.Children.Add(tb);
+            }
+            else 
+            {
+                if (v < 0)
+                    dicTBForIndicators[i].textblock.Text = v.ToString();
+                else
+                    dicTBForIndicators[i].textblock.Text = " " + v.ToString();
+            }
         }
         public void ChangeBidAsk(double _ask, double _bid)
         {
@@ -489,6 +526,7 @@ namespace MyMoney
         public LinearGradientBrush GradientBrushForIndicatorAverage2;
         public Polyline tickGraphAsk, tickGraphBid;
 
+        private Dictionary<int, IndicatorValuesTextBlock> dicTBForIndicators = new Dictionary<int, IndicatorValuesTextBlock>();
         public TextBlock tbGlassValue;
         public TextBlock tbGlassValue25;
 
@@ -535,5 +573,10 @@ namespace MyMoney
         }
         public int profitCount = 0;
         public int lossCount = 0;
+    }
+    public class IndicatorValuesTextBlock
+    {
+        public double value;
+        public TextBlock textblock;
     }
 }
