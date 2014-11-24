@@ -59,6 +59,12 @@ namespace MyMoney
             {
                 if (GlassValues[_price].volume != _volume || GlassValues[_price].action != _action)
                 {
+                    ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                        (ThreadStart)delegate()
+                        {
+                            if (_row == 0) 
+                                CalcGlassValue();
+                        });
                     GlassValues[_price].volume = _volume;
                     GlassValues[_price].action = _action;
                     if (GlassValues[_price].rectMain != null)
@@ -147,35 +153,7 @@ namespace MyMoney
                 {
                     if (_price == lastPriceTick)// && _action == lastActionTick)
                         return;
-
-                    int snegative = 0, spositive = 0;
-                    int sumnegative = 0, sumpositive = 0;
-                    int percentDelta = 1;
-                    for (int j = 0; j < atemp.Length; j++)
-                    {
-                        if (atemp[j] > 0)
-                        {
-                            sumpositive += atemp[j];
-                            spositive++;
-                        }
-                        else
-                        {
-                            sumnegative += atemp[j];
-                            snegative++;
-                        }
-                        if (j == 17)
-                        { 
-                            percentDelta = spositive + snegative;
-                            GlValues25 = (int)(100 * Math.Max(spositive, snegative) / percentDelta) * (spositive > snegative ? 1 : -1);
-                            tbGlassValue25.Text += "\r\n" + (sumpositive + sumnegative).ToString();
-                        } 
-                        else if (j == atemp.Length - 1) // если последняя итерация
-                        {
-                            percentDelta = (spositive + Math.Abs(snegative));
-                            GlValues = (int)(100 * Math.Max(spositive, snegative) / percentDelta) * (spositive > snegative ? 1 : -1);
-                            tbGlassValue.Text += "\r\n" + (sumpositive + sumnegative).ToString();
-                        }
-                    }
+                    CalcGlassValue();
 
                     for (int i = 0; i < listGradient.Count - queueRect.Count; i++)
                         listGradient.RemoveRange(0, 1);
@@ -284,6 +262,39 @@ namespace MyMoney
                     lastActionTick = _action;
                 }
             );
+        }
+
+        private void CalcGlassValue()
+        {
+            int snegative = 0, spositive = 0;
+            int sumnegative = 0, sumpositive = 0;
+            int percentDelta = 1;
+            for (int j = 0; j < atemp.Length; j++)
+            {
+                if (atemp[j] > 0)
+                {
+                    sumpositive += atemp[j];
+                    spositive++;
+                }
+                else
+                {
+                    sumnegative += atemp[j];
+                    snegative++;
+                }
+                if (j == 17)
+                {
+                    percentDelta = spositive + snegative;
+                    GlValues25 = (int)(100 * Math.Max(spositive, snegative) / percentDelta) * (spositive > snegative ? 1 : -1);
+                    tbGlassValue25.Text += "\r\n" + (sumpositive + sumnegative).ToString();
+                }
+                else if (j == atemp.Length - 1) // если последняя итерация
+                {
+                    percentDelta = (spositive + Math.Abs(snegative));
+                    GlValues = (int)(100 * Math.Max(spositive, snegative) / percentDelta) * (spositive > snegative ? 1 : -1);
+                    tbGlassValue.Text += "\r\n" + (sumpositive + sumnegative).ToString();
+                }
+            }
+
         }
         public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage)
         {
