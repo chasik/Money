@@ -270,7 +270,7 @@ namespace MyMoney
                     tbGlassValue.Text += "\r\n" + (sumpositive + sumnegative).ToString();
                 }
             }
-            return sum25;
+            return GlValues25;
         }
         public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage)
         {
