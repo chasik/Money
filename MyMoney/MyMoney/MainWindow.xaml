@@ -18,7 +18,7 @@
         <Button Content="Запуск" Margin="391,0,0,10" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="84" Click="Button_Click_1"/>
         <TextBox x:Name="textBox1" HorizontalAlignment="Left" Height="24" Margin="255,16,0,0" TextWrapping="Wrap" Text="BP12800" VerticalAlignment="Top" Width="98"/>
         <CheckBox x:Name="checkBox1" Content="Подключение к серверу" HorizontalAlignment="Left" Margin="243,51,0,0" VerticalAlignment="Top" Width="158"/>
-        <PasswordBox x:Name="passBox1" HorizontalAlignment="Left" Height="24" Margin="391,18,0,0" VerticalAlignment="Top" Width="102" Password="8GVZ7Z"/>
+        <PasswordBox x:Name="passBox1" HorizontalAlignment="Left" Height="24" Margin="391,18,0,0" VerticalAlignment="Top" Width="102" Password="WaNo11998811it"/>
         <TextBox x:Name="tbThreadCount" HorizontalAlignment="Left" Height="22" Margin="429,74,0,0" TextWrapping="Wrap" Text="7" VerticalAlignment="Top" Width="48" ToolTip="Количество потоков в тесте"/>
         <Label Content="Потоков:" HorizontalAlignment="Left" Margin="361,72,0,0" VerticalAlignment="Top" Width="60" Height="25"/>
         <Label Content="Не учитывать если больше среднего (в ... раз):" HorizontalAlignment="Left" Margin="241,96,0,0" VerticalAlignment="Top" Width="238" FontSize="11"/>

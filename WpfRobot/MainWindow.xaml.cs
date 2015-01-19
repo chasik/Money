@@ -34,18 +34,18 @@ namespace WpfRobot
             InitializeComponent();
 
             InstrumentsList.Items.Add("MICEX");
-            InstrumentsList.Items.Add("RTS-12.14_FT");
-            InstrumentsList.Items.Add("Si-12.14_FT");
-            InstrumentsList.Items.Add("GOLD-12.14_FT");
-            InstrumentsList.Items.Add("SBRF-12.14_FT");
-            InstrumentsList.Items.Add("GAZR-12.14_FT");
-            InstrumentsList.Items.Add("LKOH-12.14_FT");
+            InstrumentsList.Items.Add("RTS-3.15_FT");
+            InstrumentsList.Items.Add("Si-3.15_FT");
+            InstrumentsList.Items.Add("GOLD-3.15_FT");
+            InstrumentsList.Items.Add("SBRF-3.15_FT");
+            InstrumentsList.Items.Add("GAZR-3.15_FT");
+            InstrumentsList.Items.Add("LKOH-3.15_FT");
         }
         public void StartThreadsButton_Click(object sender, RoutedEventArgs e)
         {
             foreach (string s in InstrumentsList.Items)
             {
-                var q = new QuotesThread(this, s, "BP12800", "8GVZ7Z");
+                var q = new QuotesThread(this, s, "BP12800", "WaNo11998811it");
                 q.OnBeforeStart += q_OnBeforeStart;
                 _quotesThreads.Add(q);
                 //break;
