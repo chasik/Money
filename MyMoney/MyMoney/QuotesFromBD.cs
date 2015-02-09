@@ -232,7 +232,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, row as rownum, typeprice, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(12, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(14, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(14, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -245,7 +245,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(12, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(14, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(14, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
