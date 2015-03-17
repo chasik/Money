@@ -84,7 +84,7 @@ namespace MyMoney
             scom.connect("mxr.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
-            workSymbol = "RTS-3.15_FT";
+            workSymbol = "RTS-6.15_FT";
             scom.Connected += scom_Connected;
             scom.Disconnected += scom_Disconnected;
         }
