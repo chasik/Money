@@ -40,7 +40,7 @@ namespace MyMoney
         public SortedDictionary<DateTime, Bar> Bars = new SortedDictionary<DateTime, Bar>();
         //private TypeBar _typeBarGraph = TypeBar.TimeMinuteBar;
         private TypeBar _typeBarGraph = TypeBar.VolumeBar;
-        private int ValueBar = 40;
+        private int ValueBar = 20;
         public Canvas graphC;
         public Canvas graphI;
         private Bar b;
@@ -103,8 +103,8 @@ namespace MyMoney
                     MinMaxValue mm = this.GetMinMaxValues();
                     double widthBar = (graphC.ActualWidth - widthYArea) / Bars.Count / 1.3;
                     double pixelInPunkt = (mm.MaxValue - mm.MinValue) / (graphC.ActualHeight - heightXArea);
-                    if (widthBar > 6)
-                        widthBar = 6;
+                    if (widthBar > 5)
+                        widthBar = 5;
 
                     ClearWorkAreaGraph(pixelInPunkt);
 
@@ -204,6 +204,10 @@ namespace MyMoney
                     btemp = b.AddTick(new Tick(DateTime.Now, (float) _price, (float) _volume));
                     if (btemp != b)
                     {
+                        while (Bars.ContainsKey(b.openTick.dtTick))
+                        {
+                            b.openTick.dtTick = b.openTick.dtTick.AddMilliseconds(1);
+                        }
                         Bars.Add(b.openTick.dtTick, b);
                         b = btemp;
                     }
