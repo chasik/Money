@@ -38,10 +38,13 @@ namespace MyMoney
         private DataRow[] _dr;
         private int heightXArea = 15, widthYArea = 70;
         public SortedDictionary<DateTime, Bar> Bars = new SortedDictionary<DateTime, Bar>();
-        private TypeBar _typeBarGraph = TypeBar.TimeMinuteBar;
-        private int ValueBar = 1;
+        //private TypeBar _typeBarGraph = TypeBar.TimeMinuteBar;
+        private TypeBar _typeBarGraph = TypeBar.VolumeBar;
+        private int ValueBar = 40;
         public Canvas graphC;
         public Canvas graphI;
+        private Bar b;
+        private Bar btemp;
         public DataRow[] drData{
             get { return _dr;}
             set {
@@ -52,15 +55,14 @@ namespace MyMoney
         public TypeBar TypeBarGraph
         {
             get { return _typeBarGraph; }
-            set
-            {
-                _typeBarGraph = value;
-            }
+            set { _typeBarGraph = value; }
         }
         public TradeGraph(Canvas _graph = null, Canvas _indic = null)
         {
             graphC = _graph;
             graphI = _indic;
+            b = new Bar(TypeBarGraph, ValueBar);
+            btemp = b;
         }
         //
         // расчет баров по тикам
@@ -70,8 +72,6 @@ namespace MyMoney
             Bars.Clear();
             if (drData == null || drData.Length < 1)
                 return;
-            Bar b = new Bar(TypeBarGraph, ValueBar);
-            Bar btemp = b;
             foreach (DataRow dr in drData)
             {
                 DateTime dt1 = (DateTime)dr.Field<DateTime?>("dtserver");
@@ -103,8 +103,8 @@ namespace MyMoney
                     MinMaxValue mm = this.GetMinMaxValues();
                     double widthBar = (graphC.ActualWidth - widthYArea) / Bars.Count / 1.3;
                     double pixelInPunkt = (mm.MaxValue - mm.MinValue) / (graphC.ActualHeight - heightXArea);
-                    if (widthBar > 8)
-                        widthBar = 8;
+                    if (widthBar > 6)
+                        widthBar = 6;
 
                     ClearWorkAreaGraph(pixelInPunkt);
 
@@ -194,6 +194,23 @@ namespace MyMoney
                 Canvas.SetTop(t, (mm.MaxValue - y) * graphC.ActualHeight / mm.DeltaValue - 5);
             }
         }
+
+        public void AddTick(double _price, double _volume, ActionGlassItem _action)
+        {
+            graphC.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                (ThreadStart)delegate()
+                {
+
+                    btemp = b.AddTick(new Tick(DateTime.Now, (float) _price, (float) _volume));
+                    if (btemp != b)
+                    {
+                        Bars.Add(b.openTick.dtTick, b);
+                        b = btemp;
+                    }
+                    if (graphC != null)
+                        DrawGraph();
+                });
+        }
     }
 
     public enum TypeBar
@@ -224,6 +241,7 @@ namespace MyMoney
         private Tick _hiTick;
         private Tick _lowTick;
         public SortedDictionary<DateTime, Tick> Ticks = new SortedDictionary<DateTime, Tick>();
+        public float SummVolume = 0;
 
         public Bar(TypeBar _typebar, int _valuebar)
         {
@@ -253,6 +271,7 @@ namespace MyMoney
 
         public Bar AddTick(Tick _tick)
         {
+            SummVolume += _tick.Volume;
             TimeSpan ts;
             double deltaT = 0;
             if (_lasttick != null)
@@ -266,6 +285,7 @@ namespace MyMoney
             switch (typebar)
             {
                 case TypeBar.VolumeBar:
+
                     break;
                 case TypeBar.TimeSecondBar:
                     deltaT = ts.TotalSeconds;
@@ -289,7 +309,7 @@ namespace MyMoney
                 _tick.dtTick = _tick.dtTick.AddMilliseconds(1);
             }
             Ticks.Add(_tick.dtTick, _tick);
-            if (deltaT >= (float)valuebar)
+            if ((typebar != TypeBar.VolumeBar && deltaT >= (float)valuebar) || (typebar == TypeBar.VolumeBar && SummVolume > (float) valuebar))
             {
                 closeTick = _tick;
                 return new Bar(typebar, valuebar);
