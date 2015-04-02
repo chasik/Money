@@ -112,8 +112,8 @@
             </Canvas.Background>
             <Rectangle x:Name="indicatorRect" Fill="#FF155FFF" Canvas.Left="221" Stroke="Black" Width="22" Height="929"/>
             <Rectangle x:Name="indicatorRect2" Fill="#FF155FFF" Canvas.Left="194" Stroke="Black" Width="22" Height="929"/>
-            <Rectangle x:Name="indicatorAverageRect" Fill="#FF155FFF" Canvas.Left="167" Stroke="Black" Width="22" Height="929"/>
-            <Rectangle x:Name="indicatorAverageRect2" Fill="#FF155FFF" Canvas.Left="140" Stroke="Black" Width="22" Height="929"/>
+            <Rectangle x:Name="indicatorAverageRect" Fill="#FF155FFF" Canvas.Left="167" Stroke="Black" Width="22" Height="929" Visibility="Hidden"/>
+            <Rectangle x:Name="indicatorAverageRect2" Fill="#FF155FFF" Canvas.Left="140" Stroke="Black" Width="22" Height="929" Visibility="Hidden"/>
         </Canvas>
         <CheckBox x:Name="chbVisualisationTest" Content="Визуализация" HorizontalAlignment="Left" Margin="243,74,0,0" VerticalAlignment="Top" Width="118"/>
         <Slider x:Name="speedSlider" Grid.Column="0" HorizontalAlignment="Right" Margin="0,0,34,68" VerticalAlignment="Bottom" Height="24" Width="413" Interval="44" Minimum="-15" Maximum="30" ValueChanged="speedSlider_ValueChanged"/>

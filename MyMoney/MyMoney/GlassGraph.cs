@@ -36,26 +36,26 @@ namespace MyMoney
             GradientBrushForIndicator = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
             GradientBrushForIndicator2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
 
-            GradientBrushForIndicatorAverage = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
-            GradientBrushForIndicatorAverage2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
+            //GradientBrushForIndicatorAverage = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
+            //GradientBrushForIndicatorAverage2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
 
             _indicatorRect.Fill = GradientBrushForIndicator;
             _indicatorRect2.Fill = GradientBrushForIndicator2;
 
-            _indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
-            _indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
+            //_indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
+            //_indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
 
             tickGraphAsk = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 0, 110) }, StrokeThickness = 2, SnapsToDevicePixels = true };
             tickGraphBid = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(110, 0, 0) }, StrokeThickness = 2, SnapsToDevicePixels = true };
 
-            indicatorGraphSumm = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(255, 255, 255) }, StrokeThickness = 2, SnapsToDevicePixels = true };
+            //indicatorGraphSumm = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(255, 255, 255) }, StrokeThickness = 2, SnapsToDevicePixels = true };
 
             tickGraphCanvas.Children.Add(tickGraphAsk);
             tickGraphCanvas.Children.Add(tickGraphBid);
-            tickGraphCanvas.Children.Add(indicatorGraphSumm);
+            //tickGraphCanvas.Children.Add(indicatorGraphSumm);
             Canvas.SetZIndex(tickGraphAsk, 3);
             Canvas.SetZIndex(tickGraphBid, 2);
-            Canvas.SetZIndex(indicatorGraphSumm, 4);
+            //Canvas.SetZIndex(indicatorGraphSumm, 4);
         }
         public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -159,7 +159,10 @@ namespace MyMoney
                         return;
 
                     for (int i = 0; i < listGradient.Count - queueRect.Count; i++)
+                    {
                         listGradient.RemoveRange(0, 1);
+                        listGradient2.RemoveRange(0, 1);
+                    }
 
                     for (int i = 0; i < listArrayValues.Count - queueRect.Count; i++)
                     {
@@ -175,6 +178,7 @@ namespace MyMoney
 
                    
                     listGradient.Add(GradientBrushForIndicator.Clone());
+                    listGradient2.Add(GradientBrushForIndicator2.Clone());
 
                     if (lastPriceAsk == 0) lastPriceAsk = _price;
                     if (lastPriceBid == 0) lastPriceBid = _price;
@@ -197,9 +201,16 @@ namespace MyMoney
                             r.Fill = listGradient[listGradient.Count - queueRect.Count + x - 1];
                     }
                     x = 0;
+                    foreach (Rectangle r in queueRect2)
+                    {
+                        x++;
+                        if (x > queueRect2.Count - listGradient2.Count)
+                            r.Fill = listGradient2[listGradient2.Count - queueRect2.Count + x - 1];
+                    }
+                    x = 0;
                     tickGraphAsk.Points.Clear();
                     tickGraphBid.Points.Clear();
-                    indicatorGraphSumm.Points.Clear();
+                    //indicatorGraphSumm.Points.Clear();
                     Random rr = new Random((int)DateTime.Now.TimeOfDay.TotalMilliseconds);
                     double maxp = listTicksPriceAsk.Max() + 20;
                     double minp = listTicksPriceBid.Min() - 20;
@@ -222,11 +233,11 @@ namespace MyMoney
                         tickGraphBid.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listTicksPriceBid.Count - 1), (maxp - p) / onePixelPrice));
                     }
                     x = 0;
-                    foreach (double indv in listIndicatorSumm)
-                    {
-                        x++;
-                        indicatorGraphSumm.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listIndicatorSumm.Count - 1), (maxInd - indv) / onePixelIndicator));
-                    }
+                    //foreach (double indv in listIndicatorSumm)
+                    //{
+                        //x++;
+                        //indicatorGraphSumm.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listIndicatorSumm.Count - 1), (maxInd - indv) / onePixelIndicator));
+                    //}
 
                     lastPriceTick = _price;
                     if (_action == ActionGlassItem.buy)
@@ -281,19 +292,20 @@ namespace MyMoney
                 {
                     GradientBrushForIndicator.GradientStops.Clear();
                     GradientBrushForIndicator2.GradientStops.Clear();
-                    GradientBrushForIndicatorAverage.GradientStops.Clear();
-                    GradientBrushForIndicatorAverage2.GradientStops.Clear();
+                    //GradientBrushForIndicatorAverage.GradientStops.Clear();
+                    //GradientBrushForIndicatorAverage2.GradientStops.Clear();
                     int ival = 0, ival2 = 0, ivalAvr = 0, ivalAvr2 = 0;
                     int s = 0, sa = 0;
                     for (int i = 0; i < _arrind.Length; i++)
                     {
                         s += _arrind[i];
                         sa += _arrindAverage[i];
-                        //ival = s / (i + 1);
-                        ival = _arrind[i];
-                        ival2 = s / (i + 1);
-                        ivalAvr = _arrindAverage[i];
-                        ivalAvr2 = sa / (i + 1);
+                        ival = s / (i + 1);
+                        //ival = _arrind[i];
+                        //ival2 = s / (i + 1);
+                        ival2 = _arrind[i];
+                        //ivalAvr = _arrindAverage[i];
+                        //ivalAvr2 = sa / (i + 1);
                         // выводим на градиенте значения индикатора ival
                         if (i % 5 == 0)
                             ChangeTextValue(i, ival);
@@ -302,16 +314,16 @@ namespace MyMoney
                         byte b1 = Convert.ToByte(Math.Abs(Math.Abs(3 * ival) > 255 ? 255 : 3 * ival) + 0);
                         byte b2 = Convert.ToByte(Math.Abs(Math.Abs(3 * ival2) > 255 ? 255 : 3 * ival2) + 0);
                         byte b22 = Convert.ToByte(Math.Abs(Math.Abs(3 * ival2) > 255 ? 255 : 3 * ival2) + 0);
-                        byte ba = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr) > 255 ? 255 : 3 * ivalAvr) + 0);
-                        byte ba1 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr) > 255 ? 255 : 3 * ivalAvr) + 0);
-                        byte ba2 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr2) > 255 ? 255 : 3 * ivalAvr2) + 0);
-                        byte ba22 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr2) > 255 ? 255 : 3 * ivalAvr2) + 0);
+                        //byte ba = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr) > 255 ? 255 : 3 * ivalAvr) + 0);
+                        //byte ba1 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr) > 255 ? 255 : 3 * ivalAvr) + 0);
+                        //byte ba2 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr2) > 255 ? 255 : 3 * ivalAvr2) + 0);
+                        //byte ba22 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr2) > 255 ? 255 : 3 * ivalAvr2) + 0);
 
                         GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b1, 255) : Color.FromRgb(255, b, 0), 1 - (double)i / 50));
                         GradientBrushForIndicator2.GradientStops.Add(new GradientStop(ival2 > 0 ? Color.FromRgb(0, b22, 255) : Color.FromRgb(255, b2, 0), 1 - (double)i / 50));
 
-                        GradientBrushForIndicatorAverage.GradientStops.Add(new GradientStop(ivalAvr > 0 ? Color.FromRgb(0, ba1, 255) : Color.FromRgb(255, ba, 0), 1 - (double)i / 50));
-                        GradientBrushForIndicatorAverage2.GradientStops.Add(new GradientStop(ivalAvr2 > 0 ? Color.FromRgb(0, ba22, 255) : Color.FromRgb(255, ba2, 0), 1 - (double)i / 50));
+                        //GradientBrushForIndicatorAverage.GradientStops.Add(new GradientStop(ivalAvr > 0 ? Color.FromRgb(0, ba1, 255) : Color.FromRgb(255, ba, 0), 1 - (double)i / 50));
+                        //GradientBrushForIndicatorAverage2.GradientStops.Add(new GradientStop(ivalAvr2 > 0 ? Color.FromRgb(0, ba22, 255) : Color.FromRgb(255, ba2, 0), 1 - (double)i / 50));
                     }
                 });
         }
@@ -452,13 +464,22 @@ namespace MyMoney
                     {
                         Rectangle r = new Rectangle();
                         r.Fill = DownBrush;
-                        //r.SnapsToDevicePixels = true;
                         r.Width = 1;
                         r.Height = ribboncanvas.ActualHeight;
                         Canvas.SetLeft(r, x);
                         Canvas.SetTop(r, 0);
+                        Rectangle r2 = new Rectangle();
+                        r2.Fill = DownBrush;
+                        r2.Width = 1;
+                        r2.Height = ribboncanvas.ActualHeight;
+                        Canvas.SetLeft(r2, x);
+                        Canvas.SetTop(r2, 0);
+                        r.Opacity = 0.45;
+                        r2.Opacity = 0.45;
                         ribboncanvas.Children.Add(r);
+                        ribboncanvas.Children.Add(r2);
                         queueRect.Enqueue(r);
+                        queueRect2.Enqueue(r2);
                     }
                 }
             );
@@ -509,10 +530,10 @@ namespace MyMoney
         public SolidColorBrush ZeroBrush;
         public LinearGradientBrush GradientBrushForIndicator;
         public LinearGradientBrush GradientBrushForIndicator2;
-        public LinearGradientBrush GradientBrushForIndicatorAverage;
-        public LinearGradientBrush GradientBrushForIndicatorAverage2;
+        //public LinearGradientBrush GradientBrushForIndicatorAverage;
+        //public LinearGradientBrush GradientBrushForIndicatorAverage2;
         public Polyline tickGraphAsk, tickGraphBid;
-        public Polyline indicatorGraphSumm;
+        //public Polyline indicatorGraphSumm;
 
         private Dictionary<int, IndicatorValuesTextBlock> dicTBForIndicators = new Dictionary<int, IndicatorValuesTextBlock>();
         public TextBlock tbGlassValue;
@@ -520,7 +541,9 @@ namespace MyMoney
 
         public object objLock = new Object();
         public Queue<Rectangle> queueRect = new Queue<Rectangle>();
+        public Queue<Rectangle> queueRect2 = new Queue<Rectangle>();
         public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
+        public List<LinearGradientBrush> listGradient2 = new List<LinearGradientBrush>();
         public List<double> listTicksPriceAsk = new List<double>();
         public List<double> listTicksPriceBid = new List<double>();
         public List<double> listIndicatorSumm = new List<double>();
