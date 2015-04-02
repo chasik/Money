@@ -412,5 +412,10 @@ namespace MyMoney
                 GlassVisual.CreateQueueForRibbon();
         }
 
+        private void MyWindow_KeyUp(object sender, KeyEventArgs e)
+        {
+            //MessageBox.Show(e.Key.ToString());
+        }
+
     }
 }

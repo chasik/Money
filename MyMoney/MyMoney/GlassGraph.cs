@@ -474,7 +474,7 @@ namespace MyMoney
                         r2.Height = ribboncanvas.ActualHeight;
                         Canvas.SetLeft(r2, x);
                         Canvas.SetTop(r2, 0);
-                        r.Opacity = 0.45;
+                        r.Opacity = 1;
                         r2.Opacity = 0.45;
                         ribboncanvas.Children.Add(r);
                         ribboncanvas.Children.Add(r2);

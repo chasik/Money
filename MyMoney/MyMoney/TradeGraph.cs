@@ -40,7 +40,7 @@ namespace MyMoney
         public SortedDictionary<DateTime, Bar> Bars = new SortedDictionary<DateTime, Bar>();
         //private TypeBar _typeBarGraph = TypeBar.TimeMinuteBar;
         private TypeBar _typeBarGraph = TypeBar.VolumeBar;
-        private int ValueBar = 40;
+        private int ValueBar = 500;
         public Canvas graphC;
         public Canvas graphI;
         private Bar b;
