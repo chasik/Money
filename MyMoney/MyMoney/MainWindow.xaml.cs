@@ -118,10 +118,10 @@ namespace MyMoney
             dsource.ConnectToDataSource();
             dsource.OnInformation += dsource_OnInformation;
 
-            (dsource).OnChangeGlass += GlassVisual.ChangeValues;
-            (dsource).OnChangeVisualIndicator += GlassVisual.ChangeVisualIndicator;
-            (dsource).OnAddTick += GlassVisual.AddTick;
-            (dsource).OnAddTick += tradeGraphVisual.AddTick;
+            dsource.OnChangeGlass += GlassVisual.ChangeValues;
+            dsource.OnChangeVisualIndicator += GlassVisual.ChangeVisualIndicator;
+            dsource.OnAddTick += GlassVisual.AddTick;
+            dsource.OnAddTick += tradeGraphVisual.AddTick;
         }
 
         void dsource_OnInformation(string _mess)
@@ -415,6 +415,25 @@ namespace MyMoney
         private void MyWindow_KeyUp(object sender, KeyEventArgs e)
         {
             //MessageBox.Show(e.Key.ToString());
+            if (!(dsource is QuotesFromSmartCom))
+                return;
+            QuotesFromSmartCom scomt = dsource as QuotesFromSmartCom;
+            SmartCOM3Lib.StServerClass sc = scomt.scom;
+            if (e.Key == Key.Up)
+            {
+                MessageBox.Show("UP:" + scomt.workPortfolioName);
+                //sc.PlaceOrder(scomt.workPortfolioName);
+            }
+            else if (e.Key == Key.Down)
+            {
+                MessageBox.Show("DOWN:" + scomt.workPortfolioName);
+                //sc.PlaceOrder(scomt.workPortfolioName);
+            }
+            else if (e.Key == Key.Space)
+            {
+                MessageBox.Show("space:" + scomt.workPortfolioName);
+                //sc.PlaceOrder(scomt.workPortfolioName);
+            }
         }
 
     }

@@ -85,16 +85,16 @@
         <TextBox x:Name="tbIndicatorShortFinish" HorizontalAlignment="Left" Height="20" Margin="413,328,0,0" TextWrapping="Wrap" Text="86" VerticalAlignment="Top" Width="32" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
         <TextBox x:Name="tbIndicatorShortStep" HorizontalAlignment="Left" Height="20" Margin="451,328,0,0" TextWrapping="Wrap" Text="3" VerticalAlignment="Top" Width="28" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
         <TextBox x:Name="tbIndicatorShortCurrent" HorizontalAlignment="Left" Height="20" Margin="329,328,0,0" TextWrapping="Wrap" Text="68" VerticalAlignment="Top" Width="32" TextAlignment="Right" FontSize="11" FontFamily="Rockwell"/>
-        <Canvas x:Name="canvasGraph" Grid.ColumnSpan="2" Margin="10,0,57,0" Height="198" VerticalAlignment="Top" Background="#FFCF9393" Grid.Row="1"/>
-        <Canvas x:Name="canvasIndicator" Grid.ColumnSpan="2" Margin="10,203,57,0" Height="187" VerticalAlignment="Top" Grid.Row="1">
+        <Canvas x:Name="canvasGraph" Grid.ColumnSpan="2" Margin="10,0,57,0" Height="123" VerticalAlignment="Top" Background="#FFCF9393" Grid.Row="1"/>
+        <Canvas x:Name="canvasIndicator" Grid.ColumnSpan="2" Margin="10,128,99,0" Height="262" VerticalAlignment="Top" Grid.Row="1">
             <Canvas.Background>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="Black" Offset="0"/>
                     <GradientStop Color="#FF762222" Offset="1"/>
                 </LinearGradientBrush>
             </Canvas.Background>
-            <Rectangle Fill="White" Height="124" Stroke="Black" Width="1461" Panel.ZIndex="1" Opacity="0" IsEnabled="False"/>
-            <Rectangle Fill="White" Height="63" Stroke="Black" Width="1461" Panel.ZIndex="1" Opacity="0" IsEnabled="False" Canvas.Top="124"/>
+            <Rectangle Fill="White" Height="152" Stroke="Black" Width="1414" Panel.ZIndex="1" IsEnabled="False" Opacity="0"/>
+            <Rectangle Fill="White" Height="110" Stroke="Black" Width="1414" Panel.ZIndex="1" Opacity="0" IsEnabled="False" Canvas.Top="152"/>
         </Canvas>
         <TextBox x:Name="tbInformation" HorizontalAlignment="Left" Margin="13,0,0,130" TextWrapping="Wrap" Width="225" FontFamily="Arial" FontSize="9" Height="45" VerticalAlignment="Bottom"/>
         <CheckBox x:Name="chbTrading" Content="Торговать" HorizontalAlignment="Left" Margin="406,50,0,0" VerticalAlignment="Top" Width="84"/>
@@ -118,7 +118,7 @@
         <CheckBox x:Name="chbVisualisationTest" Content="Визуализация" HorizontalAlignment="Left" Margin="243,74,0,0" VerticalAlignment="Top" Width="118"/>
         <Slider x:Name="speedSlider" Grid.Column="0" HorizontalAlignment="Right" Margin="0,0,34,68" VerticalAlignment="Bottom" Height="24" Width="413" Interval="44" Minimum="-15" Maximum="30" ValueChanged="speedSlider_ValueChanged"/>
         <Label x:Name="speedLabel" Content="0" HorizontalAlignment="Left" Margin="10,0,0,68" VerticalAlignment="Bottom" Width="48"/>
-        <TextBlock x:Name="tbValuesGlass" Grid.Column="1" HorizontalAlignment="Left" Margin="990,203,0,0" Grid.Row="1" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" FontFamily="Kartika" FontWeight="Bold" Width="47"/>
-        <TextBlock x:Name="tbValuesGlass25" Grid.Column="1" HorizontalAlignment="Left" Margin="990,314,0,0" Grid.Row="1" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="47" RenderTransformOrigin="0.435,-0.391" FontFamily="Kartika" FontWeight="Bold"/>
+        <TextBlock x:Name="tbValuesGlass" Grid.Column="1" HorizontalAlignment="Left" Margin="990,128,0,0" Grid.Row="1" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" FontFamily="Kartika" FontWeight="Bold" Width="47"/>
+        <TextBlock x:Name="tbValuesGlass25" Grid.Column="1" HorizontalAlignment="Left" Margin="990,323,0,0" Grid.Row="1" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="47" RenderTransformOrigin="0.435,-0.391" FontFamily="Kartika" FontWeight="Bold"/>
     </Grid>
 </Window>

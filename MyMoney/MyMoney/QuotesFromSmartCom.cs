@@ -18,7 +18,7 @@ namespace MyMoney
         private int _martinlevel = 0;
         private string login;
         private string password;
-        private string workPortfolioName = "";
+        public string workPortfolioName = "";
         private string workSymbol = "";
         public double lastBid = 0;
         public double lastAsk = 0;
