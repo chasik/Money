@@ -29,6 +29,7 @@ namespace MyMoney
     }
     public class GlassGraph
     {
+        public int abssummchangeval;
         public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
         {
             canvas = _c;
@@ -98,7 +99,7 @@ namespace MyMoney
                                 double maxBid = GetMaxBid();
                                 // сотрим, далеко ли "уполз" стакан
                                 double deltaAsk = minAsk - lastMinAsk;
-                                if (Math.Abs(deltaAsk) > 150)
+                                if (Math.Abs(deltaAsk) > 200)
                                 {
                                     lock (objLock)
                                     {
@@ -147,13 +148,19 @@ namespace MyMoney
 
                                 lock (objLock)
                                 {
+                                    //abssummchangeval = 0;
                                     foreach(GlassItem gv in GlassValues.Values){
+                                        //if (gv.price == _price && _row == 0) // если это уровень bid и ask - то эти изменения не учитываем
+                                        //    continue;
                                         int summchangeval = 0;
                                         List<ChangeValuesItem> templist = new List<ChangeValuesItem>();
                                         foreach (ChangeValuesItem v in gv.listChangeVal)
                                         {
                                             if ((_dt - v.dt).TotalSeconds < 1)
+                                            {
                                                 summchangeval += (int)v.newvalue - (int)v.oldvalue > 0 ? 1 : -1;
+                                                //abssummchangeval++;
+                                            }
                                             else
                                                 templist.Add(v);
                                         }
@@ -165,7 +172,7 @@ namespace MyMoney
                                         templist.Clear();
                                         if (gv.tbChangeVal != null)
                                         {
-                                            gv.tbChangeVal.Text = Math.Abs(summchangeval) > 0 ? "" : ""; //summchangeval.ToString() : "";
+                                            //gv.tbChangeVal.Text = Math.Abs(summchangeval) > 0 ? "" : ""; //summchangeval.ToString() : "";
                                             gv.rectChangeVolume.Width = Math.Abs(summchangeval) * 5;
                                             gv.rectChangeVolume.Fill = summchangeval < 0 ? ChangeVolDownBrush : ChangeVolUpBrush;
                                         }
@@ -221,7 +228,7 @@ namespace MyMoney
             {
                 lock (objLock)
                 {
-                    GlassValues.Add(_price, new GlassItem(_volume, _action));
+                    GlassValues.Add(_price, new GlassItem(_price, _volume, _action));
                 }
                 RebuildGlass(_dt);
             }
@@ -346,14 +353,15 @@ namespace MyMoney
                 if (j == 17)
                 {
                     percentDelta25 = spositive + Math.Abs(snegative);
-                    GlValues25 = (int)(100 * Math.Max(spositive, snegative) / percentDelta25) * (spositive > snegative ? 1 : -1);
+                    GlValues25 = (int)(100 * Math.Max(spositive, Math.Abs(snegative)) / percentDelta25) * (spositive > Math.Abs(snegative) ? 1 : -1);
                     tbGlassValue25.Text += "\r\n" + (sumpositive + sumnegative).ToString();
                     sum25 = sumpositive + sumnegative;
+                    abssummchangeval = sum25;
                 }
                 else if (j == atemp.Length - 1) // если последняя итерация
                 {
                     percentDelta = (spositive + Math.Abs(snegative));
-                    GlValues = (int)(100 * Math.Max(spositive, snegative) / percentDelta) * (spositive > snegative ? 1 : -1);
+                    GlValues = (int)(100 * Math.Max(spositive, Math.Abs(snegative)) / percentDelta) * (spositive > Math.Abs(snegative) ? 1 : -1);
                     tbGlassValue.Text += "\r\n" + (sumpositive + sumnegative).ToString();
                 }
             }
@@ -396,7 +404,10 @@ namespace MyMoney
                         //byte ba2 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr2) > 255 ? 255 : 3 * ivalAvr2) + 0);
                         //byte ba22 = Convert.ToByte(Math.Abs(Math.Abs(3 * ivalAvr2) > 255 ? 255 : 3 * ivalAvr2) + 0);
 
-                        GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b1, 255) : Color.FromRgb(255, b, 0), 1 - (double)i / 50));
+                        //if (Math.Abs(abssummchangeval) > 500)
+                            GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b1, 255) : Color.FromRgb(255, b, 0), 1 - (double)i / 50));
+                        //else
+                        //    GradientBrushForIndicator.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, 0, 0) : Color.FromRgb(0, 0, 0), 1 - (double)i / 50));
                         GradientBrushForIndicator2.GradientStops.Add(new GradientStop(ival2 > 0 ? Color.FromRgb(0, b22, 255) : Color.FromRgb(255, b2, 0), 1 - (double)i / 50));
 
                         //GradientBrushForIndicatorAverage.GradientStops.Add(new GradientStop(ivalAvr > 0 ? Color.FromRgb(0, ba1, 255) : Color.FromRgb(255, ba, 0), 1 - (double)i / 50));
@@ -668,13 +679,15 @@ namespace MyMoney
 
     public class GlassItem
     {
-        public GlassItem(double _volume, ActionGlassItem _action)
+        public GlassItem(double _price, double _volume, ActionGlassItem _action)
         {
+            price = _price;
             volume = _volume;
             action = _action;
         }
         public List<ChangeValuesItem> listChangeVal = new List<ChangeValuesItem>();
         public double volume;
+        public double price;
         public ActionGlassItem action;
         public Rectangle rectMain;
         public Rectangle rectVolume;

@@ -436,5 +436,10 @@ namespace MyMoney
             }
         }
 
+        private void glassCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            //tbInformation.AppendText("\r\n" + e.Delta.ToString());
+        }
+
     }
 }
