@@ -536,7 +536,7 @@ namespace MyMoney
                             if (typeprice == 1)         act = ActionGlassItem.buy;
                             else if (typeprice == 2)    act = ActionGlassItem.sell;
 
-                            OnChangeGlass(updatepricegl, updatevolumegl, rownum, act);
+                            OnChangeGlass(dtCurrentRow, updatepricegl, updatevolumegl, rownum, act);
                         }
                         if (!glass.ContainsKey(updatepricegl))
                             glass.Add(updatepricegl, updatevolumegl);

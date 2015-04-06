@@ -375,8 +375,8 @@ namespace MyMoney
         {
             if (OnChangeGlass != null)
             {
-                OnChangeGlass(ask, asksize, row, ActionGlassItem.buy);
-                OnChangeGlass(bid, bidsize, row, ActionGlassItem.sell);
+                OnChangeGlass(DateTime.Now, ask, asksize, row, ActionGlassItem.buy);
+                OnChangeGlass(DateTime.Now, bid, bidsize, row, ActionGlassItem.sell);
             }
             if (row == 0)
             {

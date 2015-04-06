@@ -20,6 +20,13 @@ namespace MyMoney
         sell = 1,
         buy = 2,
     };
+    public struct ChangeValuesItem
+    {
+        public DateTime dt;
+        public double price;
+        public double oldvalue;
+        public double newvalue;
+    }
     public class GlassGraph
     {
         public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
@@ -31,7 +38,15 @@ namespace MyMoney
             StepGlass = _step;
             UpBrush = new SolidColorBrush { Color = Color.FromArgb(255, 255, 228, 225) };
             DownBrush = new SolidColorBrush { Color = Color.FromArgb(255, 152, 251, 152) };
+
+            UpBrushAsk = new SolidColorBrush { Color = Color.FromArgb(255, 255, 185, 177) };
+            DownBrushBid = new SolidColorBrush { Color = Color.FromArgb(255, 125, 209, 125) };
+
             ZeroBrush = new SolidColorBrush { Color = Color.FromArgb(255, 252, 252, 252) };
+            VolumeBrush = new SolidColorBrush { Color = Color.FromArgb(255, 255, 127, 39) };
+
+            ChangeVolUpBrush = new SolidColorBrush { Color = Color.FromArgb(255, 36, 187, 250) };
+            ChangeVolDownBrush = new SolidColorBrush { Color = Color.FromArgb(255, 250, 36, 36) };
 
             GradientBrushForIndicator = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
             GradientBrushForIndicator2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
@@ -57,7 +72,7 @@ namespace MyMoney
             Canvas.SetZIndex(tickGraphBid, 2);
             //Canvas.SetZIndex(indicatorGraphSumm, 4);
         }
-        public void ChangeValues(double _price, double _volume, int _row, ActionGlassItem _action)
+        public void ChangeValues(DateTime _dt, double _price, double _volume, int _row, ActionGlassItem _action)
         {
             if (GlassValues.ContainsKey(_price))
             {
@@ -69,6 +84,10 @@ namespace MyMoney
                             if (_row == 0) 
                                 CalcGlassValue();
                         });
+                    lock (objLock)
+                    {
+                        GlassValues[_price].listChangeVal.Add(new ChangeValuesItem() { dt = _dt, price = _price, oldvalue = GlassValues[_price].volume, newvalue = _volume });
+                    }
                     GlassValues[_price].volume = _volume;
                     GlassValues[_price].action = _action;
                     if (GlassValues[_price].rectMain != null)
@@ -88,33 +107,80 @@ namespace MyMoney
                                             if (gi.rectMain != null)
                                             {
                                                 double top = Canvas.GetTop(gi.rectMain);
-                                                gi.rectMain.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(300)));
+                                                gi.rectMain.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(1000)));
                                             }
                                             if (gi.tbVolume != null)
                                             {
                                                 double top = Canvas.GetTop(gi.tbVolume);
-                                                gi.tbVolume.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(300)));
+                                                gi.tbVolume.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(1000)));
                                             }
                                             if (gi.tbPrice != null)
                                             {
                                                 double top = Canvas.GetTop(gi.tbPrice);
-                                                gi.tbPrice.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(300)));
+                                                gi.tbPrice.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(1000)));
+                                            }
+                                            if (gi.tbChangeVal != null)
+                                            {
+                                                double top = Canvas.GetTop(gi.tbChangeVal);
+                                                gi.tbChangeVal.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(1000)));
+                                            }
+                                            if (gi.rectVolume != null)
+                                            {
+                                                double top = Canvas.GetTop(gi.rectVolume);
+                                                gi.rectVolume.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(1000)));
+                                            }
+                                            if (gi.rectChangeVolume != null)
+                                            {
+                                                double top = Canvas.GetTop(gi.rectChangeVolume);
+                                                gi.rectChangeVolume.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(1000)));
                                             }
                                             if (gi.line100 != null)
                                             {
                                                 double top = Canvas.GetTop(gi.line100);
-                                                gi.line100.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(300)));
+                                                gi.line100.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(top, top + 140 * Math.Sign(deltaAsk), TimeSpan.FromMilliseconds(1000)));
                                             }
                                         }
                                     }
                                     lastMinAsk = minAsk;
                                     lastMaxBid = maxBid;
                                 }
+
+                                lock (objLock)
+                                {
+                                    foreach(GlassItem gv in GlassValues.Values){
+                                        int summchangeval = 0;
+                                        List<ChangeValuesItem> templist = new List<ChangeValuesItem>();
+                                        foreach (ChangeValuesItem v in gv.listChangeVal)
+                                        {
+                                            if ((_dt - v.dt).TotalSeconds < 1)
+                                                summchangeval += (int)v.newvalue - (int)v.oldvalue > 0 ? 1 : -1;
+                                            else
+                                                templist.Add(v);
+                                        }
+                                        foreach (ChangeValuesItem o in templist)
+                                        {
+                                            if (gv.listChangeVal.Contains(o))
+                                                gv.listChangeVal.Remove(o);
+                                        }
+                                        templist.Clear();
+                                        if (gv.tbChangeVal != null)
+                                        {
+                                            gv.tbChangeVal.Text = Math.Abs(summchangeval) > 0 ? "" : ""; //summchangeval.ToString() : "";
+                                            gv.rectChangeVolume.Width = Math.Abs(summchangeval) * 5;
+                                            gv.rectChangeVolume.Fill = summchangeval < 0 ? ChangeVolDownBrush : ChangeVolUpBrush;
+                                        }
+                                    }
+                                }
+                                double tw = _volume / 5;
+                                GlassValues[_price].rectVolume.Width = tw > 65 ? 65 : tw;
                                 GlassValues[_price].tbVolume.Text = _volume.ToString();
                                 if (_action == ActionGlassItem.buy)
                                 {
-                                    GlassValues[_price].rectMain.Fill = UpBrush;
                                     if (_row == 0)
+                                    {
+                                        GlassValues[_price].rectMain.Fill = UpBrushAsk;
+                                        if (GlassValues.ContainsKey(_price + StepGlass) && GlassValues[_price + StepGlass].rectMain != null)
+                                            GlassValues[_price + StepGlass].rectMain.Fill = UpBrush;
                                         for (double j = _price - StepGlass; j >= minAsk; j = j - StepGlass)
                                         {
                                             if (!GlassValues.ContainsKey(j) || GlassValues[j].rectMain == null)
@@ -123,11 +189,18 @@ namespace MyMoney
                                             GlassValues[j].rectMain.Fill = ZeroBrush;
                                             GlassValues[j].tbVolume.Text = "";
                                         }
+                                    }
+                                    else
+                                        GlassValues[_price].rectMain.Fill = UpBrush;
                                 }
                                 else if (_action == ActionGlassItem.sell)
                                 {
-                                    GlassValues[_price].rectMain.Fill = DownBrush;
+
                                     if (_row == 0)
+                                    {
+                                        GlassValues[_price].rectMain.Fill = DownBrushBid;
+                                        if (GlassValues.ContainsKey(_price - StepGlass) && GlassValues[_price - StepGlass].rectMain != null)
+                                            GlassValues[_price - StepGlass].rectMain.Fill = DownBrush;
                                         for (double j = _price + StepGlass; j <= maxBid; j = j + StepGlass)
                                         {
                                             if (!GlassValues.ContainsKey(j) || GlassValues[j].rectMain == null)
@@ -136,6 +209,9 @@ namespace MyMoney
                                             GlassValues[j].rectMain.Fill = ZeroBrush;
                                             GlassValues[j].tbVolume.Text = "";
                                         }
+                                    }
+                                    else
+                                        GlassValues[_price].rectMain.Fill = DownBrush;
                                 }
                                 //GlassValues[_price].tbVolume.BeginAnimation(Canvas.LeftProperty, new DoubleAnimation(5, 50, TimeSpan.FromMilliseconds(10000)));
                                 });
@@ -147,7 +223,7 @@ namespace MyMoney
                 {
                     GlassValues.Add(_price, new GlassItem(_volume, _action));
                 }
-                RebuildGlass();
+                RebuildGlass(_dt);
             }
         }
         public void AddTick(double _price, double _volume, ActionGlassItem _action)
@@ -300,10 +376,11 @@ namespace MyMoney
                     {
                         s += _arrind[i];
                         sa += _arrindAverage[i];
-                        ival = s / (i + 1);
-                        //ival = _arrind[i];
-                        //ival2 = s / (i + 1);
-                        ival2 = _arrind[i];
+                        //ival = s / (i + 1);
+                        //ival2 = _arrind[i];
+                        ival = _arrind[i];
+                        ival2 = s / (i + 1);
+
                         //ivalAvr = _arrindAverage[i];
                         //ivalAvr2 = sa / (i + 1);
                         // выводим на градиенте значения индикатора ival
@@ -327,7 +404,7 @@ namespace MyMoney
                     }
                 });
         }
-        public void RebuildGlass()
+        public void RebuildGlass(DateTime _dt)
         {
             lastMinAsk = GetMinAsk();
             lastMaxBid = GetMaxBid();
@@ -341,45 +418,66 @@ namespace MyMoney
                     for (int i = 0; i <= (int)(GlassValues.Count / 2); i++)
                     {
                         st = centerPrice + i * StepGlass;
-                        DrawItem(i, lastMinAsk, lastMaxBid);
+                        DrawItem(_dt, i, lastMinAsk, lastMaxBid);
                         if (i != 0)
-                            DrawItem(-i, lastMinAsk, lastMaxBid);
+                            DrawItem(_dt, -i, lastMinAsk, lastMaxBid);
                     }
                 });
         }
-        public void DrawItem(int i, double _minAsk, double _maxBid)
+        public void DrawItem(DateTime _dt, int i, double _minAsk, double _maxBid)
         {
-            Rectangle block = new Rectangle { SnapsToDevicePixels = true, Width = 110, Height = 12 };
+            Rectangle block = new Rectangle { SnapsToDevicePixels = true, Width = 110, Height = 10 };
+            Rectangle block2 = new Rectangle { SnapsToDevicePixels = true, Height = 10 };
+            Rectangle block3 = new Rectangle { SnapsToDevicePixels = true, Height = 10 };
+
             if (i > 0)
                 block.Fill = UpBrush;
-            else
+            else if (i < 0)
                 block.Fill = DownBrush;
 
             TextBlock t = new TextBlock { FontSize = 10 };
             TextBlock t1 = new TextBlock { FontSize = 10 };
+            TextBlock t2 = new TextBlock { FontSize = 10 };
 
             Canvas.SetLeft(block, canvas.ActualWidth - 108 - 120);
-            Canvas.SetTop(block, centerCanvas - i * 12 + 1);
+            Canvas.SetTop(block, centerCanvas - i * 10 + 1);
             Canvas.SetZIndex(block, 0);
 
+            Canvas.SetLeft(block2, canvas.ActualWidth - 108 - 120);
+            Canvas.SetTop(block2, centerCanvas - i * 10 + 1);
+            Canvas.SetZIndex(block2, 1);
+            block2.Fill = VolumeBrush;
+
+            Canvas.SetLeft(block3, canvas.ActualWidth - 110);
+            Canvas.SetTop(block3, centerCanvas - i * 10 + 1);
+            Canvas.SetZIndex(block2, 1);
+            block2.Fill = VolumeBrush;
+
             Canvas.SetLeft(t, canvas.ActualWidth - 40 - 120);
-            Canvas.SetTop(t, centerCanvas - i * 12);
-            Canvas.SetZIndex(t, 10);
+            Canvas.SetTop(t, centerCanvas - 1 - i * 10);
+            Canvas.SetZIndex(t, 9);
 
             Canvas.SetLeft(t1, canvas.ActualWidth - 105 - 120);
-            Canvas.SetTop(t1, centerCanvas - i * 12);
-            Canvas.SetZIndex(t1, 10);
+            Canvas.SetTop(t1, centerCanvas - 1 - i * 10);
+            Canvas.SetZIndex(t1, 9);
+
+            Canvas.SetLeft(t2, canvas.ActualWidth - 110);
+            Canvas.SetTop(t2, centerCanvas - 1 - i * 10);
+            Canvas.SetZIndex(t2, 9);
 
             canvas.Children.Add(block);
+            canvas.Children.Add(block2);
+            canvas.Children.Add(block3);
             canvas.Children.Add(t);
             canvas.Children.Add(t1);
+            canvas.Children.Add(t2);
 
             Line line100 = null;
             if ((_maxBid + i * 10) % 100 == 0)
             {
                 line100 = new Line { X2 = canvas.ActualWidth - 111, Stroke = Brushes.Silver, StrokeThickness = 1 };
                 t.FontWeight = System.Windows.FontWeights.Black;
-                Canvas.SetTop(line100, centerCanvas - i * 12 + 8);
+                Canvas.SetTop(line100, centerCanvas - i * 10 + 6);
                 Canvas.SetZIndex(t, 5);
                 canvas.Children.Add(line100);
             }
@@ -387,12 +485,27 @@ namespace MyMoney
             if (GlassValues.ContainsKey(_maxBid + i * StepGlass))
             {
                 t.Text = (_maxBid + i * StepGlass).ToString("### ###");
+                double tw = GlassValues[_maxBid + i * StepGlass].volume / 5;
+                block2.Width = tw > 65 ? 65 : tw;
                 t1.Text = GlassValues[_maxBid + i * StepGlass].volume.ToString();
+                int summchangeval = 0;
+                lock (objLock)
+                {
+                    foreach (ChangeValuesItem v in GlassValues[_maxBid + i * StepGlass].listChangeVal)
+                        if ((_dt - v.dt).TotalSeconds < 1)
+                            summchangeval += (int) v.newvalue - (int) v.oldvalue > 0 ? 1 : -1;
+                    t2.Text = Math.Abs(summchangeval) > 0 ? "" : ""; //summchangeval.ToString() : "";
+                    block3.Width = Math.Abs(summchangeval) * 5;
+                    block3.Fill = summchangeval < 0 ? ChangeVolDownBrush : ChangeVolUpBrush;
+                }
                 lock (objLock)
                 {
                     GlassValues[_maxBid + i * StepGlass].rectMain = block;
                     GlassValues[_maxBid + i * StepGlass].tbPrice = t;
                     GlassValues[_maxBid + i * StepGlass].tbVolume = t1;
+                    GlassValues[_maxBid + i * StepGlass].tbChangeVal = t2;
+                    GlassValues[_maxBid + i * StepGlass].rectVolume = block2;
+                    GlassValues[_maxBid + i * StepGlass].rectChangeVolume = block3;
                     if (line100 != null)
                         GlassValues[_maxBid + i * StepGlass].line100 = line100;
                 }
@@ -468,18 +581,18 @@ namespace MyMoney
                         r.Height = ribboncanvas.ActualHeight;
                         Canvas.SetLeft(r, x);
                         Canvas.SetTop(r, 0);
-                        Rectangle r2 = new Rectangle();
-                        r2.Fill = DownBrush;
-                        r2.Width = 1;
-                        r2.Height = ribboncanvas.ActualHeight;
-                        Canvas.SetLeft(r2, x);
-                        Canvas.SetTop(r2, 0);
+                        //Rectangle r2 = new Rectangle();
+                        //r2.Fill = DownBrush;
+                        //r2.Width = 1;
+                        //r2.Height = ribboncanvas.ActualHeight;
+                        //Canvas.SetLeft(r2, x);
+                        //Canvas.SetTop(r2, 0);
                         r.Opacity = 1;
-                        r2.Opacity = 0.45;
+                        //r2.Opacity = 0.45;
                         ribboncanvas.Children.Add(r);
-                        ribboncanvas.Children.Add(r2);
+                        //ribboncanvas.Children.Add(r2);
                         queueRect.Enqueue(r);
-                        queueRect2.Enqueue(r2);
+                        //queueRect2.Enqueue(r2);
                     }
                 }
             );
@@ -525,9 +638,9 @@ namespace MyMoney
         private ActionGlassItem lastActionTick;
         private int[] atemp = { };
 
-        public SolidColorBrush UpBrush;
-        public SolidColorBrush DownBrush;
-        public SolidColorBrush ZeroBrush;
+        public SolidColorBrush UpBrush, UpBrushAsk, DownBrush, DownBrushBid;
+        public SolidColorBrush ZeroBrush, VolumeBrush;
+        public SolidColorBrush ChangeVolUpBrush, ChangeVolDownBrush;
         public LinearGradientBrush GradientBrushForIndicator;
         public LinearGradientBrush GradientBrushForIndicator2;
         //public LinearGradientBrush GradientBrushForIndicatorAverage;
@@ -560,11 +673,15 @@ namespace MyMoney
             volume = _volume;
             action = _action;
         }
+        public List<ChangeValuesItem> listChangeVal = new List<ChangeValuesItem>();
         public double volume;
         public ActionGlassItem action;
         public Rectangle rectMain;
+        public Rectangle rectVolume;
+        public Rectangle rectChangeVolume;
         public TextBlock tbVolume;
         public TextBlock tbPrice;
+        public TextBlock tbChangeVal;
         public Line line100;
     }
     public class ResTestLocal

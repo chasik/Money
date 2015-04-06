@@ -11,7 +11,7 @@ namespace MyMoney
     public delegate void GetInstrumentsHandler();
     public delegate void ThreadStarted(string message);
     public delegate void GetInformation(string _mess);
-    public delegate void ChangeGlass(double _p, double _v, int _row, ActionGlassItem _a);
+    public delegate void ChangeGlass(DateTime _dt, double _p, double _v, int _row, ActionGlassItem _a);
     public delegate void AddTick(double _p, double _v, ActionGlassItem _a);
     public delegate void ChangeVisualIndicator(int[] _ind, int[] _indAverage);
 
