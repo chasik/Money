@@ -263,11 +263,6 @@ namespace MyMoney
                     listGradient.Add(GradientBrushForIndicator.Clone());
                     listGradient2.Add(GradientBrushForIndicator2.Clone());
 
-                    if (lastPriceAsk == 0) lastPriceAsk = _price;
-                    if (lastPriceBid == 0) lastPriceBid = _price;
-
-                    listTicksPriceAsk.Add(lastPriceAsk);
-                    listTicksPriceBid.Add(lastPriceBid);
                     double oneTickIndValue = CalcGlassValue();
                     listIndicatorSumm.Add(oneTickIndValue);
 
@@ -295,6 +290,12 @@ namespace MyMoney
                     tickGraphBid.Points.Clear();
                     indicatorGraphSumm.Points.Clear();
                     Random rr = new Random((int)DateTime.Now.TimeOfDay.TotalMilliseconds);
+
+                    if (lastPriceAsk == 0) lastPriceAsk = _price;
+                    if (lastPriceBid == 0) lastPriceBid = _price;
+                    listTicksPriceAsk.Add(lastPriceAsk);
+                    listTicksPriceBid.Add(lastPriceBid);
+
                     double maxp = listTicksPriceAsk.Max() + 20;
                     double minp = listTicksPriceBid.Min() - 20;
                     double delta = maxp - minp;
@@ -323,11 +324,11 @@ namespace MyMoney
                     }
 
                     lastPriceTick = _price;
+                    lastActionTick = _action;
                     if (_action == ActionGlassItem.buy)
                         lastPriceAsk = _price;
                     else if (_action == ActionGlassItem.sell)
                             lastPriceBid = _price;
-                    lastActionTick = _action;
                 }
             );
         }
@@ -367,6 +368,8 @@ namespace MyMoney
             }
             if ((GlValues25 > 90 && sum25 > 300) || (GlValues25 < -90 && sum25 < -300))
                 allTradesAtGraph.SignalIn(lastMinAsk, lastMaxBid, percentDelta25);
+            if (Math.Abs(sum25) < 300)
+                GlValues25 = 0;
             return GlValues25;
         }
         public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage)
