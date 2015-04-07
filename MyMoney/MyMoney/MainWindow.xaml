@@ -94,7 +94,7 @@
                 </LinearGradientBrush>
             </Canvas.Background>
             <Rectangle Fill="White" Height="175" Stroke="Black" Width="1416" Panel.ZIndex="1" IsEnabled="False" Opacity="0.8"/>
-            <Rectangle Fill="White" Height="12" Stroke="Black" Width="1416" Panel.ZIndex="1" Opacity="0" IsEnabled="False" Canvas.Top="250"/>
+            <Rectangle Fill="White" Height="87" Stroke="Black" Width="1416" Panel.ZIndex="1" Opacity="0.15" IsEnabled="False" Canvas.Top="175"/>
         </Canvas>
         <TextBox x:Name="tbInformation" HorizontalAlignment="Left" Margin="13,0,0,130" TextWrapping="Wrap" Width="225" FontFamily="Arial" FontSize="9" Height="45" VerticalAlignment="Bottom"/>
         <CheckBox x:Name="chbTrading" Content="Торговать" HorizontalAlignment="Left" Margin="406,50,0,0" VerticalAlignment="Top" Width="84"/>

@@ -341,7 +341,7 @@ namespace MyMoney
 
         private void OneThreadTester(object p)
         {
-            DateTime lastDtBadIndicator;
+            //DateTime lastDtBadIndicator;
             ResultOneThreadSumm resTh = new ResultOneThreadSumm();
             List<int> oldGlassValue = new List<int>();
             List<int> tempListForIndicator = new List<int>();
@@ -378,7 +378,7 @@ namespace MyMoney
                 glass.Clear();
                 oldGlassValue.Clear();
                 tempListForIndicator.Clear();
-                lastDtBadIndicator = new DateTime();
+                //lastDtBadIndicator = new DateTime();
                 priceEnterLong = 0; priceEnterShort = 0;
                 int lotCount = 1;
                 int? bid = 0, ask = 0;

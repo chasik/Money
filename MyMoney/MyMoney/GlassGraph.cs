@@ -61,10 +61,9 @@ namespace MyMoney
             //_indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
             //_indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
 
-            tickGraphAsk = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 0, 110) }, StrokeThickness = 2, SnapsToDevicePixels = true };
-            tickGraphBid = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(110, 0, 0) }, StrokeThickness = 2, SnapsToDevicePixels = true };
-
-            indicatorGraphSumm = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 167, 31) }, StrokeThickness = 2, SnapsToDevicePixels = true };
+            tickGraphAsk = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 0, 110) }, StrokeThickness = 1, SnapsToDevicePixels = true };
+            tickGraphBid = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(110, 0, 0) }, StrokeThickness = 1, SnapsToDevicePixels = true };
+            indicatorGraphSumm = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 167, 31) }, StrokeThickness = 1, SnapsToDevicePixels = true };
 
             tickGraphCanvas.Children.Add(tickGraphAsk);
             tickGraphCanvas.Children.Add(tickGraphBid);
@@ -72,6 +71,8 @@ namespace MyMoney
             Canvas.SetZIndex(tickGraphAsk, 3);
             Canvas.SetZIndex(tickGraphBid, 2);
             Canvas.SetZIndex(indicatorGraphSumm, 4);
+
+            visualAllElements = new VisualAllElemnts() { _tickGraphAsk = tickGraphAsk, _tickGraphBid = tickGraphBid, _indicatorGraphSumm = indicatorGraphSumm };
         }
         public void ChangeValues(DateTime _dt, double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -241,87 +242,21 @@ namespace MyMoney
                     if (_price == lastPriceTick)// && _action == lastActionTick)
                         return;
 
-                    for (int i = 0; i < listGradient.Count - queueRect.Count; i++)
-                    {
-                        listGradient.RemoveRange(0, 1);
-                        listGradient2.RemoveRange(0, 1);
-                    }
-
-                    for (int i = 0; i < listArrayValues.Count - queueRect.Count; i++)
-                    {
-                        listArrayValues.RemoveRange(0, 1);
-                    }
-
-                    for (int i = 0; i < listTicksPriceAsk.Count - queueRect.Count; i++)
-                    {
-                        listTicksPriceAsk.RemoveRange(0, 1);
-                        listTicksPriceBid.RemoveRange(0, 1);
-                        listIndicatorSumm.RemoveRange(0, 1);
-                    }
-
-                   
-                    listGradient.Add(GradientBrushForIndicator.Clone());
-                    listGradient2.Add(GradientBrushForIndicator2.Clone());
-
-                    double oneTickIndValue = CalcGlassValue();
-                    listIndicatorSumm.Add(oneTickIndValue);
+                    visualAllElements.listGradient.Add(GradientBrushForIndicator.Clone());
+                    visualAllElements.listGradient2.Add(GradientBrushForIndicator2.Clone());
+                    visualAllElements.listIndicatorSumm.Add(CalcGlassValue());
 
                     int[] _glassvaluesarray = { };
                     Array.Resize(ref _glassvaluesarray, atemp.Length);
                     atemp.CopyTo(_glassvaluesarray, 0);
                     listArrayValues.Add(_glassvaluesarray);
 
-                    int x = 0;
-                    foreach (Rectangle r in queueRect)
-                    {
-                        x++;
-                        if (x > queueRect.Count - listGradient.Count)
-                            r.Fill = listGradient[listGradient.Count - queueRect.Count + x - 1];
-                    }
-                    x = 0;
-                    foreach (Rectangle r in queueRect2)
-                    {
-                        x++;
-                        if (x > queueRect2.Count - listGradient2.Count)
-                            r.Fill = listGradient2[listGradient2.Count - queueRect2.Count + x - 1];
-                    }
-                    x = 0;
-                    tickGraphAsk.Points.Clear();
-                    tickGraphBid.Points.Clear();
-                    indicatorGraphSumm.Points.Clear();
                     Random rr = new Random((int)DateTime.Now.TimeOfDay.TotalMilliseconds);
 
                     if (lastPriceAsk == 0) lastPriceAsk = _price;
                     if (lastPriceBid == 0) lastPriceBid = _price;
-                    listTicksPriceAsk.Add(lastPriceAsk);
-                    listTicksPriceBid.Add(lastPriceBid);
-
-                    double maxp = listTicksPriceAsk.Max() + 20;
-                    double minp = listTicksPriceBid.Min() - 20;
-                    double delta = maxp - minp;
-                    double onePixelPrice = delta / tickGraphCanvas.ActualHeight;
-
-                    double maxInd = Math.Max(Math.Abs(listIndicatorSumm.Max()), Math.Abs(listIndicatorSumm.Min())) + 20;
-                    double deltaIndicator = 2 * maxInd;
-                    double onePixelIndicator = deltaIndicator / tickGraphCanvas.ActualHeight;
-
-                    foreach (double p in listTicksPriceAsk)
-                    {
-                        x++;
-                        tickGraphAsk.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listTicksPriceAsk.Count - 1), (maxp - p) / onePixelPrice));
-                    }
-                    x = 0;
-                    foreach (double p in listTicksPriceBid)
-                    {
-                        x++;
-                        tickGraphBid.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listTicksPriceBid.Count - 1), (maxp - p) / onePixelPrice));
-                    }
-                    x = 0;
-                    foreach (double indv in listIndicatorSumm)
-                    {
-                        x++;
-                        indicatorGraphSumm.Points.Add(new Point((double)x + (ribboncanvas.ActualWidth - listIndicatorSumm.Count - 1), (maxInd - indv) / onePixelIndicator));
-                    }
+                    visualAllElements.listTicksPriceAsk.Add(lastPriceAsk);
+                    visualAllElements.listTicksPriceBid.Add(lastPriceBid);
 
                     lastPriceTick = _price;
                     lastActionTick = _action;
@@ -329,6 +264,7 @@ namespace MyMoney
                         lastPriceAsk = _price;
                     else if (_action == ActionGlassItem.sell)
                             lastPriceBid = _price;
+                    visualAllElements.ShowData(tickGraphCanvas);
                 }
             );
         }
@@ -383,7 +319,8 @@ namespace MyMoney
                     GradientBrushForIndicator2.GradientStops.Clear();
                     //GradientBrushForIndicatorAverage.GradientStops.Clear();
                     //GradientBrushForIndicatorAverage2.GradientStops.Clear();
-                    int ival = 0, ival2 = 0, ivalAvr = 0, ivalAvr2 = 0;
+                    int ival = 0, ival2 = 0;
+                    //int ivalAvr = 0, ivalAvr2 = 0;
                     int s = 0, sa = 0;
                     for (int i = 0; i < _arrind.Length; i++)
                     {
@@ -591,23 +528,23 @@ namespace MyMoney
                 {
                     for (int x = 0; x < ribboncanvas.ActualWidth; x++)
                     {
-                        Rectangle r = new Rectangle();
-                        r.Fill = DownBrush;
-                        r.Width = 1;
-                        r.Height = ribboncanvas.ActualHeight;
-                        Canvas.SetLeft(r, x);
-                        Canvas.SetTop(r, 0);
+                        //Rectangle r = new Rectangle();
+                        //r.Fill = DownBrush;
+                        //r.Width = 1;
+                        //r.Height = ribboncanvas.ActualHeight;
+                        //Canvas.SetLeft(r, x);
+                        //Canvas.SetTop(r, 0);
                         //Rectangle r2 = new Rectangle();
                         //r2.Fill = DownBrush;
                         //r2.Width = 1;
                         //r2.Height = ribboncanvas.ActualHeight;
                         //Canvas.SetLeft(r2, x);
                         //Canvas.SetTop(r2, 0);
-                        r.Opacity = 1;
+                        //r.Opacity = 1;
                         //r2.Opacity = 0.45;
-                        ribboncanvas.Children.Add(r);
+                        //ribboncanvas.Children.Add(r);
                         //ribboncanvas.Children.Add(r2);
-                        queueRect.Enqueue(r);
+                        //queueRect.Enqueue(r);
                         //queueRect2.Enqueue(r2);
                     }
                 }
@@ -666,17 +603,11 @@ namespace MyMoney
         public TextBlock tbGlassValue25;
 
         public object objLock = new Object();
-        public Queue<Rectangle> queueRect = new Queue<Rectangle>();
-        public Queue<Rectangle> queueRect2 = new Queue<Rectangle>();
-        public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
-        public List<LinearGradientBrush> listGradient2 = new List<LinearGradientBrush>();
-        public List<double> listTicksPriceAsk = new List<double>();
-        public List<double> listTicksPriceBid = new List<double>();
-        public List<double> listIndicatorSumm = new List<double>();
         public List<int[]> listArrayValues = new List<int[]>();
 
         public SortedDictionary<int, ResTestLocal> resultsribbon = new SortedDictionary<int, ResTestLocal>();
 
+        public VisualAllElemnts visualAllElements;
         public AllTradesAtGraph allTradesAtGraph = new AllTradesAtGraph();
     }
 
@@ -724,7 +655,103 @@ namespace MyMoney
         public double value;
         public TextBlock textblock;
     }
+    public class VisualAllElemnts
+    {
+        public VisualAllElemnts()
+        {
+        }
+        public void AddData()
+        {
 
+        }
+        public void ShowData(Canvas _canvas)
+        {
+            int x = 0;
+            foreach(Shape s in _canvas.Children)
+            {
+                x++;
+                if (s is Rectangle && s.Width == 1)
+                {
+                    Canvas.SetLeft(s, Canvas.GetLeft(s) - 1);
+                }
+            }
+            for (x = listGradient.Count - 1; x < listGradient.Count; x++) // LinearGradientBrush brushg in  listGradient)
+            {
+                Rectangle r = new Rectangle() { Fill = listGradient[x], Width = 1, Height = _canvas.ActualHeight, Opacity = 1 };
+                Canvas.SetLeft(r, _canvas.ActualWidth);
+                Canvas.SetTop(r, 0);
+                _canvas.Children.Add(r);
+            }
+
+            _tickGraphAsk.Points.Clear();
+            _tickGraphBid.Points.Clear();
+            _indicatorGraphSumm.Points.Clear();
+            if (listTicksPriceAsk.Count > _canvas.ActualWidth)
+                listTicksPriceAsk.RemoveRange(0, (int) (listTicksPriceAsk.Count - _canvas.ActualWidth));
+            if (listTicksPriceBid.Count > _canvas.ActualWidth)
+                listTicksPriceBid.RemoveRange(0, (int) (listTicksPriceBid.Count - _canvas.ActualWidth));
+            if (listIndicatorSumm.Count > _canvas.ActualWidth)
+                listIndicatorSumm.RemoveRange(0, (int)(listIndicatorSumm.Count - _canvas.ActualWidth));
+            double maxp = listTicksPriceAsk.Max() + 20;
+            double minp = listTicksPriceBid.Min() - 20;
+            double delta = maxp - minp;
+            double onePixelPrice = delta / _canvas.ActualHeight;
+
+            double maxInd = Math.Max(Math.Abs(listIndicatorSumm.Max()), Math.Abs(listIndicatorSumm.Min())) + 20;
+            double deltaIndicator = 2 * maxInd;
+            double onePixelIndicator = deltaIndicator / _canvas.ActualHeight;
+
+            x = 0;
+            foreach (double p in listTicksPriceAsk)
+            {
+                x++;
+                _tickGraphAsk.Points.Add(new Point((double)x + (_canvas.ActualWidth - listTicksPriceAsk.Count - 0), (maxp - p) / onePixelPrice));
+            }
+            x = 0;
+            foreach (double p in listTicksPriceBid)
+            {
+                x++;
+                _tickGraphBid.Points.Add(new Point((double)x + (_canvas.ActualWidth - listTicksPriceBid.Count - 0), (maxp - p) / onePixelPrice));
+            }
+            x = 0;
+            foreach (double indv in listIndicatorSumm)
+            {
+                x++;
+                _indicatorGraphSumm.Points.Add(new Point((double)x + (_canvas.ActualWidth - listIndicatorSumm.Count - 1), (maxInd - indv) / onePixelIndicator));
+            }
+
+        }
+                    /*for (int i = 0; i < listGradient.Count - queueRect.Count; i++)
+                    {
+                        listGradient.RemoveRange(0, 1);
+                        listGradient2.RemoveRange(0, 1);
+                    }
+
+                    for (int i = 0; i < listArrayValues.Count - queueRect.Count; i++)
+                    {
+                        listArrayValues.RemoveRange(0, 1);
+                    }
+
+                    for (int i = 0; i < listTicksPriceAsk.Count - queueRect.Count; i++)
+                    {
+                        listTicksPriceAsk.RemoveRange(0, 1);
+                        listTicksPriceBid.RemoveRange(0, 1);
+                        listIndicatorSumm.RemoveRange(0, 1);
+                    }
+
+                   */
+        public double maxp, maxInd, onePixelPrice, onePixelIndicator;
+
+        public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
+        public List<LinearGradientBrush> listGradient2 = new List<LinearGradientBrush>();
+        public List<double> listTicksPriceAsk = new List<double>();
+        public List<double> listTicksPriceBid = new List<double>();
+        public List<double> listIndicatorSumm = new List<double>();
+
+        public Polyline _tickGraphAsk { get; set; }
+        public Polyline _tickGraphBid { get; set; }
+        public Polyline _indicatorGraphSumm { get; set; }
+    }
     public class AllTradesAtGraph
     {
         public void SignalIn(double _lastminask, double _lastmaxbid, double _indvalue)
