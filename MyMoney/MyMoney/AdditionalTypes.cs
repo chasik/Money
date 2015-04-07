@@ -360,6 +360,8 @@ namespace MyMoney
 
         public double priceEnter = 0;
         public double realPriceEnter = 0;
+        public double priceExit = 0;
+        public double realPriceExit = 0;
         public SmartCOM3Lib.StOrder_Action action;
         public string orderid;
         public string orderno;
