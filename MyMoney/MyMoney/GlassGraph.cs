@@ -275,7 +275,7 @@ namespace MyMoney
             int sumnegative = 0, sumpositive = 0;
             int percentDelta = 1, percentDelta25 = 1;
             int sum25 = 0;
-            for (int j = 0; j < atemp.Length; j++)
+            for (int j = 3; j < atemp.Length; j++)
             {
                 if (atemp[j] > 0)
                 {
@@ -302,16 +302,16 @@ namespace MyMoney
                     tbGlassValue.Text += "\r\n" + (sumpositive + sumnegative).ToString();
                 }
             }
-            if ((GlValues25 > 90 && sum25 > 300) || (GlValues25 < -90 && sum25 < -300))
-                allTradesAtGraph.SignalIn(lastMinAsk, lastMaxBid, percentDelta25);
+            //if ((GlValues25 > 90 && sum25 > 300) || (GlValues25 < -90 && sum25 < -300))
+            //    allTradesAtGraph.SignalIn(lastMinAsk, lastMaxBid, percentDelta25);
             if (Math.Abs(sum25) < 300)
-                GlValues25 = 0;
+                glvalues25 = 0;
             return GlValues25;
         }
         public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage)
         {
-            Array.Resize(ref atemp, _arrind.Length);
-            _arrind.CopyTo(atemp, 0);
+            Array.Resize(ref atemp, _arrindAverage.Length);
+            _arrindAverage.CopyTo(atemp, 0);
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
@@ -328,8 +328,10 @@ namespace MyMoney
                         sa += _arrindAverage[i];
                         //ival = s / (i + 1);
                         //ival2 = _arrind[i];
-                        ival = _arrind[i];
-                        ival2 = s / (i + 1);
+                        //ival = _arrind[i];
+                        //ival2 = s / (i + 1);
+                        ival = _arrindAverage[i];
+                        ival2 = sa / (i + 1);
 
                         //ivalAvr = _arrindAverage[i];
                         //ivalAvr2 = sa / (i + 1);
@@ -697,7 +699,7 @@ namespace MyMoney
             double delta = maxp - minp;
             double onePixelPrice = delta / _canvas.ActualHeight;
 
-            double maxInd = Math.Max(Math.Abs(listIndicatorSumm.Max()), Math.Abs(listIndicatorSumm.Min())) + 20;
+            double maxInd = Math.Max(Math.Abs(listIndicatorSumm.Max()), Math.Abs(listIndicatorSumm.Min())) + 1;
             double deltaIndicator = 2 * maxInd;
             double onePixelIndicator = deltaIndicator / _canvas.ActualHeight;
 
@@ -717,7 +719,7 @@ namespace MyMoney
             foreach (double indv in listIndicatorSumm)
             {
                 x++;
-                _indicatorGraphSumm.Points.Add(new Point((double)x + (_canvas.ActualWidth - listIndicatorSumm.Count - 1), (maxInd - indv) / onePixelIndicator));
+                _indicatorGraphSumm.Points.Add(new Point((double)x + (_canvas.ActualWidth - listIndicatorSumm.Count - 0), (maxInd - indv) / onePixelIndicator));
             }
 
         }

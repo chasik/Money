@@ -120,5 +120,7 @@
         <Label x:Name="speedLabel" Content="0" HorizontalAlignment="Left" Margin="10,0,0,68" VerticalAlignment="Bottom" Width="48"/>
         <TextBlock x:Name="tbValuesGlass" Grid.Column="1" HorizontalAlignment="Left" Margin="990,128,0,0" Grid.Row="1" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" FontFamily="Kartika" FontWeight="Bold" Width="47"/>
         <TextBlock x:Name="tbValuesGlass25" Grid.Column="1" HorizontalAlignment="Left" Margin="990,294,0,0" Grid.Row="1" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="47" RenderTransformOrigin="0.435,-0.391" FontFamily="Kartika" FontWeight="Bold"/>
+        <Slider HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="1" VerticalAlignment="Top" Width="274" Minimum="50" Maximum="100" SmallChange="1"/>
+        <Slider HorizontalAlignment="Left" Margin="10,37,0,0" Grid.Row="1" VerticalAlignment="Top" Width="274" Maximum="2000" SmallChange="1" LargeChange="100"/>
     </Grid>
 </Window>
