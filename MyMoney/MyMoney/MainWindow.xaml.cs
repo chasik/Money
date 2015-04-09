@@ -408,8 +408,9 @@ namespace MyMoney
 
         private void MyWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            if (GlassVisual != null && GlassVisual.ribboncanvas != null)
-                GlassVisual.CreateQueueForRibbon();
+            //if (GlassVisual != null && GlassVisual.ribboncanvas != null)
+            //{
+            //}
         }
 
         private void MyWindow_KeyUp(object sender, KeyEventArgs e)

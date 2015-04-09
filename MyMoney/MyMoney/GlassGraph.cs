@@ -246,12 +246,7 @@ namespace MyMoney
                     visualAllElements.listGradient2.Add(GradientBrushForIndicator2.Clone());
                     visualAllElements.listIndicatorSumm.Add(CalcGlassValue());
 
-                    int[] _glassvaluesarray = { };
-                    Array.Resize(ref _glassvaluesarray, atemp.Length);
-                    atemp.CopyTo(_glassvaluesarray, 0);
-                    listArrayValues.Add(_glassvaluesarray);
-
-                    Random rr = new Random((int)DateTime.Now.TimeOfDay.TotalMilliseconds);
+                    visualAllElements.AddData(atemp);
 
                     if (lastPriceAsk == 0) lastPriceAsk = _price;
                     if (lastPriceBid == 0) lastPriceBid = _price;
@@ -263,7 +258,7 @@ namespace MyMoney
                     if (_action == ActionGlassItem.buy)
                         lastPriceAsk = _price;
                     else if (_action == ActionGlassItem.sell)
-                            lastPriceBid = _price;
+                        lastPriceBid = _price;
                     visualAllElements.ShowData(tickGraphCanvas);
                 }
             );
@@ -271,40 +266,16 @@ namespace MyMoney
 
         private double CalcGlassValue()
         {
-            int cnegative = 0, cpositive = 0;
-            int sumnegative = 0, sumpositive = 0;
-            int percentDelta = 1, percentDelta25 = 1;
-            int sum25 = 0;
-            for (int j = 3; j < atemp.Length; j++)
-            {
-                if (atemp[j] > 0)
-                {
-                    sumpositive += atemp[j];
-                    cpositive++;
-                }
-                else
-                {
-                    sumnegative += atemp[j];
-                    cnegative++;
-                }
-                if (j == 17)
-                {
-                    percentDelta25 = sumpositive + Math.Abs(sumnegative);
-                    GlValues25 = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / percentDelta25) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
-                    tbGlassValue25.Text += "\r\n" + (sumpositive + sumnegative).ToString();
-                    sum25 = sumpositive + sumnegative;
-                    abssummchangeval = sum25;
-                }
-                else if (j == atemp.Length - 1) // если последняя итерация
-                {
-                    percentDelta = (sumpositive + Math.Abs(sumnegative));
-                    GlValues = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / percentDelta) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
-                    tbGlassValue.Text += "\r\n" + (sumpositive + sumnegative).ToString();
-                }
-            }
+            int summiddle = 0, sumtop = 0;
+            visualAllElements.CalcSummIndicatorValue(atemp, 2, 17, out glvalues25, out glvalues, out summiddle, out sumtop);
+            GlValues25 = glvalues25;
+            GlValues = glvalues;
+            tbGlassValue25.Text += "\r\n" + summiddle.ToString();
+            tbGlassValue.Text += "\r\n" + sumtop.ToString();
+
             //if ((GlValues25 > 90 && sum25 > 300) || (GlValues25 < -90 && sum25 < -300))
             //    allTradesAtGraph.SignalIn(lastMinAsk, lastMaxBid, percentDelta25);
-            if (Math.Abs(sum25) < 300)
+            if (Math.Abs(summiddle) < 300)
                 glvalues25 = 0;
             return GlValues25;
         }
@@ -523,35 +494,6 @@ namespace MyMoney
             }
             return _maxB;
         }
-        public void CreateQueueForRibbon()
-        {
-            ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
-                (ThreadStart)delegate()
-                {
-                    for (int x = 0; x < ribboncanvas.ActualWidth; x++)
-                    {
-                        //Rectangle r = new Rectangle();
-                        //r.Fill = DownBrush;
-                        //r.Width = 1;
-                        //r.Height = ribboncanvas.ActualHeight;
-                        //Canvas.SetLeft(r, x);
-                        //Canvas.SetTop(r, 0);
-                        //Rectangle r2 = new Rectangle();
-                        //r2.Fill = DownBrush;
-                        //r2.Width = 1;
-                        //r2.Height = ribboncanvas.ActualHeight;
-                        //Canvas.SetLeft(r2, x);
-                        //Canvas.SetTop(r2, 0);
-                        //r.Opacity = 1;
-                        //r2.Opacity = 0.45;
-                        //ribboncanvas.Children.Add(r);
-                        //ribboncanvas.Children.Add(r2);
-                        //queueRect.Enqueue(r);
-                        //queueRect2.Enqueue(r2);
-                    }
-                }
-            );
-        }
 
         public int GlValues
         {
@@ -657,26 +599,71 @@ namespace MyMoney
         public double value;
         public TextBlock textblock;
     }
+    public class VisualOneElement
+    {
+        public int[] atempValues = { };
+    }
     public class VisualAllElemnts
     {
         public VisualAllElemnts()
         {
         }
-        public void AddData()
+        public void CalcSummIndicatorValue(int[] _arrval, int _levelstart, int _levelmiddle, out int _valmiddle, out int _valtop, out int _summiddle, out int _sumtop)
         {
+            _valmiddle = _valtop = _summiddle = _sumtop = 0;
 
+            int sumnegative = 0, sumpositive = 0, cnegative = 0, cpositive = 0;
+            for (int j = _levelstart; j < _arrval.Length; j++)
+            {
+                if (_arrval[j] > 0)
+                {
+                    sumpositive += _arrval[j];
+                    cpositive++;
+                }
+                else
+                {
+                    sumnegative += _arrval[j];
+                    cnegative++;
+                }
+                if (j == _levelmiddle)
+                {
+                    _valmiddle = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
+                    _summiddle = sumpositive + sumnegative;
+                }
+                else if (j == _arrval.Length - 1) // если последняя итерация
+                {
+                    _valtop = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
+                    _sumtop = sumpositive + sumnegative;
+                }
+            }
+        }
+        public void AddData(int[] _atemp)
+        {
+            VisualOneElement tmpvis = new VisualOneElement();
+            Array.Resize(ref tmpvis.atempValues, _atemp.Length); // будем хранить значения индикатора для возможного дальнейшего пересчета
+            _atemp.CopyTo(tmpvis.atempValues, 0);
+            visualElementsList.Add(tmpvis);
         }
         public void ShowData(Canvas _canvas)
         {
             int x = 0;
+            List<Shape> tempshapes = new List<Shape>();
             foreach(Shape s in _canvas.Children)
             {
                 x++;
                 if (s is Rectangle && s.Width == 1)
                 {
-                    Canvas.SetLeft(s, Canvas.GetLeft(s) - 1);
+                    if (Canvas.GetLeft(s) - 1 < 0)
+                        tempshapes.Add(s);
+                    else
+                        Canvas.SetLeft(s, Canvas.GetLeft(s) - 1);
                 }
             }
+            foreach(Shape s in tempshapes)
+            {
+                _canvas.Children.Remove(s);
+            }
+            tempshapes.Clear();
             for (x = listGradient.Count - 1; x < listGradient.Count; x++) // LinearGradientBrush brushg in  listGradient)
             {
                 Rectangle r = new Rectangle() { Fill = listGradient[x], Width = 1, Height = _canvas.ActualHeight, Opacity = 1 };
@@ -723,26 +710,10 @@ namespace MyMoney
             }
 
         }
-                    /*for (int i = 0; i < listGradient.Count - queueRect.Count; i++)
-                    {
-                        listGradient.RemoveRange(0, 1);
-                        listGradient2.RemoveRange(0, 1);
-                    }
 
-                    for (int i = 0; i < listArrayValues.Count - queueRect.Count; i++)
-                    {
-                        listArrayValues.RemoveRange(0, 1);
-                    }
-
-                    for (int i = 0; i < listTicksPriceAsk.Count - queueRect.Count; i++)
-                    {
-                        listTicksPriceAsk.RemoveRange(0, 1);
-                        listTicksPriceBid.RemoveRange(0, 1);
-                        listIndicatorSumm.RemoveRange(0, 1);
-                    }
-
-                   */
         public double maxp, maxInd, onePixelPrice, onePixelIndicator;
+
+        public List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
 
         public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
         public List<LinearGradientBrush> listGradient2 = new List<LinearGradientBrush>();
