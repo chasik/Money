@@ -48,6 +48,7 @@ namespace MyMoney
             GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, null, null/*indicatorAverageRect, indicatorAverageRect2*/, 10);
             GlassVisual.tbGlassValue = tbValuesGlass;
             GlassVisual.tbGlassValue25 = tbValuesGlass25;
+            GlassVisual.visualAllElements.LevelIgnoreValue = 300;
 
             allResults = new ObservableCollection<ResultOneThreadSumm>();
             detailResults = new ObservableCollection<ResultOneThread>();
@@ -440,6 +441,22 @@ namespace MyMoney
         private void glassCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             //tbInformation.AppendText("\r\n" + e.Delta.ToString());
+        }
+
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (GlassVisual != null)
+                GlassVisual.visualAllElements.LevelIgnoreValue = (int) e.NewValue;
+            if (lbLevelIngoreVal != null)
+                lbLevelIngoreVal.Content = e.NewValue.ToString();
+        }
+
+        private void Slider_ValueChanged_1(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (GlassVisual != null)
+                GlassVisual.visualAllElements.LevelStartGlass = (int) e.NewValue;
+            if (lbLevelIngoreGlass != null)
+                lbLevelIngoreGlass.Content = e.NewValue.ToString();
         }
 
     }
