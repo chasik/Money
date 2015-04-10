@@ -48,6 +48,7 @@ namespace MyMoney
             GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, null, null/*indicatorAverageRect, indicatorAverageRect2*/, 10);
             GlassVisual.tbGlassValue = tbValuesGlass;
             GlassVisual.tbGlassValue25 = tbValuesGlass25;
+            GlassVisual.visualAllElements.LevelHeightGlass = 17;
             GlassVisual.visualAllElements.LevelIgnoreValue = 300;
 
             allResults = new ObservableCollection<ResultOneThreadSumm>();
@@ -457,6 +458,14 @@ namespace MyMoney
                 GlassVisual.visualAllElements.LevelStartGlass = (int) e.NewValue;
             if (lbLevelIngoreGlass != null)
                 lbLevelIngoreGlass.Content = e.NewValue.ToString();
+        }
+
+        private void Slider_ValueChanged_2(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (GlassVisual != null)
+                GlassVisual.visualAllElements.LevelHeightGlass = (int)e.NewValue;
+            if (lbLevelHeighGlass != null)
+                lbLevelHeighGlass.Content = e.NewValue.ToString();
         }
 
     }

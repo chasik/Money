@@ -267,7 +267,7 @@ namespace MyMoney
         private double CalcGlassValue()
         {
             int summiddle = 0, sumtop = 0;
-            visualAllElements.CalcSummIndicatorValue(atemp, 17, out glvalues25, out glvalues, out summiddle, out sumtop);
+            visualAllElements.CalcSummIndicatorValue(atemp, out glvalues25, out glvalues, out summiddle, out sumtop);
             GlValues25 = glvalues25;
             GlValues = glvalues;
             tbGlassValue25.Text += "\r\n" + summiddle.ToString();
@@ -606,7 +606,7 @@ namespace MyMoney
         public VisualAllElemnts()
         {
         }
-        public void CalcSummIndicatorValue(int[] _arrval, int _levelmiddle, out int _valmiddle, out int _valtop, out int _summiddle, out int _sumtop)
+        public void CalcSummIndicatorValue(int[] _arrval, out int _valmiddle, out int _valtop, out int _summiddle, out int _sumtop)
         {
             _valmiddle = _valtop = _summiddle = _sumtop = 0;
 
@@ -623,7 +623,7 @@ namespace MyMoney
                     sumnegative += _arrval[j];
                     cnegative++;
                 }
-                if (j == _levelmiddle)
+                if (j == LevelHeightGlass)
                 {
                     _valmiddle = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
                     _summiddle = sumpositive + sumnegative;
@@ -683,13 +683,13 @@ namespace MyMoney
                 foreach (VisualOneElement ve in visualElementsList)
                 {
                     int valmiddle, valtop, summiddle, sumtop;
-                    CalcSummIndicatorValue(ve.atempValues, 17, out valmiddle, out valtop, out summiddle, out sumtop);
+                    CalcSummIndicatorValue(ve.atempValues, out valmiddle, out valtop, out summiddle, out sumtop);
                     listIndicatorSumm.Add(valmiddle);
-                    //(atemp, 2, 17, out glvalues25, out glvalues, out summiddle, out sumtop);
                 }
             }
             if (listIndicatorSumm.Count > CanvasGraph.ActualWidth)
             {
+                listGradient.RemoveRange(0, (int)(listIndicatorSumm.Count - CanvasGraph.ActualWidth));
                 visualElementsList.RemoveRange(0, (int)(listIndicatorSumm.Count - CanvasGraph.ActualWidth));
                 listIndicatorSumm.RemoveRange(0, (int)(listIndicatorSumm.Count - CanvasGraph.ActualWidth));
             }
@@ -727,7 +727,7 @@ namespace MyMoney
         }
 
         public double maxp, maxInd, onePixelPrice, onePixelIndicator;
-        public int levelignoreval, levelstartglass;
+        public int levelignoreval, levelstartglass, levelheightglass;
 
         public List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
 
@@ -736,28 +736,20 @@ namespace MyMoney
         public List<double> listTicksPriceAsk = new List<double>();
         public List<double> listTicksPriceBid = new List<double>();
         public List<double> listIndicatorSumm = new List<double>();
-
+        public int LevelHeightGlass
+        {
+            get { return levelheightglass; }
+            set { levelheightglass = value; ShowData(true); }
+        }
         public int LevelIgnoreValue 
         {
-            get {
-                return levelignoreval;
-            } 
-            set{
-                levelignoreval = value;
-                ShowData(true);
-            }
+            get { return levelignoreval; } 
+            set { levelignoreval = value; ShowData(true); }
         }
         public int LevelStartGlass
         {
-            get
-            {
-                return levelstartglass;
-            }
-            set
-            {
-                levelstartglass = value;
-                ShowData(true);
-            }
+            get { return levelstartglass; }
+            set { levelstartglass = value; ShowData(true); }
         }
         public Canvas CanvasGraph;
         public Polyline _tickGraphAsk { get; set; }
