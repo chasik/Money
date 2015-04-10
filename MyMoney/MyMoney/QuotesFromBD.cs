@@ -17,6 +17,7 @@ namespace MyMoney
         public int countThreads = 0;
         private bool _dovisual = false;
         private double speedvisual = 0;
+        public GlassGraph glassgraph;
 
         ParametrsForTest _paramTh = new ParametrsForTest();
         public ParametrsForTest paramTh
@@ -232,7 +233,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, row as rownum, typeprice, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(14, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -245,7 +246,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(14, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(23, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -345,6 +346,7 @@ namespace MyMoney
             ResultOneThreadSumm resTh = new ResultOneThreadSumm();
             List<int> oldGlassValue = new List<int>();
             List<int> tempListForIndicator = new List<int>();
+            List<int> tempListForIndicatorAverage = new List<int>();
             SortedDictionary<int, int> glass = new SortedDictionary<int, int>();
             ParametrsForTest paramTh = (p as ParametrsForTestObj).paramS;
             Dictionary<string, DataTableWithCalcValues> dictionaryDT = (p as ParametrsForTestObj).dictionaryDT;
@@ -388,6 +390,12 @@ namespace MyMoney
                 resThTemp.shortName = k;
                 DealInfo dealTemp = null;
                 DataTable dt = dictionaryDT[k].datatable;//.Copy();
+                glassgraph.visualAllElements.levelignoreval = 300;
+                glassgraph.visualAllElements.levelstartglass = 2;
+                glassgraph.visualAllElements.levelheightglass = 18;
+                // levelignoreval, levelstartglass, levelheightglass
+                // LevelIgnoreValue LevelStartGlass LevelHeightGlass
+
                 int indicator = 0;
                 int iterationNum = 0; // счетчик строк в текущей DataTable
                 int? pricetick = 0;
@@ -430,25 +438,25 @@ namespace MyMoney
                             // лосс короткая
                             else if (priceEnterShort + lossShortValueTemp <= ask)
                             {
-                                if (paramTh.martingValue >= martinLevelTemp)// && indicator < 0)
-                                {
-                                    martinLevelTemp++;
-                                    lotCount += 1;
-                                    dealTemp.lotsCount = lotCount;
-                                    int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
+                                //if (paramTh.martingValue >= martinLevelTemp)// && indicator < 0)
+                                //{
+                                    //martinLevelTemp++;
+                                    //lotCount += 1;
+                                    //dealTemp.lotsCount = lotCount;
+                                    //int delt = (int)Math.Truncate((double)((int)ask - priceEnterShort) / lotCount / 10) * 10;
 
-                                    profitShortValueTemp = paramTh.profitShortValue + 2 * delt;
-                                    lossShortValueTemp   = paramTh.lossShortValue + delt;
+                                    //profitShortValueTemp = paramTh.profitShortValue + 2 * delt;
+                                    //lossShortValueTemp   = paramTh.lossShortValue + delt;
 
-                                    priceEnterShort = priceEnterShort + (int)((int)ask - priceEnterShort) / lotCount;
+                                    //priceEnterShort = priceEnterShort + (int)((int)ask - priceEnterShort) / lotCount;
 
-                                    if (dealTemp.lstSubDeal.Count > 0)
-                                        dealTemp.lstSubDeal.Last().dtDealLength = dtCurrentRow.TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
-                                    dealTemp.lstSubDeal.Add(new SubDealInfo(dtCurrentRow, lotCount, ActionDeal.subsell, (float)priceEnterShort, (float)ask, (float)delt, indicator, (float)lossShortValueTemp, (float)profitShortValueTemp));
+                                    //if (dealTemp.lstSubDeal.Count > 0)
+                                    //    dealTemp.lstSubDeal.Last().dtDealLength = dtCurrentRow.TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
+                                    //dealTemp.lstSubDeal.Add(new SubDealInfo(dtCurrentRow, lotCount, ActionDeal.subsell, (float)priceEnterShort, (float)ask, (float)delt, indicator, (float)lossShortValueTemp, (float)profitShortValueTemp));
                                     //dealTemp.lstSubDeal.Last().aggreeIndV = aggreValues.ResultAggregate;
-                                }
-                                else
-                                {
+                                //}
+                                //else
+                                //{
                                     resThTemp.countLDeal++;
                                     int g = ((int)ask - priceEnterShort) * lotCount;
                                     resThTemp.loss += g;
@@ -457,7 +465,7 @@ namespace MyMoney
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                     priceEnterShort = 0;
                                     lotCount = 1;
-                                }
+                                //}
                             }
                             // трейлим профит 
                             //else if ((ask - paramTh.profitShortValue - 20 > priceEnterShort - profitShortValueTemp) && profitShortValueTemp > 20)
@@ -481,25 +489,25 @@ namespace MyMoney
                             // лосс длиная
                             else if (priceEnterLong - lossLongValueTemp >= bid)
                             {
-                                if (paramTh.martingValue >= martinLevelTemp) //&& indicator > 0)
-                                {
-                                    martinLevelTemp++;
-                                    lotCount += 1;
-                                    dealTemp.lotsCount = lotCount;
-                                    int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
+                                //if (paramTh.martingValue >= martinLevelTemp) //&& indicator > 0)
+                                //{
+                                    //martinLevelTemp++;
+                                    //lotCount += 1;
+                                    //dealTemp.lotsCount = lotCount;
+                                    //int delt = (int)Math.Truncate((double)(priceEnterLong - (int)bid) / lotCount / 10) * 10;
 
-                                    profitLongValueTemp = paramTh.profitLongValue + 2 * delt;
-                                    lossLongValueTemp   = paramTh.lossLongValue + delt;
+                                    //profitLongValueTemp = paramTh.profitLongValue + 2 * delt;
+                                    //lossLongValueTemp   = paramTh.lossLongValue + delt;
 
-                                    priceEnterLong = priceEnterLong - (int)(priceEnterLong - (int)bid) / lotCount;
+                                    //priceEnterLong = priceEnterLong - (int)(priceEnterLong - (int)bid) / lotCount;
 
-                                    if (dealTemp.lstSubDeal.Count > 0)
-                                        dealTemp.lstSubDeal.Last().dtDealLength = dtCurrentRow.TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
-                                    dealTemp.lstSubDeal.Add(new SubDealInfo(dtCurrentRow, lotCount, ActionDeal.subbuy, (float)priceEnterLong, (float)bid, (float)delt, indicator, (float)lossLongValueTemp, (float)profitLongValueTemp));
+                                    //if (dealTemp.lstSubDeal.Count > 0)
+                                    //    dealTemp.lstSubDeal.Last().dtDealLength = dtCurrentRow.TimeOfDay.Subtract(dealTemp.lstSubDeal.Last().dtEnter);
+                                    //dealTemp.lstSubDeal.Add(new SubDealInfo(dtCurrentRow, lotCount, ActionDeal.subbuy, (float)priceEnterLong, (float)bid, (float)delt, indicator, (float)lossLongValueTemp, (float)profitLongValueTemp));
                                     //dealTemp.lstSubDeal.Last().aggreeIndV = aggreValues.ResultAggregate;
-                                }
-                                else
-                                {
+                                //}
+                                //else
+                                //{
                                     resThTemp.countLDeal++;
                                     int g = (priceEnterLong - (int)bid) * lotCount;
                                     resThTemp.loss += g;
@@ -508,7 +516,7 @@ namespace MyMoney
                                     resThTemp.lstAllDeals.Add(dealTemp);
                                     priceEnterLong = 0;
                                     lotCount = 1;
-                                }
+                                //}
                             }
                             // трейлим профит 
                             //else if ((bid + paramTh.profitLongValue < priceEnterLong + profitLongValueTemp - 20) && profitLongValueTemp > 20)
@@ -561,17 +569,18 @@ namespace MyMoney
                                     // удаляем из стакана значения, выпадающие за пределы глубины стакана
                                     oldGlassValue.ForEach((int i) => { glass.Remove(i); });*/
 
+                                    int sumGlass = 0;
                                     // среднее значение по стакану
-                                    
-                                    //for (int i = 0; i < paramTh.glassHeight; i++)
-                                    //{
-                                    //    sumGlass += glass.ContainsKey((int)ask + i * 10) ? glass[(int)ask + i * 10] : 0;
-                                    //    sumGlass += glass.ContainsKey((int)bid - i * 10) ? glass[(int)bid - i * 10] : 0;
-                                    //}
-                                    //int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
+                                    for (int i = 0; i < paramTh.glassHeight; i++)
+                                    {
+                                        sumGlass += glass.ContainsKey((int)ask + i * 10) ? (int)glass[(int)ask + i * 10] : 0;
+                                        sumGlass += glass.ContainsKey((int)bid - i * 10) ? (int)glass[(int)bid - i * 10] : 0;
+                                    }
+                                    int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                                     int sumlong = 0, sumshort = 0;
-
+                                    int sumlongAverage = 0, sumshortAverage = 0;
                                     tempListForIndicator.Clear();
+                                    tempListForIndicatorAverage.Clear();
                                     // новая версия, более взвешенное значение (как год назад)
                                     for (int i = 0; i < paramTh.glassHeight; i++)
                                     {
@@ -588,15 +597,34 @@ namespace MyMoney
                                         if (sumlong + sumshort == 0)
                                             continue;
                                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
+
+
+                                        if (glass.ContainsKey((int)ask + i * 10))
+                                            sumlong += (int)glass[(int)ask + i * 10];
+                                        if (glass.ContainsKey((int)bid - i * 10))
+                                            sumshort += (int)glass[(int)bid - i * 10];
+                                        sumlongAverage += glass.ContainsKey((int)ask + i * 10)
+                                            && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
+                                            ? (int)glass[(int)ask + i * 10] : averageGlass * (int)paramTh.averageValue;
+                                        sumshortAverage += glass.ContainsKey((int)bid - i * 10)
+                                            && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
+                                            ? (int)glass[(int)bid - i * 10] : averageGlass * (int)paramTh.averageValue;
+                                        if (sumlong + sumshort == 0)
+                                            continue;
+                                        tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
+                                        tempListForIndicatorAverage.Add((int)(sumlongAverage - sumshortAverage) * 100 / (sumlongAverage + sumshortAverage));
                                     }
-                                    int s = 0;
-                                    foreach (int i in tempListForIndicator)
+                                    //int s = 0;
+                                    //foreach (int i in tempListForIndicator)
+                                    //{
+                                    //    s += i;
+                                    //}
+                                    //indicator = (int)s / paramTh.glassHeight;
+                                    lock (lockObj)
                                     {
-                                        s += i;
-                                    }
-                                    indicator = (int)s / paramTh.glassHeight;
-                                    lock(lockObj)
-                                    {
+                                        int _valmiddle, _valtop, _summiddle, _sumtop;
+                                        glassgraph.visualAllElements.CalcSummIndicatorValue(tempListForIndicatorAverage.ToArray(), out  indicator, out  _valtop, out _summiddle, out _sumtop);
+
                                         if (!calculatedIndidcator.values.ContainsKey(dttemp))
                                             calculatedIndidcator.values.Add(dttemp, indicator);
                                     }
@@ -604,7 +632,7 @@ namespace MyMoney
                                 else
                                     indicator = (int)calculatedIndidcator.values[dttemp];
                                 if (OnChangeVisualIndicator != null && DoVisualisation)
-                                    OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicator.ToArray());
+                                    OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray());
                                 // старая версия индикатора
                                 /*foreach (int pkey in glass.Keys)
                                 {
@@ -616,7 +644,7 @@ namespace MyMoney
                                 //indicator = (sumlong + sumshort) != 0 ? (int)(sumlong - sumshort) * 100 / (sumlong + sumshort) : 0;
                                 // вход лонг
                                 //TimeSpan ddt = dtCurrentRow.Subtract(lastDtBadIndicator);
-                                if (indicator <= -paramTh.indicatorLongValue)
+                                if (indicator > 0)
                                 {
                                     if (priceEnterLong == 0 && priceEnterShort == 0)// && ddt.TotalMilliseconds > paramTh.delay)
                                     {
@@ -628,10 +656,14 @@ namespace MyMoney
                                         lotCount = 1;
                                         martinLevelTemp = 1;
                                         dealTemp = new DealInfo(ActionDeal.buy, dtCurrentRow, 1, priceEnterLong, indicator);
+                                    } 
+                                    else if (priceEnterShort != 0)
+                                    {
+
                                     }
                                 }
                                 // вход шорт
-                                else if (indicator >= paramTh.indicatorShortValue)
+                                else if (indicator < 0)
                                 {
                                     if (priceEnterLong == 0 && priceEnterShort == 0)// && ddt.TotalMilliseconds > paramTh.delay)
                                     {
@@ -643,6 +675,10 @@ namespace MyMoney
                                         lotCount = 1;
                                         martinLevelTemp = 1;
                                         dealTemp = new DealInfo(ActionDeal.sell, dtCurrentRow, 1, priceEnterShort, indicator);
+                                    } 
+                                    else if (priceEnterLong != 0)
+                                    {
+
                                     }
                                 }
                                 //if (indicator < paramTh.indicatorLongValue && indicator > -paramTh.indicatorShortValue)

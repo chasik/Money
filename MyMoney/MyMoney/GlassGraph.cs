@@ -291,7 +291,7 @@ namespace MyMoney
                     int ival = 0, ival2 = 0;
                     //int ivalAvr = 0, ivalAvr2 = 0;
                     int s = 0, sa = 0;
-                    for (int i = 0; i < _arrind.Length; i++)
+                    for (int i = 0; i < _arrindAverage.Length; i++)
                     {
                         s += _arrind[i];
                         sa += _arrindAverage[i];
@@ -623,12 +623,12 @@ namespace MyMoney
                     sumnegative += _arrval[j];
                     cnegative++;
                 }
-                if (j == LevelHeightGlass)
+                if (j == LevelHeightGlass && sumnegative + sumpositive != 0)
                 {
                     _valmiddle = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
                     _summiddle = sumpositive + sumnegative;
                 }
-                else if (j == _arrval.Length - 1) // если последняя итерация
+                else if (j == _arrval.Length - 1 && sumnegative + sumpositive != 0) // если последняя итерация
                 {
                     _valtop = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
                     _sumtop = sumpositive + sumnegative;

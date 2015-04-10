@@ -93,6 +93,7 @@ namespace MyMoney
             if (checkBox1.IsChecked == false)
             {
                 dsource = new QuotesFromBD();
+                (dsource as QuotesFromBD).glassgraph = GlassVisual;
                 dsource.OnConnected += new ConnectedHandler(ConnectedEvent);
                 dsource.OnGetInstruments += new GetInstrumentsHandler(GetInstrumentsEvent);
                 (dsource as QuotesFromBD).OnThreadTesterStart += new ThreadStarted(ThreadTesterStarted);
