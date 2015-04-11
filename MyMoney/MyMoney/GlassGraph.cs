@@ -30,6 +30,10 @@ namespace MyMoney
     public class GlassGraph
     {
         public int abssummchangeval;
+        public GlassGraph()
+        {
+            visualAllElements = new VisualAllElemnts();
+        }
         public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
         {
             canvas = _c;
