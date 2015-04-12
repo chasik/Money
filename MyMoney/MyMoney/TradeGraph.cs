@@ -40,7 +40,7 @@ namespace MyMoney
         public SortedDictionary<DateTime, Bar> Bars = new SortedDictionary<DateTime, Bar>();
         //private TypeBar _typeBarGraph = TypeBar.TimeMinuteBar;
         private TypeBar _typeBarGraph = TypeBar.VolumeBar;
-        private int ValueBar = 500;
+        private int ValueBar = 1000;
         public Canvas graphC;
         public Canvas graphI;
         private Bar b;
@@ -195,7 +195,7 @@ namespace MyMoney
             }
         }
 
-        public void AddTick(double _price, double _volume, ActionGlassItem _action)
+        public void AddTick(DateTime _dt, double _price, double _volume, ActionGlassItem _action)
         {
             graphC.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()

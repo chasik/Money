@@ -334,13 +334,13 @@ namespace MyMoney
             {
                 v = volume;
                 if (OnAddTick != null)
-                    OnAddTick(price, volume, ActionGlassItem.buy);
+                    OnAddTick(datetime, price, volume, ActionGlassItem.buy);
             }
             else if (action == StOrder_Action.StOrder_Action_Sell)
             {
                 v = -volume;
                 if (OnAddTick != null)
-                    OnAddTick(price, volume, ActionGlassItem.sell);
+                    OnAddTick(datetime, price, volume, ActionGlassItem.sell);
             }
             DateTime dttemp = DateTime.Now;
             if (!activeAmounts.ContainsKey(dttemp))

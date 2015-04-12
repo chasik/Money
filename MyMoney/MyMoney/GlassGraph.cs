@@ -34,7 +34,7 @@ namespace MyMoney
         {
             visualAllElements = new VisualAllElemnts();
         }
-        public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
+        public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, Rectangle _speedbar, double _step)
         {
             canvas = _c;
             ribboncanvas = _ribbon;
@@ -55,12 +55,14 @@ namespace MyMoney
 
             GradientBrushForIndicator = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
             GradientBrushForIndicator2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
+            GradientBrushForSpeed = new LinearGradientBrush { StartPoint = new Point(1, 0), EndPoint = new Point(0, 0) };
 
             //GradientBrushForIndicatorAverage = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
             //GradientBrushForIndicatorAverage2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
 
             _indicatorRect.Fill = GradientBrushForIndicator;
             _indicatorRect2.Fill = GradientBrushForIndicator2;
+            _speedbar.Fill = GradientBrushForSpeed;
 
             //_indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
             //_indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
@@ -68,15 +70,18 @@ namespace MyMoney
             tickGraphAsk = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 0, 110) }, StrokeThickness = 1, SnapsToDevicePixels = true };
             tickGraphBid = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(110, 0, 0) }, StrokeThickness = 1, SnapsToDevicePixels = true };
             indicatorGraphSumm = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 167, 31) }, StrokeThickness = 1, SnapsToDevicePixels = true };
+            SMA = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(166, 167, 31) }, StrokeThickness = 1, SnapsToDevicePixels = true };
 
             tickGraphCanvas.Children.Add(tickGraphAsk);
             tickGraphCanvas.Children.Add(tickGraphBid);
             tickGraphCanvas.Children.Add(indicatorGraphSumm);
+            tickGraphCanvas.Children.Add(SMA);
             Canvas.SetZIndex(tickGraphAsk, 3);
             Canvas.SetZIndex(tickGraphBid, 2);
             Canvas.SetZIndex(indicatorGraphSumm, 4);
+            Canvas.SetZIndex(SMA, 5);
 
-            visualAllElements = new VisualAllElemnts() { _tickGraphAsk = tickGraphAsk, _tickGraphBid = tickGraphBid, _indicatorGraphSumm = indicatorGraphSumm, CanvasGraph = tickGraphCanvas};
+            visualAllElements = new VisualAllElemnts() { _sma = SMA, _tickGraphAsk = tickGraphAsk, _tickGraphBid = tickGraphBid, _indicatorGraphSumm = indicatorGraphSumm, CanvasGraph = tickGraphCanvas};
         }
         public void ChangeValues(DateTime _dt, double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -238,7 +243,7 @@ namespace MyMoney
                 RebuildGlass(_dt);
             }
         }
-        public void AddTick(double _price, double _volume, ActionGlassItem _action)
+        public void AddTick(DateTime _dt, double _price, double _volume, ActionGlassItem _action)
         {
             ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
@@ -251,11 +256,23 @@ namespace MyMoney
                     visualAllElements.listIndicatorSumm.Add(CalcGlassValue());
 
                     visualAllElements.AddData(atemp);
+                    //visualAllElements.AddTick(GradientBrushForSpeed, _dt, _price, _volume, _action);
 
                     if (lastPriceAsk == 0) lastPriceAsk = _price;
                     if (lastPriceBid == 0) lastPriceBid = _price;
                     visualAllElements.listTicksPriceAsk.Add(lastPriceAsk);
                     visualAllElements.listTicksPriceBid.Add(lastPriceBid);
+                    int periodsma = 60;
+                    double sumaskatperiod = 0;
+                    for (int j = visualAllElements.listTicksPriceAsk.Count - 1; j >= visualAllElements.listTicksPriceAsk.Count - periodsma; j--)
+                    {
+                        if (j < 0)
+                            break;
+
+                        //sumaskatperiod += visualAllElements.listTicksPriceAsk[j];
+                        sumaskatperiod += (visualAllElements.listTicksPriceAsk[j] + visualAllElements.listTicksPriceBid[j]) / 2;
+                    }
+                    visualAllElements.listSMA.Add(Math.Round(sumaskatperiod / periodsma));
 
                     lastPriceTick = _price;
                     lastActionTick = _action;
@@ -539,10 +556,11 @@ namespace MyMoney
         public SolidColorBrush ChangeVolUpBrush, ChangeVolDownBrush;
         public LinearGradientBrush GradientBrushForIndicator;
         public LinearGradientBrush GradientBrushForIndicator2;
+        public LinearGradientBrush GradientBrushForSpeed;
         //public LinearGradientBrush GradientBrushForIndicatorAverage;
         //public LinearGradientBrush GradientBrushForIndicatorAverage2;
         public Polyline tickGraphAsk, tickGraphBid;
-        public Polyline indicatorGraphSumm;
+        public Polyline indicatorGraphSumm, SMA;
 
         private Dictionary<int, IndicatorValuesTextBlock> dicTBForIndicators = new Dictionary<int, IndicatorValuesTextBlock>();
         public TextBlock tbGlassValue;
@@ -648,6 +666,24 @@ namespace MyMoney
             _atemp.CopyTo(tmpvis.atempValues, 0);
             visualElementsList.Add(tmpvis);
         }
+        public void AddTick(GradientBrush _brush, DateTime _dt, double _price, double _volume, ActionGlassItem _action)
+        {
+            listSpeedTicks.Add(_dt);
+            if (listSpeedTicks.Count > CanvasGraph.ActualWidth)
+                listSpeedTicks.RemoveRange(0, (int)(listSpeedTicks.Count - CanvasGraph.ActualWidth));
+            _brush.GradientStops.Clear();
+            DateTime lastdt = DateTime.Now;
+            for (int i = listSpeedTicks.Count - 1; i > 0; i--)
+            {
+                if (i % 10 == 0)
+                {
+                    double ts = Math.Abs((listSpeedTicks[i] - lastdt).TotalSeconds) * 100;
+                    byte tsb = Convert.ToByte(ts > 255 ? 255 : ts);
+                    _brush.GradientStops.Add(new GradientStop(Color.FromRgb(Convert.ToByte(255-tsb), tsb, 255), 1 - (double)i / listSpeedTicks.Count));
+                    lastdt = listSpeedTicks[i];
+                }
+            }
+        }
         public void ShowData(bool _rebuild = false)
         {
             List<Shape> tempshapes = new List<Shape>();
@@ -680,6 +716,8 @@ namespace MyMoney
                 listTicksPriceAsk.RemoveRange(0, (int)(listTicksPriceAsk.Count - CanvasGraph.ActualWidth));
             if (listTicksPriceBid.Count > CanvasGraph.ActualWidth)
                 listTicksPriceBid.RemoveRange(0, (int)(listTicksPriceBid.Count - CanvasGraph.ActualWidth));
+            if (listSMA.Count > CanvasGraph.ActualWidth)
+                listSMA.RemoveRange(0, (int)(listSMA.Count - CanvasGraph.ActualWidth));
 
             if (_rebuild)
             {
@@ -709,11 +747,13 @@ namespace MyMoney
             _tickGraphAsk.Points.Clear();
             _tickGraphBid.Points.Clear();
             _indicatorGraphSumm.Points.Clear();
+            _sma.Points.Clear();
             x = 0;
             foreach (double p in listTicksPriceAsk)
             {
                 x++;
                 _tickGraphAsk.Points.Add(new Point((double)x + (CanvasGraph.ActualWidth - listTicksPriceAsk.Count - 0), (maxp - p) / onePixelPrice));
+                _sma.Points.Add(new Point((double)x + (CanvasGraph.ActualWidth - listSMA.Count - 0), (maxp - listSMA[x - 1]) / onePixelPrice));
             }
             x = 0;
             foreach (double p in listTicksPriceBid)
@@ -740,6 +780,8 @@ namespace MyMoney
         public List<double> listTicksPriceAsk = new List<double>();
         public List<double> listTicksPriceBid = new List<double>();
         public List<double> listIndicatorSumm = new List<double>();
+        public List<double> listSMA = new List<double>();
+        public List<DateTime> listSpeedTicks = new List<DateTime>();
         public int LevelHeightGlass
         {
             get { return levelheightglass; }
@@ -759,6 +801,7 @@ namespace MyMoney
         public Polyline _tickGraphAsk { get; set; }
         public Polyline _tickGraphBid { get; set; }
         public Polyline _indicatorGraphSumm { get; set; }
+        public Polyline _sma { get; set; }
     }
     public class AllTradesAtGraph
     {
