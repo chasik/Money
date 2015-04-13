@@ -109,6 +109,7 @@ namespace MyMoney
             else
             {
                 dsource = new QuotesFromSmartCom(textBox1.Text, passBox1.Password);
+                (dsource as QuotesFromSmartCom).glassgraph = GlassVisual;
                 (dsource as QuotesFromSmartCom).Trading = (bool)chbTrading.IsChecked;
                 (dsource as QuotesFromSmartCom).paramTh = new ParametrsForTest(0, new List<string>{}
                     , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)

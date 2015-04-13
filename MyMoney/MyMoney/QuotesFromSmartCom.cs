@@ -51,6 +51,8 @@ namespace MyMoney
 
         public event ChangeGlass OnChangeGlass;
         public event ChangeVisualIndicator OnChangeVisualIndicator;
+
+        public GlassGraph glassgraph;
         public event AddTick OnAddTick;
 
         SortedDictionary<double, double> glass = new SortedDictionary<double, double>();
@@ -81,9 +83,9 @@ namespace MyMoney
             scom = new SmartCOM3Lib.StServerClass();
             scom.ConfigureClient("logLevel=4;CalcPlannedPos=no;logFilePath=D:");
             scom.ConfigureServer("logLevel=4;pingTimeOut=20;logFilePath=D:");
-            scom.connect("mxr.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            //scom.connect("mxr.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
-            //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
+            scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
             workSymbol = "RTS-6.15_FT";
             scom.Connected += scom_Connected;
             scom.Disconnected += scom_Disconnected;
@@ -411,19 +413,17 @@ namespace MyMoney
                         if (glass.ContainsKey((int)lastBid - i * 10))
                             sumshort += (int)glass[(int)lastBid - i * 10]; 
                         sumlongAverage += glass.ContainsKey((int)lastAsk + i * 10)
-                            && glass[(int)lastAsk + i * 10] < averageGlass * paramTh.averageValue
-                            ? (int)glass[(int)lastAsk + i * 10] : averageGlass * (int)paramTh.averageValue;
+                            && glass[(int)lastAsk + i * 10] < averageGlass * 1/*paramTh.averageValue*/
+                            ? (int)glass[(int)lastAsk + i * 10] : averageGlass * 1/*(int)paramTh.averageValue*/;
                         sumshortAverage += glass.ContainsKey((int)lastBid - i * 10)
-                            && glass[(int)lastBid - i * 10] < averageGlass * paramTh.averageValue
-                            ? (int)glass[(int)lastBid - i * 10] : averageGlass * (int)paramTh.averageValue;
+                            && glass[(int)lastBid - i * 10] < averageGlass * 1 /*paramTh.averageValue*/
+                            ? (int)glass[(int)lastBid - i * 10] : averageGlass * 1 /*(int)paramTh.averageValue*/;
                         if (sumlong + sumshort == 0)
                             continue;
                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
-                        tempListForIndicatorAverage.Add((int)(sumlongAverage - sumshortAverage) * 100 / (sumlongAverage + sumshortAverage));
+                        int tempsumavr = (sumlongAverage + sumshortAverage) == 0 ? 1 : sumlongAverage + sumshortAverage;
+                        tempListForIndicatorAverage.Add((int)(sumlongAverage - sumshortAverage) * 100 / (tempsumavr));
                     }
-
-                    if (OnChangeVisualIndicator != null)
-                        OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray());
 
                     int s = 0;
                     for (int i = 0; i < paramTh.glassHeight; i++ )
@@ -491,6 +491,8 @@ namespace MyMoney
                             allClaims.Add(_cid, priceEnterShort, lotCount, StOrder_Action.StOrder_Action_Sell);
                         }
                     }
+                    if (OnChangeVisualIndicator != null)
+                        OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray());
                 }
             }
         }

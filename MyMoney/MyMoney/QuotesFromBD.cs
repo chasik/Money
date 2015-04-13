@@ -425,7 +425,7 @@ namespace MyMoney
                     // совершена сделка
                     if (!dr.IsNull("priceTick") && (pricetick = (int?)dr.Field<float?>("priceTick")) > 0)// && pricetick != (int?)dr.Field<float?>("priceTick")) // вторая часть условия - если перед этим была таже цена - пропускаем
                     {
-                        if (OnInformation != null)
+                        if (DoVisualisation && OnInformation != null)
                             OnInformation(dr.Field<DateTime>("dtserver").ToString("ind " + indicator.ToString()));
                         if (indicator == 0)
                             indicatorGoToZero = true;
