@@ -94,8 +94,8 @@
                 </LinearGradientBrush>
             </Canvas.Background>
             <Rectangle Fill="White" Height="175" Stroke="Black" Width="1416" Panel.ZIndex="1" IsEnabled="False" Opacity="0.75"/>
-            <Rectangle Fill="White" Height="87" Stroke="Black" Width="1416" Panel.ZIndex="1" Opacity="0.45" IsEnabled="False" Canvas.Top="175"/>
-            <Rectangle x:Name="speedgradientbar" Fill="{DynamicResource speedgradientbrush}" Height="56" Stroke="Black" Width="1416" Panel.ZIndex="1" IsEnabled="False" Canvas.Top="119">
+            <Rectangle Fill="White" Height="87" Stroke="Black" Width="1416" Panel.ZIndex="1" Opacity="0.7" IsEnabled="False" Canvas.Top="175"/>
+            <Rectangle x:Name="speedgradientbar" Fill="{DynamicResource speedgradientbrush}" Height="56" Stroke="Black" Width="1416" Panel.ZIndex="1" IsEnabled="False" Canvas.Top="119" Opacity="0">
                 <Rectangle.Resources>
                     <SolidColorBrush x:Key="speedgradientbrush" Color="#FF0DF5AB">
                     </SolidColorBrush>
