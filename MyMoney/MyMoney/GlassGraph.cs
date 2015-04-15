@@ -29,6 +29,10 @@ namespace MyMoney
     }
     public class GlassGraph
     {
+        public delegate void DoTradeLong();
+        public delegate void DoTradeShort();
+        public event DoTradeLong OnDoTradeLong;
+        public event DoTradeShort OnDoTradeShort;
         public int abssummchangeval;
         public GlassGraph()
         {
@@ -251,9 +255,17 @@ namespace MyMoney
                     if (_price == lastPriceTick)// && _action == lastActionTick)
                         return;
 
+                    visualAllElements.listIndicatorSumm.Add(CalcGlassValue());
+                    if (GlValues25 > 99 && OnDoTradeLong != null)
+                    {
+                        OnDoTradeLong();
+                    }
+                    else if (GlValues25 < -99 && OnDoTradeShort != null)
+                    {
+                        OnDoTradeShort();
+                    }
                     visualAllElements.listGradient.Add(GradientBrushForIndicator.Clone());
                     visualAllElements.listGradient2.Add(GradientBrushForIndicator2.Clone());
-                    visualAllElements.listIndicatorSumm.Add(CalcGlassValue());
 
                     visualAllElements.AddData(atemp);
                     //visualAllElements.AddTick(GradientBrushForSpeed, _dt, _price, _volume, _action);
@@ -656,7 +668,8 @@ namespace MyMoney
                     _sumtop = sumpositive + sumnegative;
                 }
             }
-            if (Math.Abs(_summiddle) < LevelIgnoreValue)
+            //if (Math.Abs(_summiddle) < LevelIgnoreValue)// || Math.Abs(_valmiddle) < 100)
+            if (Math.Abs(_valmiddle) < 100)
                 _valmiddle = 0;
         }
         public void AddData(int[] _atemp)

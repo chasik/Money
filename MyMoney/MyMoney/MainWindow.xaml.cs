@@ -119,6 +119,8 @@ namespace MyMoney
                 {
                     dsource = new QuotesFromSmartCom(textBox1.Text, passBox1.Password);
                     (dsource as QuotesFromSmartCom).glassgraph = GlassVisual;
+                    GlassVisual.OnDoTradeLong += (dsource as QuotesFromSmartCom).DoTradeLong;
+                    GlassVisual.OnDoTradeShort += (dsource as QuotesFromSmartCom).DoTradeShort;
                     (dsource as QuotesFromSmartCom).Trading = (bool)chbTrading.IsChecked;
                     (dsource as QuotesFromSmartCom).paramTh = new ParametrsForTest(0, new List<string> { }
                         , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
@@ -485,6 +487,19 @@ namespace MyMoney
             if (lbLevelHeighGlass != null)
                 lbLevelHeighGlass.Content = e.NewValue.ToString();
         }
+
+        private void chbTrading_Checked(object sender, RoutedEventArgs e)
+        {
+            if (dsource != null && dsource is QuotesFromSmartCom)
+                (dsource as QuotesFromSmartCom).Trading = true;
+        }
+
+        private void chbTrading_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (dsource != null && dsource is QuotesFromSmartCom)
+                (dsource as QuotesFromSmartCom).Trading = false;
+        }
+
 
     }
 }
