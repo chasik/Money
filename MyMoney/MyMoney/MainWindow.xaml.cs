@@ -39,93 +39,107 @@ namespace MyMoney
         
         public MainWindow()
         {
-            CultureInfo ci = new CultureInfo("ru-RU");
-            Thread.CurrentThread.CurrentCulture = ci;
-            Thread.CurrentThread.CurrentUICulture = ci;
+            try
+            {
+                CultureInfo ci = new CultureInfo("ru-RU");
+                Thread.CurrentThread.CurrentCulture = ci;
+                Thread.CurrentThread.CurrentUICulture = ci;
 
-            InitializeComponent();
-            tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
-            GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, null, null/*indicatorAverageRect, indicatorAverageRect2*/, speedgradientbar, 10);
-            GlassVisual.tbGlassValue = tbValuesGlass;
-            GlassVisual.tbGlassValue25 = tbValuesGlass25;
-            GlassVisual.visualAllElements.LevelHeightGlass = 17;
-            GlassVisual.visualAllElements.LevelIgnoreValue = 300;
+                InitializeComponent();
+                tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
+                GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, null, null/*indicatorAverageRect, indicatorAverageRect2*/, speedgradientbar, 10);
+                GlassVisual.tbGlassValue = tbValuesGlass;
+                GlassVisual.tbGlassValue25 = tbValuesGlass25;
+                GlassVisual.visualAllElements.LevelHeightGlass = 17;
+                GlassVisual.visualAllElements.LevelIgnoreValue = 300;
 
-            allResults = new ObservableCollection<ResultOneThreadSumm>();
-            detailResults = new ObservableCollection<ResultOneThread>();
-            detailAllDeals = new ObservableCollection<SubDealInfo>();
+                allResults = new ObservableCollection<ResultOneThreadSumm>();
+                detailResults = new ObservableCollection<ResultOneThread>();
+                detailAllDeals = new ObservableCollection<SubDealInfo>();
 
-            dgResult.ItemsSource = allResults;
-            dgResult.ColumnWidth = DataGridLength.Auto;
+                dgResult.ItemsSource = allResults;
+                dgResult.ColumnWidth = DataGridLength.Auto;
 
-            dgResultDetail.ItemsSource = detailResults;
-            dgResultDetail.ColumnWidth = DataGridLength.Auto;
+                dgResultDetail.ItemsSource = detailResults;
+                dgResultDetail.ColumnWidth = DataGridLength.Auto;
 
-            dgResultDeals.ItemsSource = detailAllDeals;
-            dgResultDeals.ColumnWidth = DataGridLength.Auto;
+                dgResultDeals.ItemsSource = detailAllDeals;
+                dgResultDeals.ColumnWidth = DataGridLength.Auto;
 
-            DataGridTextColumn c0 = new DataGridTextColumn();
-            c0.Header = "shortName"; c0.Binding = new Binding("shortName");
-            DataGridTextColumn c1 = new DataGridTextColumn();
-            c1.Header = "profitFac"; c1.Binding = new Binding("profitFac");
-            DataGridTextColumn c21 = new DataGridTextColumn();
-            c21.Header = "margin"; c21.Binding = new Binding("margin");
-            DataGridTextColumn c2 = new DataGridTextColumn();
-            c2.Header = "profit"; c2.Binding = new Binding("profit");
-            DataGridTextColumn c3 = new DataGridTextColumn();
-            c3.Header = "loss"; c3.Binding = new Binding("loss"); 
-            DataGridTextColumn c4 = new DataGridTextColumn();
-            c4.Header = "countPDeal"; c4.Binding = new Binding("countPDeal");
-            DataGridTextColumn c5 = new DataGridTextColumn();
-            c5.Header = "countLDeal"; c5.Binding = new Binding("countLDeal");
-            dgResultDetail.Columns.Add(c0);
-            dgResultDetail.Columns.Add(c1);
-            dgResultDetail.Columns.Add(c21);
-            dgResultDetail.Columns.Add(c2);
-            dgResultDetail.Columns.Add(c3);
-            dgResultDetail.Columns.Add(c4);
-            dgResultDetail.Columns.Add(c5);
+                DataGridTextColumn c0 = new DataGridTextColumn();
+                c0.Header = "shortName"; c0.Binding = new Binding("shortName");
+                DataGridTextColumn c1 = new DataGridTextColumn();
+                c1.Header = "profitFac"; c1.Binding = new Binding("profitFac");
+                DataGridTextColumn c21 = new DataGridTextColumn();
+                c21.Header = "margin"; c21.Binding = new Binding("margin");
+                DataGridTextColumn c2 = new DataGridTextColumn();
+                c2.Header = "profit"; c2.Binding = new Binding("profit");
+                DataGridTextColumn c3 = new DataGridTextColumn();
+                c3.Header = "loss"; c3.Binding = new Binding("loss");
+                DataGridTextColumn c4 = new DataGridTextColumn();
+                c4.Header = "countPDeal"; c4.Binding = new Binding("countPDeal");
+                DataGridTextColumn c5 = new DataGridTextColumn();
+                c5.Header = "countLDeal"; c5.Binding = new Binding("countLDeal");
+                dgResultDetail.Columns.Add(c0);
+                dgResultDetail.Columns.Add(c1);
+                dgResultDetail.Columns.Add(c21);
+                dgResultDetail.Columns.Add(c2);
+                dgResultDetail.Columns.Add(c3);
+                dgResultDetail.Columns.Add(c4);
+                dgResultDetail.Columns.Add(c5);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            listBox1.Items.Clear();
-            if (checkBox1.IsChecked == false)
+            try
             {
-                dsource = new QuotesFromBD();
-                (dsource as QuotesFromBD).glassgraph = GlassVisual;
-                dsource.OnConnected += new ConnectedHandler(ConnectedEvent);
-                dsource.OnGetInstruments += new GetInstrumentsHandler(GetInstrumentsEvent);
-                (dsource as QuotesFromBD).OnThreadTesterStart += new ThreadStarted(ThreadTesterStarted);
-                (dsource as QuotesFromBD).OnChangeProgress += MainWindow_OnChangeProgress;
-                (dsource as QuotesFromBD).OnFinishOneThread += MainWindow_OnFinishOneThread;
-                (dsource as QuotesFromBD).paramTh = new ParametrsForTest(0, new List<string>{}
-                    , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
-                    , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
-                    , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
-                    , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
-                    , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
-            }
-            else
-            {
-                dsource = new QuotesFromSmartCom(textBox1.Text, passBox1.Password);
-                (dsource as QuotesFromSmartCom).glassgraph = GlassVisual;
-                (dsource as QuotesFromSmartCom).Trading = (bool)chbTrading.IsChecked;
-                (dsource as QuotesFromSmartCom).paramTh = new ParametrsForTest(0, new List<string>{}
-                    , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
-                    , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
-                    , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
-                    , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
-                    , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
-                (dsource as QuotesFromSmartCom).OnChangeIndicator += MainWindow_OnChangeIndicator;
-            }
-            dsource.ConnectToDataSource();
-            dsource.OnInformation += dsource_OnInformation;
+                listBox1.Items.Clear();
+                if (checkBox1.IsChecked == false)
+                {
+                    dsource = new QuotesFromBD();
+                    (dsource as QuotesFromBD).glassgraph = GlassVisual;
+                    dsource.OnConnected += new ConnectedHandler(ConnectedEvent);
+                    dsource.OnGetInstruments += new GetInstrumentsHandler(GetInstrumentsEvent);
+                    (dsource as QuotesFromBD).OnThreadTesterStart += new ThreadStarted(ThreadTesterStarted);
+                    (dsource as QuotesFromBD).OnChangeProgress += MainWindow_OnChangeProgress;
+                    (dsource as QuotesFromBD).OnFinishOneThread += MainWindow_OnFinishOneThread;
+                    (dsource as QuotesFromBD).paramTh = new ParametrsForTest(0, new List<string> { }
+                        , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
+                        , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
+                        , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
+                        , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
+                        , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
+                }
+                else
+                {
+                    dsource = new QuotesFromSmartCom(textBox1.Text, passBox1.Password);
+                    (dsource as QuotesFromSmartCom).glassgraph = GlassVisual;
+                    (dsource as QuotesFromSmartCom).Trading = (bool)chbTrading.IsChecked;
+                    (dsource as QuotesFromSmartCom).paramTh = new ParametrsForTest(0, new List<string> { }
+                        , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
+                        , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
+                        , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
+                        , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
+                        , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
+                    (dsource as QuotesFromSmartCom).OnChangeIndicator += MainWindow_OnChangeIndicator;
+                }
+                dsource.ConnectToDataSource();
+                dsource.OnInformation += dsource_OnInformation;
 
-            dsource.OnChangeGlass += GlassVisual.ChangeValues;
-            dsource.OnChangeVisualIndicator += GlassVisual.ChangeVisualIndicator;
-            dsource.OnAddTick += GlassVisual.AddTick;
-            dsource.OnAddTick += tradeGraphVisual.AddTick;
+                dsource.OnChangeGlass += GlassVisual.ChangeValues;
+                dsource.OnChangeVisualIndicator += GlassVisual.ChangeVisualIndicator;
+                dsource.OnAddTick += GlassVisual.AddTick;
+                dsource.OnAddTick += tradeGraphVisual.AddTick;
+            }
+            catch (Exception ee)
+            {
+                MessageBox.Show(ee.Message);
+            }
         }
 
         void dsource_OnInformation(string _mess)
