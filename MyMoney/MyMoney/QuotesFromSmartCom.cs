@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using SmartCOM3Lib;
+using System.IO;
 
 namespace MyMoney
 {
@@ -18,11 +19,13 @@ namespace MyMoney
             get{ return dotrading; }
             set{ dotrading = value; }
         }
+        private string pathLogs = @"c:\logssmartcom";
         private int _martinlevel = 0;
         private string login;
         private string password;
         public string workPortfolioName = "";
         private string workSymbol = "";
+        private double workStep = 0;
         public double lastBid = 0;
         public double lastAsk = 0;
         public int indicator = 0;
@@ -84,14 +87,15 @@ namespace MyMoney
         public void ConnectToDataSource()
         {
             scom = new SmartCOM3Lib.StServerClass();
-            scom.ConfigureClient(@"useOrderStreaming=yes;logLevel=4;CalcPlannedPos=no;logFilePath=c:\logssmartcom");
-            scom.ConfigureServer(@"logLevel=4;pingTimeOut=20;logFilePath=c:\logssmartcom");
-            scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            scom.ConfigureClient(@"useOrderStreaming=yes;logLevel=4;CalcPlannedPos=no;logFilePath=" + pathLogs);
+            scom.ConfigureServer(@"logLevel=4;pingTimeOut=20;logFilePath=" + pathLogs);
+            //scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mx2.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mxr.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
-            //scom.connect("mxdemo.ittrade.ru", 8443, "C9GAAL6V", "VKTFP3");  workPortfolioName = "ST59164-RF-01"; // тестовый доступ
+            scom.connect("mxdemo.ittrade.ru", 8443, "JPBABPSD", "3QCCG8");  workPortfolioName = "ST69529-RF-01"; // тестовый доступ
             workSymbol = "RTS-6.15_FT";
+            //workSymbol = "SBRF-6.15_FT";
             scom.Connected += scom_Connected;
             scom.Disconnected += scom_Disconnected;
         }
@@ -103,6 +107,8 @@ namespace MyMoney
 
         void scom_Connected()
         {
+            scom.AddSymbol += scom_AddSymbol;
+            scom.GetSymbols();
             scom.ListenBidAsks(workSymbol);
             scom.UpdateBidAsk += scom_UpdateBidAsk;
             scom.ListenQuotes(workSymbol);
@@ -118,10 +124,22 @@ namespace MyMoney
             scom.UpdatePosition += scom_UpdatePosition;
 
             scom.OrderCancelSucceeded += scom_OrderCancelSucceeded;
+            scom.OrderSucceeded += scom_OrderSucceeded;
 
             //scom.OrderFailed += scom_OrderFailed;
-            //scom.OrderSucceeded += scom_OrderSucceeded;
             //scom.GetMyOrders(0, workPortfolioName);
+        }
+
+        void scom_AddSymbol(int row, int nrows, string symbol, string short_name, string long_name, string type, int decimals, int lot_size, double punkt, double step, string sec_ext_id, string sec_exch_name, DateTime expiry_date, double days_before_expiry, double strike)
+        {
+            if (symbol == workSymbol)
+            {
+                workStep = step;
+                glassgraph.StepGlass = step;
+            }
+            //StreamWriter sw = File.AppendText(@"C:\logssmartcom\!!!symbol.txt");
+            //sw.WriteLine("symbol:" + symbol + "           short_name:" + short_name + "                  long_name:" + long_name + "              type:" + type);
+            //sw.Close();
         }
 
         void scom_OrderCancelSucceeded(string orderid)
@@ -151,13 +169,15 @@ namespace MyMoney
         void scom_SetMyOrder(int row, int nrows, string portfolio, string symbol, StOrder_State state, StOrder_Action action, StOrder_Type type, StOrder_Validity validity
             , double price, double amount, double stop, double filled, DateTime datetime, string id, string no, int cookie)
         {
-            //if (cookie != 0)
-            //    allClaims.AddOrderIdAndOrderNo(cookie, action, id, no);
+            allClaims.AddOrderIdAndOrderNo(cookie, amount, action, id, no);
+            string messageInf = DateTime.Now.ToString("HH:mm:ss:fff") + " SetMyOrders " + cookie;
+            if (OnInformation != null)
+                OnInformation(messageInf);
         }
 
-        void scom_AddTrade(string portfolio, string symbol, string orderid, double price, double amount, DateTime datetime, string tradeno)
+        void scom_AddTrade(string portfolio, string symbol, string orderno, double price, double amount, DateTime datetime, string tradeno)
         {
-            int cookieTemp = allClaims.GetCookie(orderid);
+            int cookieTemp = allClaims.GetCookie(orderno);
             if (cookieTemp == 0)
                 cookieTemp = allClaims.GetCookie(tradeno);
             if (cookieTemp != 0)
@@ -165,8 +185,11 @@ namespace MyMoney
                 allClaims.AddTradeNo(cookieTemp, tradeno);
                 double realP = allClaims.SetRealPrice(cookieTemp, price, DateTime.Now);
                 if (OnInformation != null)
-                    OnInformation("price: " + allClaims.dicAllClaims[cookieTemp].realPriceEnter + " realprice: " + allClaims.dicAllClaims[cookieTemp].realPriceEnter
-                            + "roundtrip: " + (allClaims.dicAllClaims[cookieTemp].dtEnter - allClaims.dicAllClaims[cookieTemp].realDtEnter).TotalMilliseconds.ToString()
+                    OnInformation(DateTime.Now.ToString("HH:mm:ss:fff") 
+                            + " AddTrade  Price: " + allClaims.dicAllClaims[cookieTemp].realPriceEnter + " RealPrice: " + allClaims.dicAllClaims[cookieTemp].realPriceEnter
+                            + " cook:" + cookieTemp + " orderId:" + allClaims.dicAllClaims[cookieTemp].orderid + " orderNo:" + orderno + " tradeNo:" + tradeno
+                            + " roundTrip: " + (allClaims.dicAllClaims[cookieTemp].dtEnter - allClaims.dicAllClaims[cookieTemp].realDtEnter).TotalMilliseconds.ToString()
+                            + "\r\n\r\n"
                         );
             }
             //string messageInf = " AddTrade: (" + orderid + " | " + tradeno + ") amount: " + amount.ToString() + " ";
@@ -316,23 +339,23 @@ namespace MyMoney
             {
                 case StOrder_State.StOrder_State_Pending:
                     allClaims.dicAllClaims[cookie].dt_State_Pending = DateTime.Now;
-                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Размещен у брокера " + cookie;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Размещен у брокера cook:" + cookie + " orderid:" + orderid + " orderNo:" + orderno;
                     break;
                 case StOrder_State.StOrder_State_Open:
                     allClaims.dicAllClaims[cookie].dt_State_Open = DateTime.Now;
-                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Выведен на рынок " + cookie;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Выведен на рынок cook:" + cookie + " orderid:" + orderid + " orderNo:" + orderno;
                     break;
                 case StOrder_State.StOrder_State_Cancel:
                     allClaims.dicAllClaims[cookie].dt_State_Cancel = DateTime.Now;
-                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Отменён " + cookie;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Отменён cook:" + cookie + " orderid:" + orderid + " orderNo:" + orderno;
                     break;
                 case StOrder_State.StOrder_State_Filled:
                     allClaims.dicAllClaims[cookie].dt_State_Filled = DateTime.Now;
-                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Исполнен " + cookie;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Исполнен cook:" + cookie + " orderid:" + orderid + " orderNo:" + orderno;
                     break;
                 case StOrder_State.StOrder_State_Partial:
                     allClaims.dicAllClaims[cookie].dt_State_Partial = DateTime.Now;
-                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Исполнен частично " + cookie;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Исполнен частично cook:" + cookie + " orderid:" + orderid + " orderNo:" + orderno;
                     break;
                 default:
                     break;
@@ -341,9 +364,12 @@ namespace MyMoney
                 OnInformation(messageInf);
         }
 
-        void scom_OrderSucceeded(int cookie, string orderid)
+        void scom_OrderSucceeded(int cookie, string orderid) //orderid - id заявки на сервере котировок
         {
-            //throw new NotImplementedException();
+            allClaims.AddOrderId(cookie, orderid);
+            string messageInf = DateTime.Now.ToString("HH:mm:ss:fff") + " OrderSucceeded cook:" + cookie + " id:" + orderid;
+            if (OnInformation != null)
+                OnInformation(messageInf);
         }
 
         void scom_OrderFailed(int cookie, string orderid, string reason)
@@ -413,14 +439,14 @@ namespace MyMoney
             {
                 glass[bid] = bidsize;
                 glass[ask] = asksize;
-                if (glass.Count > 40)
+                if (glass.Count > 40 && workStep > 0)
                 {
                     int sumGlass = 0;
                     // среднее значение по стакану
                     for (int i = 0; i < paramTh.glassHeight; i++)
                     {
-                        sumGlass += glass.ContainsKey(lastAsk + i * 10) ? (int) glass[lastAsk + i * 10] : 0;
-                        sumGlass += glass.ContainsKey(lastBid - i * 10) ? (int) glass[lastBid - i * 10] : 0;
+                        sumGlass += glass.ContainsKey(lastAsk + i * workStep) ? (int)glass[lastAsk + i * workStep] : 0;
+                        sumGlass += glass.ContainsKey(lastBid - i * workStep) ? (int)glass[lastBid - i * workStep] : 0;
                     }
                     int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
                     int sumlong = 0, sumshort = 0;
@@ -428,18 +454,19 @@ namespace MyMoney
                     tempListForIndicator.Clear();
                     tempListForIndicatorAverage.Clear();
                     // новая версия, более взвешенное значение (как год назад)
+                    double lb = lastBid, la = lastAsk;
                     for (int i = 0; i < paramTh.glassHeight; i++)
                     {
-                        if (glass.ContainsKey((int)lastAsk + i * 10))
-                            sumlong += (int)glass[(int)lastAsk + i * 10];
-                        if (glass.ContainsKey((int)lastBid - i * 10))
-                            sumshort += (int)glass[(int)lastBid - i * 10]; 
-                        sumlongAverage += glass.ContainsKey((int)lastAsk + i * 10)
-                            && glass[(int)lastAsk + i * 10] < averageGlass * 1/*paramTh.averageValue*/
-                            ? (int)glass[(int)lastAsk + i * 10] : averageGlass * 1/*(int)paramTh.averageValue*/;
-                        sumshortAverage += glass.ContainsKey((int)lastBid - i * 10)
-                            && glass[(int)lastBid - i * 10] < averageGlass * 1 /*paramTh.averageValue*/
-                            ? (int)glass[(int)lastBid - i * 10] : averageGlass * 1 /*(int)paramTh.averageValue*/;
+                        if (glass.ContainsKey((int)la + i * workStep))
+                            sumlong += (int)glass[(int)la + i * workStep];
+                        if (glass.ContainsKey((int)lb - i * workStep))
+                            sumshort += (int)glass[(int)lb - i * workStep];
+                        sumlongAverage += glass.ContainsKey((int)la + i * workStep)
+                            && glass[(int)la + i * workStep] < averageGlass * 1/*paramTh.averageValue*/
+                            ? (int)glass[(int)la + i * workStep] : averageGlass * 1/*(int)paramTh.averageValue*/;
+                        sumshortAverage += glass.ContainsKey((int)lb - i * workStep)
+                            && glass[(int)lb - i * workStep] < averageGlass * 1 /*paramTh.averageValue*/
+                            ? (int)glass[(int)lb - i * workStep] : averageGlass * 1 /*(int)paramTh.averageValue*/;
                         if (sumlong + sumshort == 0)
                             continue;
                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
@@ -541,17 +568,20 @@ namespace MyMoney
                 //LongShotCount = ShortShotCount = 0;
                 lossLongValueTemp = paramTh.lossLongValue;
                 profitLongValueTemp = paramTh.profitLongValue;
-                if (priceEnterShort != 0)
-                    priceEnterLong = (int)lastAsk;
-                priceEnterShort = 0;
                 lotCount = 1;
                 cookieId++;
-                MartinLevel = 0;
+                //MartinLevel = 0;
                 int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
-                //scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
-                //    , 0, lotCount, 0, _cid); // 1 000 000
-                allClaims.Add(_cid, DateTime.Now, priceEnterLong, lotCount, StOrder_Action.StOrder_Action_Buy);
+                scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
+                    , 0, lotCount, 0, _cid); // 1 000 000
+                allClaims.Add(_cid, DateTime.Now, (int)lastAsk, lotCount, StOrder_Action.StOrder_Action_Buy);
                 allClaims.ActiveCookie = _cid;
+                if (priceEnterShort == 0)
+                    priceEnterLong = (int)lastAsk;
+                priceEnterShort = 0;
+                string messageInf = DateTime.Now.ToString("HH:mm:ss:fff") + " PlaceOrder LONG " + _cid;
+                if (OnInformation != null)
+                    OnInformation(messageInf);
             }
         }
         public void DoTradeShort()
@@ -562,17 +592,20 @@ namespace MyMoney
                 //ShortShotCount = LongShotCount = 0;
                 lossShortValueTemp = paramTh.lossShortValue;
                 profitShortValueTemp = paramTh.profitShortValue;
-                if (priceEnterLong != 0)
-                    priceEnterShort = (int)lastBid;
-                priceEnterLong = 0;
                 lotCount = 1;
                 cookieId++;
-                MartinLevel = 0;
+                //MartinLevel = 0;
                 int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
-                //scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
-                //    , 0, lotCount, 0, _cid); // 1 000 000
-                allClaims.Add(_cid, DateTime.Now, priceEnterShort, lotCount, StOrder_Action.StOrder_Action_Sell);
+                scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
+                    , 0, lotCount, 0, _cid); // 1 000 000
+                allClaims.Add(_cid, DateTime.Now, (int)lastBid, lotCount, StOrder_Action.StOrder_Action_Sell);
                 allClaims.ActiveCookie = _cid;
+                if (priceEnterLong == 0)
+                    priceEnterShort = (int)lastBid;
+                priceEnterLong = 0;
+                string messageInf = DateTime.Now.ToString("HH:mm:ss:fff") + " PlaceOrder SHORT cook:" + _cid;
+                if (OnInformation != null)
+                    OnInformation(messageInf);
             }
         }
     }

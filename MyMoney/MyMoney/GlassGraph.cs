@@ -38,13 +38,12 @@ namespace MyMoney
         {
             visualAllElements = new VisualAllElemnts();
         }
-        public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
+        public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2)
         {
             canvas = _c;
             ribboncanvas = _ribbon;
             tickGraphCanvas = _ribbon;
 
-            StepGlass = _step;
             UpBrush = new SolidColorBrush { Color = Color.FromArgb(255, 255, 228, 225) };
             DownBrush = new SolidColorBrush { Color = Color.FromArgb(255, 152, 251, 152) };
 
@@ -251,8 +250,8 @@ namespace MyMoney
             ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    //if (_price == lastPriceTick)// && _action == lastActionTick)
-                    //    return;
+                    if (_price == lastPriceTick)// && _action == lastActionTick)
+                        return;
 
                     visualAllElements.listIndicatorSumm.Add(CalcGlassValue());
                     if (GlValues25 > 99 && OnDoTradeLong != null)

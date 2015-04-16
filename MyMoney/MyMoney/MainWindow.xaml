@@ -119,12 +119,12 @@
         <Label x:Name="speedLabel" Content="0" HorizontalAlignment="Left" Margin="243,0,0,66" VerticalAlignment="Bottom" Width="48"/>
         <TextBlock x:Name="tbValuesGlass" Grid.Column="1" HorizontalAlignment="Left" Margin="990,128,0,0" Grid.Row="1" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" FontFamily="Kartika" FontWeight="Bold" Width="47"/>
         <TextBlock x:Name="tbValuesGlass25" Grid.Column="1" HorizontalAlignment="Left" Margin="990,294,0,0" Grid.Row="1" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="47" RenderTransformOrigin="0.435,-0.391" FontFamily="Kartika" FontWeight="Bold"/>
-        <Slider HorizontalAlignment="Left" Margin="64,35,0,0" Grid.Row="1" VerticalAlignment="Top" Width="289" Maximum="30" SmallChange="1" ValueChanged="Slider_ValueChanged_1"/>
-        <Slider HorizontalAlignment="Right" Margin="0,63,130,0" Grid.Row="1" VerticalAlignment="Top" Width="289" Maximum="1500" SmallChange="10" LargeChange="20" Value="220" ValueChanged="Slider_ValueChanged" TickFrequency="10"/>
-        <Label x:Name="lbLevelIngoreVal" Content="220" HorizontalAlignment="Left" Margin="10,63,0,0" VerticalAlignment="Top" Width="48" FontSize="11" FontFamily="Roboto Th" Grid.Row="1"/>
-        <Label x:Name="lbLevelIngoreGlass" Content="0" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top" Width="48" FontSize="11" FontFamily="Roboto Th" Grid.Row="1"/>
-        <Slider HorizontalAlignment="Left" Margin="64,10,0,0" Grid.Row="1" VerticalAlignment="Top" Width="289" Minimum="1" Maximum="50" SmallChange="1" Value="10" ValueChanged="Slider_ValueChanged_2"/>
-        <Label x:Name="lbLevelHeighGlass" Content="10" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="48" FontSize="11" FontFamily="Roboto Th" Grid.Row="1"/>
+        <Slider HorizontalAlignment="Left" Margin="64,35,0,0" Grid.Row="1" VerticalAlignment="Top" Width="289" Maximum="30" SmallChange="1" ValueChanged="Slider_ValueChanged_1" Value="3"/>
+        <Slider HorizontalAlignment="Right" Margin="0,63,130,0" Grid.Row="1" VerticalAlignment="Top" Width="289" Maximum="1500" SmallChange="10" LargeChange="20" Value="670" ValueChanged="Slider_ValueChanged" TickFrequency="10"/>
+        <Label x:Name="lbLevelIngoreVal" Content="670" HorizontalAlignment="Left" Margin="10,63,0,0" VerticalAlignment="Top" Width="48" FontSize="11" FontFamily="Roboto Th" Grid.Row="1"/>
+        <Label x:Name="lbLevelIngoreGlass" Content="3" HorizontalAlignment="Left" Margin="10,35,0,0" VerticalAlignment="Top" Width="48" FontSize="11" FontFamily="Roboto Th" Grid.Row="1"/>
+        <Slider HorizontalAlignment="Left" Margin="64,10,0,0" Grid.Row="1" VerticalAlignment="Top" Width="289" Minimum="1" Maximum="50" SmallChange="1" Value="48" ValueChanged="Slider_ValueChanged_2"/>
+        <Label x:Name="lbLevelHeighGlass" Content="48" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="48" FontSize="11" FontFamily="Roboto Th" Grid.Row="1"/>
         <TextBlock x:Name="tbValuesGlass25_Copy" Grid.Column="1" HorizontalAlignment="Left" Margin="990,333,0,0" Grid.Row="1" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="47" RenderTransformOrigin="0.435,-0.391" FontFamily="Kartika" FontWeight="Bold"/>
     </Grid>
 </Window>

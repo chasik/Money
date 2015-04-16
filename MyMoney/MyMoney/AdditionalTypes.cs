@@ -404,6 +404,13 @@ namespace MyMoney
             if (!_tradeno.Equals("0"))
                 dicAllClaims[_cook].tradeno = _tradeno;
         }
+        public void AddOrderId(int _cook, string _orderid)
+        {
+            if (!dicAllClaims.ContainsKey(_cook))
+                return;
+            if (!_orderid.Equals("0"))
+                dicAllClaims[_cook].orderid = _orderid;
+        }
         public void AddOrderIdAndOrderNo(int _cook, double _amount, SmartCOM3Lib.StOrder_Action _action, string _ordid, string _ordno)
         {
             if (!dicAllClaims.ContainsKey(_cook))
