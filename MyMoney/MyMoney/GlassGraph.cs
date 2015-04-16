@@ -38,7 +38,7 @@ namespace MyMoney
         {
             visualAllElements = new VisualAllElemnts();
         }
-        public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, Rectangle _speedbar, double _step)
+        public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon, Rectangle _indicatorRect, Rectangle _indicatorRect2, Rectangle _indicatorAverageRect, Rectangle _indicatorAverageRect2, double _step)
         {
             canvas = _c;
             ribboncanvas = _ribbon;
@@ -66,7 +66,6 @@ namespace MyMoney
 
             _indicatorRect.Fill = GradientBrushForIndicator;
             _indicatorRect2.Fill = GradientBrushForIndicator2;
-            _speedbar.Fill = GradientBrushForSpeed;
 
             //_indicatorAverageRect.Fill = GradientBrushForIndicatorAverage;
             //_indicatorAverageRect2.Fill = GradientBrushForIndicatorAverage2;
@@ -252,8 +251,8 @@ namespace MyMoney
             ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    if (_price == lastPriceTick)// && _action == lastActionTick)
-                        return;
+                    //if (_price == lastPriceTick)// && _action == lastActionTick)
+                    //    return;
 
                     visualAllElements.listIndicatorSumm.Add(CalcGlassValue());
                     if (GlValues25 > 99 && OnDoTradeLong != null)
@@ -668,8 +667,8 @@ namespace MyMoney
                     _sumtop = sumpositive + sumnegative;
                 }
             }
-            //if (Math.Abs(_summiddle) < LevelIgnoreValue)// || Math.Abs(_valmiddle) < 100)
-            if (Math.Abs(_valmiddle) < 100)
+            if (Math.Abs(_summiddle) < LevelIgnoreValue)// || Math.Abs(_valmiddle) < 100)
+            //if (Math.Abs(_valmiddle) < 100)
                 _valmiddle = 0;
         }
         public void AddData(int[] _atemp)
@@ -823,7 +822,7 @@ namespace MyMoney
             int signtrade = Math.Sign(_indvalue);
             if (!this.ExistActiveTrade())
             {
-                dicAllClaims.Add(dicAllClaims.Count, new ClaimInfo(signtrade < 0 ? _lastminask : _lastmaxbid, 1, signtrade < 0 ? SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell : SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy));
+                dicAllClaims.Add(dicAllClaims.Count, new ClaimInfo(DateTime.Now, signtrade < 0 ? _lastminask : _lastmaxbid, 1, signtrade < 0 ? SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell : SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy));
             }
 
         }

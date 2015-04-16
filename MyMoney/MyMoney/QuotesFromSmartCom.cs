@@ -84,7 +84,7 @@ namespace MyMoney
         public void ConnectToDataSource()
         {
             scom = new SmartCOM3Lib.StServerClass();
-            scom.ConfigureClient(@"logLevel=4;CalcPlannedPos=no;logFilePath=c:\logssmartcom");
+            scom.ConfigureClient(@"useOrderStreaming=yes;logLevel=4;CalcPlannedPos=no;logFilePath=c:\logssmartcom");
             scom.ConfigureServer(@"logLevel=4;pingTimeOut=20;logFilePath=c:\logssmartcom");
             scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mx2.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
@@ -157,7 +157,18 @@ namespace MyMoney
 
         void scom_AddTrade(string portfolio, string symbol, string orderid, double price, double amount, DateTime datetime, string tradeno)
         {
-            
+            int cookieTemp = allClaims.GetCookie(orderid);
+            if (cookieTemp == 0)
+                cookieTemp = allClaims.GetCookie(tradeno);
+            if (cookieTemp != 0)
+            {
+                allClaims.AddTradeNo(cookieTemp, tradeno);
+                double realP = allClaims.SetRealPrice(cookieTemp, price, DateTime.Now);
+                if (OnInformation != null)
+                    OnInformation("price: " + allClaims.dicAllClaims[cookieTemp].realPriceEnter + " realprice: " + allClaims.dicAllClaims[cookieTemp].realPriceEnter
+                            + "roundtrip: " + (allClaims.dicAllClaims[cookieTemp].dtEnter - allClaims.dicAllClaims[cookieTemp].realDtEnter).TotalMilliseconds.ToString()
+                        );
+            }
             //string messageInf = " AddTrade: (" + orderid + " | " + tradeno + ") amount: " + amount.ToString() + " ";
             //int cookieTemp = allClaims.GetCookie(orderid);
             //if (cookieTemp == 0)
@@ -297,31 +308,37 @@ namespace MyMoney
             , StOrder_State state, StOrder_Action action, StOrder_Type type, StOrder_Validity validity
             , double price, double amount, double stop, double filled, DateTime datetime, string orderid, string orderno, int status_mask, int cookie)
         {
+            string messageInf = "";
             //string messageInf = "(" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")" 
             //    + "\tUpdateOrder(" + action.ToString() + "): " + cookie + "(" + orderid + " | " + orderno + ") price: " + price.ToString() + " stop: " + stop.ToString() + " filled: " + filled.ToString() + ": ";
-            //allClaims.AddOrderIdAndOrderNo(cookie, amount, action, orderid, orderno);
-            //switch (state) 
-            //{
-            //    case StOrder_State.StOrder_State_Pending:
-            //        messageInf += "Размещен у брокера";
-            //        break;
-            //    case StOrder_State.StOrder_State_Open:
-            //        messageInf += "Выведен на рынок";
-            //        break;
-            //    case StOrder_State.StOrder_State_Cancel:
-            //        messageInf += "Отменён";
-            //        break;
-            //    case StOrder_State.StOrder_State_Filled:
-            //        messageInf += "Исполнен";
-            //        break;
-            //    case StOrder_State.StOrder_State_Partial:
-            //        messageInf += "Исполнен частично";
-            //        break;
-            //    default:
-            //        break;
-            //}
-            //if (OnInformation != null)
-            //    OnInformation(messageInf);
+            allClaims.AddOrderIdAndOrderNo(cookie, amount, action, orderid, orderno);
+            switch (state) 
+            {
+                case StOrder_State.StOrder_State_Pending:
+                    allClaims.dicAllClaims[cookie].dt_State_Pending = DateTime.Now;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Размещен у брокера " + cookie;
+                    break;
+                case StOrder_State.StOrder_State_Open:
+                    allClaims.dicAllClaims[cookie].dt_State_Open = DateTime.Now;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Выведен на рынок " + cookie;
+                    break;
+                case StOrder_State.StOrder_State_Cancel:
+                    allClaims.dicAllClaims[cookie].dt_State_Cancel = DateTime.Now;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Отменён " + cookie;
+                    break;
+                case StOrder_State.StOrder_State_Filled:
+                    allClaims.dicAllClaims[cookie].dt_State_Filled = DateTime.Now;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Исполнен " + cookie;
+                    break;
+                case StOrder_State.StOrder_State_Partial:
+                    allClaims.dicAllClaims[cookie].dt_State_Partial = DateTime.Now;
+                    messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " Исполнен частично " + cookie;
+                    break;
+                default:
+                    break;
+            }
+            if (OnInformation != null)
+                OnInformation(messageInf);
         }
 
         void scom_OrderSucceeded(int cookie, string orderid)
@@ -524,15 +541,17 @@ namespace MyMoney
                 //LongShotCount = ShortShotCount = 0;
                 lossLongValueTemp = paramTh.lossLongValue;
                 profitLongValueTemp = paramTh.profitLongValue;
+                if (priceEnterShort != 0)
+                    priceEnterLong = (int)lastAsk;
                 priceEnterShort = 0;
-                priceEnterLong = (int)lastAsk;
                 lotCount = 1;
                 cookieId++;
                 MartinLevel = 0;
                 int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
-                scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
-                    , 0, lotCount, 0, _cid); // 1 000 000
-                allClaims.Add(_cid, priceEnterLong, lotCount, StOrder_Action.StOrder_Action_Buy);
+                //scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
+                //    , 0, lotCount, 0, _cid); // 1 000 000
+                allClaims.Add(_cid, DateTime.Now, priceEnterLong, lotCount, StOrder_Action.StOrder_Action_Buy);
+                allClaims.ActiveCookie = _cid;
             }
         }
         public void DoTradeShort()
@@ -543,15 +562,17 @@ namespace MyMoney
                 //ShortShotCount = LongShotCount = 0;
                 lossShortValueTemp = paramTh.lossShortValue;
                 profitShortValueTemp = paramTh.profitShortValue;
+                if (priceEnterLong != 0)
+                    priceEnterShort = (int)lastBid;
                 priceEnterLong = 0;
-                priceEnterShort = (int)lastBid;
                 lotCount = 1;
                 cookieId++;
                 MartinLevel = 0;
                 int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
-                scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
-                    , 0, lotCount, 0, _cid); // 1 000 000
-                allClaims.Add(_cid, priceEnterShort, lotCount, StOrder_Action.StOrder_Action_Sell);
+                //scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
+                //    , 0, lotCount, 0, _cid); // 1 000 000
+                allClaims.Add(_cid, DateTime.Now, priceEnterShort, lotCount, StOrder_Action.StOrder_Action_Sell);
+                allClaims.ActiveCookie = _cid;
             }
         }
     }

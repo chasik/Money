@@ -47,7 +47,7 @@ namespace MyMoney
 
                 InitializeComponent();
                 tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
-                GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, null, null/*indicatorAverageRect, indicatorAverageRect2*/, speedgradientbar, 10);
+                GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, null, null/*indicatorAverageRect, indicatorAverageRect2*/, 10);
                 GlassVisual.tbGlassValue = tbValuesGlass;
                 GlassVisual.tbGlassValue25 = tbValuesGlass25;
                 GlassVisual.visualAllElements.LevelHeightGlass = 17;
@@ -148,10 +148,10 @@ namespace MyMoney
         {
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate() {
-                    //tbInformation.Clear();
-                    //tbInformation.AppendText(_mess + "\r\n");
-                    tbValuesGlass25_Copy.Text = "";
-                    tbValuesGlass25_Copy.Text = _mess;
+                    tbInformation.Clear();
+                    tbInformation.AppendText(_mess + "\r\n");
+                    //tbValuesGlass25_Copy.Text = "";
+                    //tbValuesGlass25_Copy.Text = _mess;
             });
         }
 

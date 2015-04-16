@@ -351,15 +351,19 @@ namespace MyMoney
 
     public class ClaimInfo
     {
-        public ClaimInfo(double _priceenter, int _lotcount, SmartCOM3Lib.StOrder_Action _action)
+        public ClaimInfo(DateTime _dtenter, double _priceenter, int _lotcount, SmartCOM3Lib.StOrder_Action _action)
         {
             priceEnter = _priceenter;
             action = _action;
             lotcount = _lotcount;
+            dtEnter = _dtenter;
         }
 
         public double priceEnter = 0;
+        public DateTime dtEnter;
         public double realPriceEnter = 0;
+        public DateTime realDtEnter;
+        public DateTime dt_State_Pending, dt_State_Open, dt_State_Cancel, dt_State_Filled, dt_State_Partial;
         public double priceExit = 0;
         public double realPriceExit = 0;
         public SmartCOM3Lib.StOrder_Action action;
@@ -388,9 +392,9 @@ namespace MyMoney
         {
             ActiveCookie = 0;
         }
-        public ClaimInfo Add(int _cookie, double _priceent, int _lotcount, SmartCOM3Lib.StOrder_Action _action)
+        public ClaimInfo Add(int _cookie, DateTime _dtEnter, double _priceent, int _lotcount, SmartCOM3Lib.StOrder_Action _action)
         {
-            dicAllClaims.Add(_cookie, new ClaimInfo(_priceent, _lotcount, _action));
+            dicAllClaims.Add(_cookie, new ClaimInfo(_dtEnter, _priceent, _lotcount, _action));
             return dicAllClaims[_cookie];
         }
         public void AddTradeNo(int _cook, string _tradeno)
@@ -404,7 +408,7 @@ namespace MyMoney
         {
             if (!dicAllClaims.ContainsKey(_cook))
             {
-                ClaimInfo lastc = this.Add(_cook, 0, (int)_amount, _action);
+                ClaimInfo lastc = this.Add(_cook, DateTime.Now, 0, (int)_amount, _action);
                 int cookId = GetCookieId(_cook);
                 foreach(int c in dicAllClaims.Keys)
                 {
@@ -438,10 +442,11 @@ namespace MyMoney
             return r;
         }
 
-        public double SetRealPrice(int _cook, double _price)
+        public double SetRealPrice(int _cook, double _price, DateTime _realdtenter)
         {
             if (!dicAllClaims.ContainsKey(_cook))
                 return 0;
+            dicAllClaims[_cook].realDtEnter = _realdtenter;
             return dicAllClaims[_cook].realPriceEnter = _price;
         }
 
