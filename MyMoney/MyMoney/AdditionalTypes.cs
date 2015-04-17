@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 
 namespace MyMoney
 {
+    public enum InfoElement
+    {
+        logfile = 0,
+        tbInformation = 1,
+        tbInfo2 = 2
+    }
     public enum TypeWorkOrder
     {
         none = 0,
@@ -26,7 +32,7 @@ namespace MyMoney
     {
     }
 
-    public struct tableInfo
+    public struct TableInfo
     {
         public string fullName;
         public string shortName;
@@ -34,6 +40,7 @@ namespace MyMoney
         public string tableType;
         public string dateTable;
         public DateTime dtTable;
+        public double symbolstep;
         public int dayNum;
         public int monthNum;
         public int yearNum;

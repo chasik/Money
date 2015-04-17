@@ -51,8 +51,10 @@ namespace MyMoney
                 GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, null, null/*indicatorAverageRect, indicatorAverageRect2*/);
                 GlassVisual.tbGlassValue = tbValuesGlass;
                 GlassVisual.tbGlassValue25 = tbValuesGlass25;
-                GlassVisual.visualAllElements.LevelHeightGlass = 17;
-                GlassVisual.visualAllElements.LevelIgnoreValue = 300;
+
+                GlassVisual.visualAllElements.LevelStartGlass = (int)sliderStartGlassLevel.Value;
+                GlassVisual.visualAllElements.LevelHeightGlass = (int)sliderGlassHeightLevel.Value;
+                GlassVisual.visualAllElements.LevelIgnoreValue = (int)sliderIndicatorLevel.Value;
 
                 allResults = new ObservableCollection<ResultOneThreadSumm>();
                 detailResults = new ObservableCollection<ResultOneThread>();
@@ -100,7 +102,7 @@ namespace MyMoney
             try
             {
                 listBox1.Items.Clear();
-                if (checkBox1.IsChecked == false)
+                if (chbConnectToServer.IsChecked == false)
                 {
                     dsource = new QuotesFromBD();
                     (dsource as QuotesFromBD).glassgraph = GlassVisual;
@@ -109,12 +111,15 @@ namespace MyMoney
                     (dsource as QuotesFromBD).OnThreadTesterStart += new ThreadStarted(ThreadTesterStarted);
                     (dsource as QuotesFromBD).OnChangeProgress += MainWindow_OnChangeProgress;
                     (dsource as QuotesFromBD).OnFinishOneThread += MainWindow_OnFinishOneThread;
-                    (dsource as QuotesFromBD).paramTh = new ParametrsForTest(0, new List<string> { }
-                        , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
-                        , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
-                        , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
-                        , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
-                        , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
+                    //if (chbVisualisationTest.IsChecked == true)
+                    //{
+                        (dsource as QuotesFromBD).paramTh = new ParametrsForTest(0, new List<string> { }
+                            , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
+                            , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
+                            , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
+                            , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
+                            , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
+                    //}
                 }
                 else
                 {
@@ -145,17 +150,27 @@ namespace MyMoney
             }
         }
 
-        void dsource_OnInformation(string _mess)
+        void dsource_OnInformation(InfoElement _element,string _mess)
         {
             this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate() {
-                    //tbInformation.Clear();
-                    //tbInformation.AppendText(_mess + "\r\n");
-                    //tbValuesGlass25_Copy.Text = "";
-                    //tbValuesGlass25_Copy.Text = _mess;
-                    StreamWriter sw = File.AppendText(@"C:\logssmartcom\!!! temp text .txt");
-                    sw.WriteLine(_mess);
-                    sw.Close();
+                    switch (_element)
+                    {
+                        case InfoElement.logfile:
+                                StreamWriter sw = File.AppendText(@"C:\logssmartcom\!!! temp text .txt");
+                                sw.WriteLine(_mess);
+                                sw.Close();
+                            break;
+                        case InfoElement.tbInformation:
+                                tbInformation.Clear();
+                                tbInformation.AppendText(_mess + "\r\n");
+                            break;
+                        case InfoElement.tbInfo2:
+                                tbInfo2.Text = _mess;
+                            break;
+                        default:
+                            break;
+                    }
             });
         }
 
@@ -434,6 +449,9 @@ namespace MyMoney
 
         private void MyWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            lbLevelIngoreGlass.Content = tbGlassCurrent.Text = sliderStartGlassLevel.Value.ToString();
+            lbLevelHeighGlass.Content = tbGlassCurrent.Text = sliderGlassHeightLevel.Value.ToString();
+            lbLevelIngoreVal.Content = sliderIndicatorLevel.Value.ToString();
             //if (GlassVisual != null && GlassVisual.ribboncanvas != null)
             //{
             //}

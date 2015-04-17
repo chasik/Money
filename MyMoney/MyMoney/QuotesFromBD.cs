@@ -17,6 +17,7 @@ namespace MyMoney
         public int countThreads = 0;
         private bool _dovisual = false;
         private double speedvisual = 0;
+        private double symbolStep = 0;
         public GlassGraph glassgraph;
 
         ParametrsForTest _paramTh = new ParametrsForTest();
@@ -40,7 +41,7 @@ namespace MyMoney
         public DataTable dtInstruments { get; set; }
         public DataTable dtAllTables { get; set; }
         public Dictionary<string, int> dictInstruments;
-        public SortedDictionary<string, tableInfo> dictAllTables;
+        public SortedDictionary<string, TableInfo> dictAllTables;
         public Dictionary<string, DataTableWithCalcValues> dicSelectedDataTables;
         public List<string> selectedSessionList;
 
@@ -69,7 +70,7 @@ namespace MyMoney
             dtInstruments = new DataTable();
             dtAllTables = new DataTable();
             dictInstruments = new Dictionary<string, int>();
-            dictAllTables = new SortedDictionary<string, tableInfo>();
+            dictAllTables = new SortedDictionary<string, TableInfo>();
             dicSelectedDataTables = new Dictionary<string, DataTableWithCalcValues>();
             selectedSessionList = new List<string>();
             dicDiapasonParams = new Dictionary<string, diapasonTestParam>();
@@ -134,7 +135,7 @@ namespace MyMoney
             {
                 dictAllTables.Clear();
                 sqlcommand.CommandText = @"
-                    SELECT at.idtable, at.idinstrument, i.name, tt.name as typetname, convert(date, at.datecre) as shortdate, at.datecre 
+                    SELECT at.idtable, at.idinstrument, i.name, tt.name as typetname, convert(date, at.datecre) as shortdate, at.datecre, i.step as symbolstep
                     FROM alltables at 
 	                    JOIN instruments i ON at.idinstrument = i.idinstrument
 	                    JOIN typetable tt ON at.idtypetable = tt.idtypetable
@@ -150,11 +151,14 @@ namespace MyMoney
                     string lname = sname + "_" + item["typetname"].ToString();
                     if (!dictAllTables.ContainsKey(lname))
                     {
-                        tableInfo ti = new tableInfo();
+                        TableInfo ti = new TableInfo();
                         ti.tableType = item["typetname"].ToString();
                         ti.shortName = sname;
                         ti.fullName = lname;
                         ti.dateTable = item["shortdate"].ToString().Remove(10);
+                        ti.symbolstep = item.Field<float>("symbolstep");
+                        symbolStep = ti.symbolstep;
+                        glassgraph.StepGlass = symbolStep;
                         ti.dtTable = DateTime.Parse(item["datecre"].ToString());
                         ti.dayNum = int.Parse(mc[0].Groups[2].ToString());
                         ti.monthNum = int.Parse(mc[0].Groups[3].ToString());
@@ -392,14 +396,9 @@ namespace MyMoney
                 resThTemp.shortName = k;
                 DealInfo dealTemp = null;
                 DataTable dt = dictionaryDT[k].datatable;//.Copy();
-                threadGlassVisual.visualAllElements.levelignoreval = paramTh.glassHeight;
-                threadGlassVisual.visualAllElements.levelstartglass = (int)paramTh.averageValue;
-                threadGlassVisual.visualAllElements.levelheightglass = 17;
-                //threadGlassVisual.visualAllElements.levelignoreval = 400;
-                //threadGlassVisual.visualAllElements.levelstartglass = 4;
-
-                // levelignoreval, levelstartglass, levelheightglass
-                // LevelIgnoreValue LevelStartGlass LevelHeightGlass
+                threadGlassVisual.visualAllElements.LevelStartGlass = (int)paramTh.averageValue;
+                threadGlassVisual.visualAllElements.LevelHeightGlass = paramTh.glassHeight;
+                threadGlassVisual.visualAllElements.LevelIgnoreValue = 10000;
 
                 int indicator = 0;
                 int iterationNum = 0; // счетчик строк в текущей DataTable
@@ -426,7 +425,10 @@ namespace MyMoney
                     if (!dr.IsNull("priceTick") && (pricetick = (int?)dr.Field<float?>("priceTick")) > 0)// && pricetick != (int?)dr.Field<float?>("priceTick")) // вторая часть условия - если перед этим была таже цена - пропускаем
                     {
                         if (DoVisualisation && OnInformation != null)
-                            OnInformation(dr.Field<DateTime>("dtserver").ToString("ind " + indicator.ToString()));
+                        {
+                            OnInformation(InfoElement.tbInformation, dr.Field<DateTime>("dtserver").ToString());
+                            OnInformation(InfoElement.tbInfo2, "ind " + indicator.ToString());
+                        }
                         if (indicator == 0)
                             indicatorGoToZero = true;
                         actiontick = dr.Field<byte?>("idaction");
@@ -435,7 +437,7 @@ namespace MyMoney
                         if (priceEnterShort != 0 && indicator > 0 && actiontick == 1)
                         {
                             indicatorGoToZero = false;
-                            if (priceEnterShort - ask >= 10)
+                            if (priceEnterShort - ask >= symbolStep)
                             {
                                 resThTemp.countPDeal++;
                                 resThTemp.profit += (priceEnterShort - (int)ask) * lotCount;
@@ -512,7 +514,7 @@ namespace MyMoney
                         else if (priceEnterLong != 0 && indicator < 0 && actiontick == 2)
                         {
                             indicatorGoToZero = false;
-                            if (bid - priceEnterLong >= 10)
+                            if (bid - priceEnterLong >= symbolStep)
                             {
                                 resThTemp.countPDeal++;
                                 resThTemp.profit += ((int)bid - priceEnterLong) * lotCount;
@@ -641,7 +643,7 @@ namespace MyMoney
                                     /*oldGlassValue.Clear();
                                     foreach (int pkey in glass.Keys)
                                     {
-                                        if (pkey > ask + paramTh.glassHeight * 10 || pkey < bid - paramTh.glassHeight * 10)
+                                        if (pkey > ask + paramTh.glassHeight * symbolStep || pkey < bid - paramTh.glassHeight * symbolStep)
                                             oldGlassValue.Add(pkey);
                                         else if (pkey >= ask || pkey <= bid)
                                             sumGlass += glass[pkey];
@@ -651,12 +653,12 @@ namespace MyMoney
 
                                     int sumGlass = 0;
                                     // среднее значение по стакану
-                                    for (int i = 0; i < threadGlassVisual.visualAllElements.levelheightglass; i++)
+                                    for (int i = 0; i < threadGlassVisual.visualAllElements.LevelHeightGlass; i++)
                                     {
-                                        sumGlass += glass.ContainsKey((int)ask + i * 10) ? (int)glass[(int)ask + i * 10] : 0;
-                                        sumGlass += glass.ContainsKey((int)bid - i * 10) ? (int)glass[(int)bid - i * 10] : 0;
+                                        sumGlass += glass.ContainsKey((int)(ask + i * symbolStep)) ? (int)glass[(int)(ask + i * symbolStep)] : 0;
+                                        sumGlass += glass.ContainsKey((int)(bid - i * symbolStep)) ? (int)glass[(int)(bid - i * symbolStep)] : 0;
                                     }
-                                    int averageGlass = (int)sumGlass / (threadGlassVisual.visualAllElements.levelheightglass * 2);
+                                    int averageGlass = (int)sumGlass / (threadGlassVisual.visualAllElements.LevelHeightGlass * 2);
                                     int sumlong = 0, sumshort = 0;
                                     int sumlongAverage = 0, sumshortAverage = 0;
                                     tempListForIndicator.Clear();
@@ -664,31 +666,31 @@ namespace MyMoney
                                     // новая версия, более взвешенное значение (как год назад)
                                     for (int i = 0; i < 50/*paramTh.glassHeight*/; i++)
                                     {
-                                        if (glass.ContainsKey((int)ask + i * 10))
-                                            sumlong += glass[(int)ask + i * 10];
-                                        //sumlong += glass.ContainsKey((int)ask + i * 10)
-                                        //    && glass[(int)ask + i * 10] < averageGlass * paramTh.averageValue
-                                        //    ? glass[(int)ask + i * 10] : averageGlass;
-                                        if (glass.ContainsKey((int)bid - i * 10))
-                                            sumshort += glass[(int)bid - i * 10]; 
-                                        //sumshort += glass.ContainsKey((int)bid - i * 10)
-                                        //    && glass[(int)bid - i * 10] < averageGlass * paramTh.averageValue
-                                        //    ? glass[(int)bid - i * 10] : averageGlass;
+                                        if (glass.ContainsKey((int)(ask + i * symbolStep)))
+                                            sumlong += glass[(int)(ask + i * symbolStep)];
+                                        //sumlong += glass.ContainsKey((int)ask + i * symbolStep)
+                                        //    && glass[(int)ask + i * symbolStep] < averageGlass * paramTh.averageValue
+                                        //    ? glass[(int)ask + i * symbolStep] : averageGlass;
+                                        if (glass.ContainsKey((int)(bid - i * symbolStep)))
+                                            sumshort += glass[(int)(bid - i * symbolStep)];
+                                        //sumshort += glass.ContainsKey((int)bid - i * symbolStep)
+                                        //    && glass[(int)bid - i * symbolStep] < averageGlass * paramTh.averageValue
+                                        //    ? glass[(int)bid - i * symbolStep] : averageGlass;
                                         if (sumlong + sumshort == 0)
                                             continue;
                                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
 
 
-                                        if (glass.ContainsKey((int)ask + i * 10))
-                                            sumlong += (int)glass[(int)ask + i * 10];
-                                        if (glass.ContainsKey((int)bid - i * 10))
-                                            sumshort += (int)glass[(int)bid - i * 10];
-                                        sumlongAverage += glass.ContainsKey((int)ask + i * 10)
-                                            && glass[(int)ask + i * 10] < averageGlass * 1 //paramTh.averageValue
-                                            ? (int)glass[(int)ask + i * 10] : averageGlass * 1; //(int)paramTh.averageValue;
-                                        sumshortAverage += glass.ContainsKey((int)bid - i * 10)
-                                            && glass[(int)bid - i * 10] < averageGlass * 1 //paramTh.averageValue
-                                            ? (int)glass[(int)bid - i * 10] : averageGlass * 1; // (int)paramTh.averageValue;
+                                        if (glass.ContainsKey((int)(ask + i * symbolStep)))
+                                            sumlong += (int)glass[(int)(ask + i * symbolStep)];
+                                        if (glass.ContainsKey((int)(bid - i * symbolStep)))
+                                            sumshort += (int)glass[(int)(bid - i * symbolStep)];
+                                        sumlongAverage += glass.ContainsKey((int)(ask + i * symbolStep))
+                                            && glass[(int)(ask + i * symbolStep)] < averageGlass * 1 //paramTh.averageValue
+                                            ? (int)glass[(int)(ask + i * symbolStep)] : averageGlass * 1; //(int)paramTh.averageValue;
+                                        sumshortAverage += glass.ContainsKey((int)(bid - i * symbolStep))
+                                            && glass[(int)(bid - i * symbolStep)] < averageGlass * 1 //paramTh.averageValue
+                                            ? (int)glass[(int)(bid - i * symbolStep)] : averageGlass * 1; // (int)paramTh.averageValue;
                                         if (sumlong + sumshort == 0)
                                             continue;
                                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
@@ -702,7 +704,7 @@ namespace MyMoney
                                     //indicator = (int)s / paramTh.glassHeight;
                                     lock (lockObj)
                                     {
-                                        int _valmiddle, _valtop, _summiddle, _sumtop;
+                                        int _valtop, _summiddle, _sumtop;
                                         threadGlassVisual.visualAllElements.CalcSummIndicatorValue(tempListForIndicatorAverage.ToArray(), out  indicator, out  _valtop, out _summiddle, out _sumtop);
 
                                         if (!calculatedIndidcator.values.ContainsKey(dttemp))

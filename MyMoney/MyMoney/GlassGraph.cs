@@ -111,7 +111,7 @@ namespace MyMoney
                                 double maxBid = GetMaxBid();
                                 // сотрим, далеко ли "уполз" стакан
                                 double deltaAsk = minAsk - lastMinAsk;
-                                if (Math.Abs(deltaAsk) > 200)
+                                if (Math.Abs(deltaAsk) > 15 * StepGlass)
                                 {
                                     lock (objLock)
                                     {
@@ -428,7 +428,7 @@ namespace MyMoney
             canvas.Children.Add(t2);
 
             Line line100 = null;
-            if ((_maxBid + i * 10) % 100 == 0)
+            if ((_maxBid + i * StepGlass) % (10 * StepGlass) == 0)
             {
                 line100 = new Line { X2 = canvas.ActualWidth - 111, Stroke = Brushes.Silver, StrokeThickness = 1 };
                 t.FontWeight = System.Windows.FontWeights.Black;
@@ -782,7 +782,7 @@ namespace MyMoney
         }
 
         public double maxp, maxInd, onePixelPrice, onePixelIndicator;
-        public int levelignoreval, levelstartglass, levelheightglass;
+        private int levelignoreval, levelstartglass, levelheightglass;
 
         public List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
 
