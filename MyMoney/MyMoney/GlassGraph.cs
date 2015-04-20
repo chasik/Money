@@ -257,11 +257,11 @@ namespace MyMoney
                     if (_price == lastPriceTick)// && _action == lastActionTick)
                         return;
                     CalcGlassValue();
-                    if (GlValues25 > 99 && OnDoTradeLong != null)
+                    if (GlValues25 > 70 && OnDoTradeLong != null)
                     {
                         OnDoTradeLong();
                     }
-                    else if (GlValues25 < -99 && OnDoTradeShort != null)
+                    else if (GlValues25 < -70 && OnDoTradeShort != null)
                     {
                         OnDoTradeShort();
                     }

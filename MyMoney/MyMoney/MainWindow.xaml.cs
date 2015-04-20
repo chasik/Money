@@ -154,22 +154,29 @@ namespace MyMoney
         {
             this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                 (ThreadStart)delegate() {
-                    switch (_element)
+                    try
                     {
-                        case InfoElement.logfile:
+                        switch (_element)
+                        {
+                            case InfoElement.logfile:
                                 StreamWriter sw = File.AppendText(@"C:\logssmartcom\!!! temp text .txt");
                                 sw.WriteLine(_mess);
                                 sw.Close();
-                            break;
-                        case InfoElement.tbInformation:
+                                break;
+                            case InfoElement.tbInformation:
                                 tbInformation.Clear();
                                 tbInformation.AppendText(_mess + "\r\n");
-                            break;
-                        case InfoElement.tbInfo2:
+                                break;
+                            case InfoElement.tbInfo2:
                                 tbInfo2.Text = _mess;
-                            break;
-                        default:
-                            break;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    catch (Exception ee)
+                    {
+                        MessageBox.Show("dsource_OnInformation: " + ee.Message);
                     }
             });
         }

@@ -475,8 +475,9 @@ namespace MyMoney
         {
             string _orderid = "";
             int cookieId = GetCookieId(_cook);
-            if (cookieId != 0)
-                _orderid = dicAllClaims[GetCookieIdFromWorkType(cookieId, _torder, _martinL)].orderid;
+            int tmpcookie = GetCookieIdFromWorkType(cookieId, _torder, _martinL);
+            if (cookieId != 0 && dicAllClaims.ContainsKey(tmpcookie))
+                _orderid = dicAllClaims[tmpcookie].orderid;
 
             return _orderid;
         }
