@@ -45,7 +45,6 @@ namespace MyMoney
                 CultureInfo ci = new CultureInfo("ru-RU");
                 Thread.CurrentThread.CurrentCulture = ci;
                 Thread.CurrentThread.CurrentUICulture = ci;
-
                 InitializeComponent();
                 tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
                 GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, null, null/*indicatorAverageRect, indicatorAverageRect2*/);
@@ -55,6 +54,7 @@ namespace MyMoney
                 GlassVisual.visualAllElements.LevelStartGlass = (int)sliderStartGlassLevel.Value;
                 GlassVisual.visualAllElements.LevelHeightGlass = (int)sliderGlassHeightLevel.Value;
                 GlassVisual.visualAllElements.LevelIgnoreValue = (int)sliderIndicatorLevel.Value;
+                GlassVisual.visualAllElements.LevelRefillingValue = (int)sliderRefillingLevel.Value;
 
                 allResults = new ObservableCollection<ResultOneThreadSumm>();
                 detailResults = new ObservableCollection<ResultOneThread>();
@@ -93,7 +93,7 @@ namespace MyMoney
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message);
+                MessageBox.Show("MainWindow Catch: " + e.Message);
             }
         }
 
@@ -116,9 +116,9 @@ namespace MyMoney
                         (dsource as QuotesFromBD).paramTh = new ParametrsForTest(0, new List<string> { }
                             , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
                             , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
-                            , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
+                            , int.Parse(tbIndicatorEnterCurrent.Text), int.Parse(tbMartingCurrent.Text)
                             , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
-                            , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
+                            , int.Parse(tbIndicatorExitCurrent.Text), int.Parse(tbDelayCurrent.Text));
                     //}
                 }
                 else
@@ -131,9 +131,9 @@ namespace MyMoney
                     (dsource as QuotesFromSmartCom).paramTh = new ParametrsForTest(0, new List<string> { }
                         , int.Parse(tbGlassCurrent.Text), float.Parse(tbAverageCurrent.Text)
                         , int.Parse(tbProfitLongCurrent.Text), int.Parse(tbLossLongCurrent.Text)
-                        , int.Parse(tbIndicatorLongCurrent.Text), int.Parse(tbMartingCurrent.Text)
+                        , int.Parse(tbIndicatorEnterCurrent.Text), int.Parse(tbMartingCurrent.Text)
                         , int.Parse(tbLossShortCurrent.Text), int.Parse(tbProfitShortCurrent.Text)
-                        , int.Parse(tbIndicatorShortCurrent.Text), int.Parse(tbDelayCurrent.Text));
+                        , int.Parse(tbIndicatorExitCurrent.Text), int.Parse(tbDelayCurrent.Text));
                     (dsource as QuotesFromSmartCom).OnChangeIndicator += MainWindow_OnChangeIndicator;
                 }
                 dsource.ConnectToDataSource();
@@ -152,7 +152,7 @@ namespace MyMoney
 
         void dsource_OnInformation(InfoElement _element,string _mess)
         {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                 (ThreadStart)delegate() {
                     switch (_element)
                     {
@@ -176,7 +176,7 @@ namespace MyMoney
 
         void MainWindow_OnChangeIndicator(string _value)
         {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                 (ThreadStart)delegate() {
                     DateTime dt = DateTime.Now;
                     int ls = dt.Hour * 60 * 60 * 1000 + dt.Minute * 60 * 1000 + dt.Second * 1000 + dt.Millisecond;
@@ -191,7 +191,7 @@ namespace MyMoney
 
         void MainWindow_OnFinishOneThread(ResultOneThreadSumm resTh)
         {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                 (ThreadStart)delegate()
                     {
                         allResults.Add(resTh);
@@ -208,7 +208,7 @@ namespace MyMoney
 
         void MainWindow_OnChangeProgress(int minval, int maxval, int val, string mes = "", bool showProgress = true)
         {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                 (ThreadStart)delegate()
                 {
                     pbar2.IsIndeterminate = showProgress;
@@ -219,7 +219,7 @@ namespace MyMoney
         private void ConnectedEvent(string mess) 
         {
             dsource.GetAllInstruments();
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                 (ThreadStart)delegate()
                 {
                     this.button1.Content = mess;
@@ -239,7 +239,7 @@ namespace MyMoney
                 dsourceDB = dsource as QuotesFromBD;
                 foreach (DataRow dr in dsourceDB.dtInstruments.Rows)
                 {
-                    this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+                    this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                         (ThreadStart)delegate()
                         {
                             if (dr["name"].ToString().ToUpper().Contains(filterTextBox.Text.ToUpper()))
@@ -449,9 +449,10 @@ namespace MyMoney
 
         private void MyWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            lbLevelIngoreGlass.Content = tbGlassCurrent.Text = sliderStartGlassLevel.Value.ToString();
+            lbLevelIngoreGlass.Content = tbAverageCurrent.Text = sliderStartGlassLevel.Value.ToString();
             lbLevelHeighGlass.Content = tbGlassCurrent.Text = sliderGlassHeightLevel.Value.ToString();
-            lbLevelIngoreVal.Content = sliderIndicatorLevel.Value.ToString();
+            lbLevelIngoreVal.Content = tbIndicatorEnterCurrent.Text = sliderIndicatorLevel.Value.ToString();
+            lbLevelRefillingVal.Content = tbIndicatorExitCurrent.Text = sliderRefillingLevel.Value.ToString();
             //if (GlassVisual != null && GlassVisual.ribboncanvas != null)
             //{
             //}
@@ -493,7 +494,13 @@ namespace MyMoney
             if (lbLevelIngoreVal != null)
                 lbLevelIngoreVal.Content = e.NewValue.ToString();
         }
-
+        private void sliderRefillingLevel_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (GlassVisual != null)
+                GlassVisual.visualAllElements.LevelRefillingValue = (int)e.NewValue;
+            if (lbLevelRefillingVal != null)
+                lbLevelRefillingVal.Content = e.NewValue.ToString();
+        }
         private void Slider_ValueChanged_1(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (GlassVisual != null)

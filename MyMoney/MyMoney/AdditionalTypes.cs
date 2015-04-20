@@ -70,11 +70,11 @@ namespace MyMoney
             averageValue = _i1;
             profitLongValue = _i2;
             lossLongValue = _i3;
-            indicatorLongValue = _i4;
+            indicatorEnterValue = _i4;
             martingValue = _i5;
             lossShortValue = _i6;
             profitShortValue = _i7;
-            indicatorShortValue = _i8;
+            indicatorExitValue = _i8;
             delay = _delay;
         }
 
@@ -87,8 +87,8 @@ namespace MyMoney
             averageValue = _params[r.Next(0,1)].averageValue;
             profitLongValue = _params[r.Next(0,1)].profitLongValue;
             lossLongValue = _params[r.Next(0,1)].lossLongValue;
-            indicatorLongValue = _params[r.Next(0,1)].indicatorLongValue;
-            indicatorShortValue = _params[r.Next(0, 1)].indicatorShortValue;
+            indicatorEnterValue = _params[r.Next(0,1)].indicatorEnterValue;
+            indicatorExitValue = _params[r.Next(0, 1)].indicatorExitValue;
             martingValue = _params[r.Next(0,1)].martingValue;
             lossShortValue = _params[r.Next(0,1)].lossShortValue;
             profitShortValue = _params[r.Next(0, 1)].profitShortValue;
@@ -97,7 +97,7 @@ namespace MyMoney
 
         public bool Compare(ParametrsForTest p1, ParametrsForTest p2)
         {
-            if (p1.indicatorShortValue.CompareTo(p2.indicatorShortValue) == 0 && p1.indicatorLongValue.CompareTo(p2.indicatorLongValue) == 0 
+            if (p1.indicatorExitValue.CompareTo(p2.indicatorExitValue) == 0 && p1.indicatorEnterValue.CompareTo(p2.indicatorEnterValue) == 0 
                 && p1.glassHeight.CompareTo(p2.glassHeight) == 0 && p1.lossLongValue.CompareTo(p2.lossLongValue) == 0 && p1.lossShortValue.CompareTo(p2.lossShortValue) == 0 
                 && p1.martingValue.CompareTo(p2.martingValue) == 0 && p1.profitLongValue.CompareTo(p2.profitLongValue) == 0 && p1.profitShortValue.CompareTo(p2.profitShortValue) == 0)
                 return true;
@@ -125,9 +125,9 @@ namespace MyMoney
                 break;
                 case 6: lossShortValue = newVal;
                 break;
-                case 7: indicatorLongValue = newVal;
+                case 7: indicatorEnterValue = newVal;
                 break;
-                case 8: indicatorShortValue = newVal;
+                case 8: indicatorExitValue = newVal;
                 break;
                 case 9: martingValue = newVal;
                 break;
@@ -147,8 +147,8 @@ namespace MyMoney
         public int lossLongValue; // значение убытка лонга
         public int profitShortValue; // значение профита шорта
         public int lossShortValue; // значение убытка шорта
-        public int indicatorLongValue; // значение индикатора для входа
-        public int indicatorShortValue; // значение индикатора для входа
+        public int indicatorEnterValue; // значение индикатора входа
+        public int indicatorExitValue; // значение индикатора выхода
         public int delay; // длительность, при которой индикатор не опускается ниже заданного уровня
         public int martingValue; // допустимое количество раз усреднения
     }

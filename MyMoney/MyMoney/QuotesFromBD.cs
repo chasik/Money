@@ -237,7 +237,7 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, row as rownum, typeprice, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(13, 55, 0, 0, 0)) 
             "
 	         /*   UNION ALL
 
@@ -250,7 +250,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(13, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -320,6 +320,7 @@ namespace MyMoney
                         }
                     }
                     listThreads.Add(new Thread(new ParameterizedThreadStart(OneThreadTester)));
+                    listThreads.Last().Priority = ThreadPriority.Lowest;
                     listThreads.Last().IsBackground = true;
                     listThreads.Last().Start(new ParametrsForTestObj(pt, dicSelectedDataTables, plStartCount - parametrsList.Count, mutationCount));
                     lock (lockObj)
@@ -396,9 +397,10 @@ namespace MyMoney
                 resThTemp.shortName = k;
                 DealInfo dealTemp = null;
                 DataTable dt = dictionaryDT[k].datatable;//.Copy();
-                threadGlassVisual.visualAllElements.LevelStartGlass = (int)paramTh.averageValue;
-                threadGlassVisual.visualAllElements.LevelHeightGlass = paramTh.glassHeight;
-                threadGlassVisual.visualAllElements.LevelIgnoreValue = 10000;
+                threadGlassVisual.visualAllElements.levelstartglass = (int)paramTh.averageValue;
+                threadGlassVisual.visualAllElements.levelheightglass = paramTh.glassHeight;
+                threadGlassVisual.visualAllElements.levelignoreval = paramTh.indicatorEnterValue;
+                threadGlassVisual.visualAllElements.levelrefilling = paramTh.indicatorExitValue;
 
                 int indicator = 0;
                 int iterationNum = 0; // счетчик строк в текущей DataTable
@@ -412,9 +414,11 @@ namespace MyMoney
                     #region торговля
                     if (DoVisualisation && iterationNum != 0)
                     {
-                        //if (OnInformation != null)
-                        //    OnInformation(dr.Field<DateTime>("dtserver").ToString(@"hh\:mm\:ss\.fff"));
-
+                        if (OnInformation != null)
+                        {
+                            OnInformation(InfoElement.tbInformation, dr.Field<DateTime>("dtserver").ToString(@"hh\:mm\:ss\.fff"));
+                            OnInformation(InfoElement.tbInfo2, "ind " + indicator.ToString());
+                        }
                         if (speedvisual >= 0)
                             Thread.Sleep(new TimeSpan((int)(dr.Field<DateTime>("dtserver").Subtract(dtCurrentRow).TotalMilliseconds * (speedvisual + 1) * 10000)));
                         else 
@@ -424,11 +428,6 @@ namespace MyMoney
                     // совершена сделка
                     if (!dr.IsNull("priceTick") && (pricetick = (int?)dr.Field<float?>("priceTick")) > 0)// && pricetick != (int?)dr.Field<float?>("priceTick")) // вторая часть условия - если перед этим была таже цена - пропускаем
                     {
-                        if (DoVisualisation && OnInformation != null)
-                        {
-                            OnInformation(InfoElement.tbInformation, dr.Field<DateTime>("dtserver").ToString());
-                            OnInformation(InfoElement.tbInfo2, "ind " + indicator.ToString());
-                        }
                         if (indicator == 0)
                             indicatorGoToZero = true;
                         actiontick = dr.Field<byte?>("idaction");
@@ -704,8 +703,8 @@ namespace MyMoney
                                     //indicator = (int)s / paramTh.glassHeight;
                                     lock (lockObj)
                                     {
-                                        int _valtop, _summiddle, _sumtop;
-                                        threadGlassVisual.visualAllElements.CalcSummIndicatorValue(tempListForIndicatorAverage.ToArray(), out  indicator, out  _valtop, out _summiddle, out _sumtop);
+                                        int _valtop, _summiddle, _sumtop, valrefilling;
+                                        threadGlassVisual.visualAllElements.CalcSummIndicatorValue(tempListForIndicatorAverage.ToArray(), out  indicator, out  _valtop, out _summiddle, out _sumtop, out valrefilling);
 
                                         if (!calculatedIndidcator.values.ContainsKey(dttemp))
                                             calculatedIndidcator.values.Add(dttemp, indicator);
@@ -832,8 +831,8 @@ namespace MyMoney
                 resTh.idParam = paramTh.id;
                 resTh.paramForTest = paramTh;
                 resTh.glassH = paramTh.glassHeight;
-                resTh.indicLongVal = paramTh.indicatorLongValue;
-                resTh.indicShortVal = paramTh.indicatorShortValue;
+                resTh.indicLongVal = paramTh.indicatorEnterValue;
+                resTh.indicShortVal = paramTh.indicatorExitValue;
                 resTh.profLongLevel = paramTh.profitLongValue;
                 resTh.lossLongLevel = paramTh.lossLongValue;
                 resTh.profShortLevel = paramTh.profitShortValue;

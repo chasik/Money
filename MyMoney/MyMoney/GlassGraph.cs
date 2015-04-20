@@ -72,18 +72,22 @@ namespace MyMoney
             tickGraphAsk = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 0, 110) }, StrokeThickness = 1, SnapsToDevicePixels = true };
             tickGraphBid = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(110, 0, 0) }, StrokeThickness = 1, SnapsToDevicePixels = true };
             indicatorGraphSumm = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 167, 31) }, StrokeThickness = 1, SnapsToDevicePixels = true };
+            indicatorRefilling = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(255, 0, 192) }, StrokeThickness = 1, SnapsToDevicePixels = true };
             SMA = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(166, 167, 31) }, StrokeThickness = 1, SnapsToDevicePixels = true };
 
             tickGraphCanvas.Children.Add(tickGraphAsk);
             tickGraphCanvas.Children.Add(tickGraphBid);
             tickGraphCanvas.Children.Add(indicatorGraphSumm);
+            tickGraphCanvas.Children.Add(indicatorRefilling);
             tickGraphCanvas.Children.Add(SMA);
             Canvas.SetZIndex(tickGraphAsk, 3);
             Canvas.SetZIndex(tickGraphBid, 2);
-            Canvas.SetZIndex(indicatorGraphSumm, 4);
-            Canvas.SetZIndex(SMA, 5);
+            Canvas.SetZIndex(indicatorGraphSumm, 6);
+            Canvas.SetZIndex(indicatorRefilling, 5);
+            Canvas.SetZIndex(SMA, 4);
 
-            visualAllElements = new VisualAllElemnts() { _sma = SMA, _tickGraphAsk = tickGraphAsk, _tickGraphBid = tickGraphBid, _indicatorGraphSumm = indicatorGraphSumm, CanvasGraph = tickGraphCanvas};
+            visualAllElements = new VisualAllElemnts() { _sma = SMA, _tickGraphAsk = tickGraphAsk, _tickGraphBid = tickGraphBid
+                                                            , _indicatorGraphSumm = indicatorGraphSumm, _indicatorRefilling =  indicatorRefilling, CanvasGraph = tickGraphCanvas};
         }
         public void ChangeValues(DateTime _dt, double _price, double _volume, int _row, ActionGlassItem _action)
         {
@@ -252,8 +256,7 @@ namespace MyMoney
                 {
                     if (_price == lastPriceTick)// && _action == lastActionTick)
                         return;
-
-                    visualAllElements.listIndicatorSumm.Add(CalcGlassValue());
+                    CalcGlassValue();
                     if (GlValues25 > 99 && OnDoTradeLong != null)
                     {
                         OnDoTradeLong();
@@ -262,6 +265,10 @@ namespace MyMoney
                     {
                         OnDoTradeShort();
                     }
+
+                    visualAllElements.listIndicatorSumm.Add(GlValues25);
+                    visualAllElements.listIndicatorRefilling.Add(GlValuesRefilling);
+
                     visualAllElements.listGradient.Add(GradientBrushForIndicator.Clone());
                     visualAllElements.listGradient2.Add(GradientBrushForIndicator2.Clone());
 
@@ -298,14 +305,13 @@ namespace MyMoney
         private double CalcGlassValue()
         {
             int summiddle = 0, sumtop = 0;
-            visualAllElements.CalcSummIndicatorValue(atemp, out glvalues25, out glvalues, out summiddle, out sumtop);
+            visualAllElements.CalcSummIndicatorValue(atemp, out glvalues25, out glvalues, out summiddle, out sumtop, out glvaluesrefilling);
             GlValues25 = glvalues25;
+            GlValuesRefilling = glvaluesrefilling;
             GlValues = glvalues;
             tbGlassValue25.Text += "\r\n" + summiddle.ToString();
             tbGlassValue.Text += "\r\n" + sumtop.ToString();
 
-            //if ((GlValues25 > 90 && sum25 > 300) || (GlValues25 < -90 && sum25 < -300))
-            //    allTradesAtGraph.SignalIn(lastMinAsk, lastMaxBid, percentDelta25);
             return GlValues25;
         }
         public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage)
@@ -550,6 +556,14 @@ namespace MyMoney
                     tbGlassValue25.Text = glvalues25.ToString() + "%";
             }
         }
+        public int GlValuesRefilling
+        {
+            get { return glvaluesrefilling;  }
+            set
+            {
+                glvaluesrefilling = value;
+            }
+        }
 
         public SortedDictionary<double, GlassItem> GlassValues = new SortedDictionary<double, GlassItem>();
         public double StepGlass = 0;
@@ -557,7 +571,7 @@ namespace MyMoney
         public int centerCanvas;
         private double lastMinAsk, lastMaxBid;
         private double lastPriceTick, lastPriceAsk, lastPriceBid;
-        private int glvalues, glvalues25;
+        private int glvalues, glvalues25, glvaluesrefilling;
         private ActionGlassItem lastActionTick;
         private int[] atemp = { };
 
@@ -570,7 +584,7 @@ namespace MyMoney
         //public LinearGradientBrush GradientBrushForIndicatorAverage;
         //public LinearGradientBrush GradientBrushForIndicatorAverage2;
         public Polyline tickGraphAsk, tickGraphBid;
-        public Polyline indicatorGraphSumm, SMA;
+        public Polyline indicatorGraphSumm, indicatorRefilling, SMA;
 
         private Dictionary<int, IndicatorValuesTextBlock> dicTBForIndicators = new Dictionary<int, IndicatorValuesTextBlock>();
         public TextBlock tbGlassValue;
@@ -638,7 +652,7 @@ namespace MyMoney
         public VisualAllElemnts()
         {
         }
-        public void CalcSummIndicatorValue(int[] _arrval, out int _valmiddle, out int _valtop, out int _summiddle, out int _sumtop)
+        public void CalcSummIndicatorValue(int[] _arrval, out int _valmiddle, out int _valtop, out int _summiddle, out int _sumtop, out int _valrefilling)
         {
             _valmiddle = _valtop = _summiddle = _sumtop = 0;
 
@@ -659,6 +673,7 @@ namespace MyMoney
                 {
                     _valmiddle = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
                     _summiddle = sumpositive + sumnegative;
+                    //_summiddle = 100 - Math.Min(sumpositive, Math.Abs(sumnegative)) / Math.Max(sumpositive, Math.Abs(sumnegative)) * 100;
                 }
                 else if (j == _arrval.Length - 1 && sumnegative + sumpositive != 0) // если последняя итерация
                 {
@@ -666,9 +681,12 @@ namespace MyMoney
                     _sumtop = sumpositive + sumnegative;
                 }
             }
+            _valrefilling = _valmiddle;
             if (Math.Abs(_summiddle) < LevelIgnoreValue)// || Math.Abs(_valmiddle) < 100)
             //if (Math.Abs(_valmiddle) < 100)
                 _valmiddle = 0;
+            if (Math.Abs(_summiddle) < LevelRefillingValue)
+                _valrefilling = 0;
         }
         public void AddData(int[] _atemp)
         {
@@ -733,11 +751,13 @@ namespace MyMoney
             if (_rebuild)
             {
                 listIndicatorSumm.Clear();
+                listIndicatorRefilling.Clear();
                 foreach (VisualOneElement ve in visualElementsList)
                 {
-                    int valmiddle, valtop, summiddle, sumtop;
-                    CalcSummIndicatorValue(ve.atempValues, out valmiddle, out valtop, out summiddle, out sumtop);
+                    int valmiddle, valtop, summiddle, sumtop, valrefilling;
+                    CalcSummIndicatorValue(ve.atempValues, out valmiddle, out valtop, out summiddle, out sumtop, out valrefilling);
                     listIndicatorSumm.Add(valmiddle);
+                    listIndicatorRefilling.Add(valrefilling);
                 }
             }
             if (listIndicatorSumm.Count > CanvasGraph.ActualWidth)
@@ -745,6 +765,7 @@ namespace MyMoney
                 listGradient.RemoveRange(0, (int)(listIndicatorSumm.Count - CanvasGraph.ActualWidth));
                 visualElementsList.RemoveRange(0, (int)(listIndicatorSumm.Count - CanvasGraph.ActualWidth));
                 listIndicatorSumm.RemoveRange(0, (int)(listIndicatorSumm.Count - CanvasGraph.ActualWidth));
+                listIndicatorRefilling.RemoveRange(0, (int)(listIndicatorRefilling.Count - CanvasGraph.ActualWidth));
             }
             double maxp = listTicksPriceAsk.Count > 0 ? listTicksPriceAsk.Max() + 20 : 20;
             double minp = listTicksPriceBid.Count > 0 ? listTicksPriceBid.Min() - 20 : 20;
@@ -752,12 +773,14 @@ namespace MyMoney
             double onePixelPrice = delta / CanvasGraph.ActualHeight;
 
             double maxInd = Math.Max(Math.Abs(listIndicatorSumm.Count > 0 ? listIndicatorSumm.Max() : 0), Math.Abs(listIndicatorSumm.Count > 0 ? listIndicatorSumm.Min() : 0)) + 1;
+            maxInd = Math.Max(maxInd, listIndicatorRefilling.Count > 0 ? listIndicatorRefilling.Max() : 0);
             double deltaIndicator = 2 * maxInd;
             double onePixelIndicator = deltaIndicator / CanvasGraph.ActualHeight;
 
             _tickGraphAsk.Points.Clear();
             _tickGraphBid.Points.Clear();
             _indicatorGraphSumm.Points.Clear();
+            _indicatorRefilling.Points.Clear();
             _sma.Points.Clear();
             x = 0;
             foreach (double p in listTicksPriceAsk)
@@ -778,11 +801,16 @@ namespace MyMoney
                 x++;
                 _indicatorGraphSumm.Points.Add(new Point((double)x + (CanvasGraph.ActualWidth - listIndicatorSumm.Count - 0), (maxInd - indv) / onePixelIndicator));
             }
+            x = 0;
+            foreach (double indv in listIndicatorRefilling)
+            {
+                x++;
+                _indicatorRefilling.Points.Add(new Point((double)x + (CanvasGraph.ActualWidth - listIndicatorRefilling.Count - 0), (maxInd - indv) / onePixelIndicator));
+            }
 
         }
 
         public double maxp, maxInd, onePixelPrice, onePixelIndicator;
-        private int levelignoreval, levelstartglass, levelheightglass;
 
         public List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
 
@@ -791,39 +819,52 @@ namespace MyMoney
         public List<double> listTicksPriceAsk = new List<double>();
         public List<double> listTicksPriceBid = new List<double>();
         public List<double> listIndicatorSumm = new List<double>();
+        public List<double> listIndicatorRefilling = new List<double>();
         public List<double> listSMA = new List<double>();
         public List<DateTime> listSpeedTicks = new List<DateTime>();
+
+        public int levelignoreval, levelheightglass, levelstartglass, levelrefilling;
         public int LevelHeightGlass
         {
             get { return levelheightglass; }
             set { levelheightglass = value; ShowData(true); }
-        }
-        public int LevelIgnoreValue 
-        {
-            get { return levelignoreval; } 
-            set { levelignoreval = value; ShowData(true); }
         }
         public int LevelStartGlass
         {
             get { return levelstartglass; }
             set { levelstartglass = value; ShowData(true); }
         }
-        public Canvas CanvasGraph;
+        public int LevelIgnoreValue
+        {
+            get { return levelignoreval; }
+            set { levelignoreval = value; ShowData(true); }
+        }
+        public int LevelRefillingValue
+        {
+            get { return levelrefilling; }
+            set { levelrefilling = value; ShowData(true); }
+        }
+        private Canvas canvasgraph = null;
+        public Canvas CanvasGraph
+        {
+            get { return canvasgraph; }
+            set { canvasgraph = value; }
+        }
         public Polyline _tickGraphAsk { get; set; }
         public Polyline _tickGraphBid { get; set; }
         public Polyline _indicatorGraphSumm { get; set; }
+        public Polyline _indicatorRefilling { get; set; }
         public Polyline _sma { get; set; }
     }
     public class AllTradesAtGraph
     {
         public void SignalIn(double _lastminask, double _lastmaxbid, double _indvalue)
         {
-            int signtrade = Math.Sign(_indvalue);
-            if (!this.ExistActiveTrade())
-            {
-                dicAllClaims.Add(dicAllClaims.Count, new ClaimInfo(DateTime.Now, signtrade < 0 ? _lastminask : _lastmaxbid, 1, signtrade < 0 ? SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell : SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy));
-            }
-
+            //int signtrade = Math.Sign(_indvalue);
+            //if (!this.ExistActiveTrade())
+            //{
+            //    dicAllClaims.Add(dicAllClaims.Count, new ClaimInfo(DateTime.Now, signtrade < 0 ? _lastminask : _lastmaxbid, 1, signtrade < 0 ? SmartCOM3Lib.StOrder_Action.StOrder_Action_Sell : SmartCOM3Lib.StOrder_Action.StOrder_Action_Buy));
+            //}
         }
         public void SignalOut()
         {
