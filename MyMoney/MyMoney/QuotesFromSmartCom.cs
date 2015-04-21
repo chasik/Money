@@ -31,7 +31,18 @@ namespace MyMoney
         //public int indicator = 0;
         public int priceEnterLong = 0, priceEnterShort = 0;
         public int lossLongValueTemp = 0, lossShortValueTemp = 0;
-        public int profitLongValueTemp = 0, profitShortValueTemp = 0;
+        public int profitShortValueTemp = 0;
+        private int profitlongvaluetemp = 0;
+        public int profitLongValueTemp
+        {
+            get { return profitlongvaluetemp; }
+            set
+            {
+                profitlongvaluetemp = value;
+                if (OnInformation != null)
+                    OnInformation(InfoElement.tbInformation, DateTime.Now.ToString() + " profitLongValueTemp:" + value.ToString());
+            }
+        }
         public int lotCount = 1;
         public int lotCountTemp;
 
@@ -178,6 +189,8 @@ namespace MyMoney
 
         void scom_AddTrade(string portfolio, string symbol, string orderno, double price, double amount, DateTime datetime, string tradeno)
         {
+            if (!Trading)
+                return;
             int cookieTemp = allClaims.GetCookie(orderno);
             if (cookieTemp == 0)
                 cookieTemp = allClaims.GetCookie(tradeno);
@@ -379,6 +392,8 @@ namespace MyMoney
             , StOrder_State state, StOrder_Action action, StOrder_Type type, StOrder_Validity validity
             , double price, double amount, double stop, double filled, DateTime datetime, string orderid, string orderno, int status_mask, int cookie)
         {
+            if (!Trading)
+                return;
             string messageInf = "";
             //string messageInf = "(" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")" 
             //    + "\tUpdateOrder(" + action.ToString() + "): " + cookie + "(" + orderid + " | " + orderno + ") price: " + price.ToString() + " stop: " + stop.ToString() + " filled: " + filled.ToString() + ": ";
@@ -420,6 +435,8 @@ namespace MyMoney
 
         void scom_OrderSucceeded(int cookie, string orderid) //orderid - id заявки на сервере котировок
         {
+            if (!Trading)
+                return;
             allClaims.AddOrderId(cookie, orderid);
             string messageInf = DateTime.Now.ToString("HH:mm:ss:fff") + " OrderSucceeded cook:" + cookie + " id:" + orderid + " lotCount:" + lotCount.ToString();
                                                         //+ " roundTrip:" + (allClaims.dicAllClaims[allClaims.GetCookieId(cookie)].dtEnter - DateTime.Now).TotalMilliseconds.ToString();
@@ -631,7 +648,7 @@ namespace MyMoney
                 int oldLotCount = priceEnterShort == 0 ? 0 : lotCount;
                 lotCount = priceEnterShort == 0 ? 1 : lotCount * 2;
                 // увеличиваем профит с каждым лоссом
-                profitLongValueTemp = lotCount == 1 ? paramTh.profitLongValue : (int)Math.Round(profitLongValueTemp * 1.5);
+                profitLongValueTemp = lotCount == 1 ? paramTh.profitLongValue : (int)Math.Round(profitShortValueTemp * 1.5);
                 scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
                     , 0, lotCount + oldLotCount, 0, _cid); // 1 000 000
                 allClaims.Add(_cid, DateTime.Now, (int)lastAsk, lotCount, StOrder_Action.StOrder_Action_Buy);
@@ -660,7 +677,7 @@ namespace MyMoney
                 int oldLotCount = priceEnterLong == 0 ? 0 : lotCount;
                 lotCount = priceEnterLong == 0 ? 1 : lotCount * 2;
                 // увеличиваем профит с каждым лоссом
-                profitShortValueTemp = lotCount == 1 ? paramTh.profitShortValue : (int) Math.Round(profitShortValueTemp * 1.5);
+                profitShortValueTemp = lotCount == 1 ? paramTh.profitShortValue : (int) Math.Round(profitLongValueTemp * 1.5);
                 scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
                     , 0, lotCount + oldLotCount, 0, _cid); // 1 000 000
                 allClaims.Add(_cid, DateTime.Now, (int)lastBid, lotCount, StOrder_Action.StOrder_Action_Sell);
