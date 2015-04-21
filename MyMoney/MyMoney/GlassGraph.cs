@@ -251,7 +251,7 @@ namespace MyMoney
         }
         public void AddTick(DateTime _dt, double _price, double _volume, ActionGlassItem _action)
         {
-            ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
+            ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                 (ThreadStart)delegate()
                 {
                     if (_price == lastPriceTick)// && _action == lastActionTick)

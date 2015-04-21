@@ -154,7 +154,7 @@ namespace MyMoney
 
         void dsource_OnInformation(InfoElement _element,string _mess)
         {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate() {
                     try
                     {
@@ -185,7 +185,7 @@ namespace MyMoney
 
         void MainWindow_OnChangeIndicator(string _value)
         {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Background,
                 (ThreadStart)delegate() {
                     DateTime dt = DateTime.Now;
                     int ls = dt.Hour * 60 * 60 * 1000 + dt.Minute * 60 * 1000 + dt.Second * 1000 + dt.Millisecond;
@@ -200,7 +200,7 @@ namespace MyMoney
 
         void MainWindow_OnFinishOneThread(ResultOneThreadSumm resTh)
         {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                     {
                         allResults.Add(resTh);
@@ -217,7 +217,7 @@ namespace MyMoney
 
         void MainWindow_OnChangeProgress(int minval, int maxval, int val, string mes = "", bool showProgress = true)
         {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Render,
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Background,
                 (ThreadStart)delegate()
                 {
                     pbar2.IsIndeterminate = showProgress;
