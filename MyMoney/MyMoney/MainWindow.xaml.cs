@@ -27,6 +27,7 @@ namespace MyMoney
     /// </summary>
     public partial class MainWindow : Window
     {
+        string dtForLogFileName = "";
         public TradeGraph tradeGraphVisual;
         public Thread threadViewGraphDeal;
         float maxPF = 0, maxMargin = 0;
@@ -42,6 +43,7 @@ namespace MyMoney
         {
             try
             {
+                dtForLogFileName = DateTime.Now.ToString("dd-MMM-yyyy HH-mm-ss");
                 CultureInfo ci = new CultureInfo("ru-RU");
                 Thread.CurrentThread.CurrentCulture = ci;
                 Thread.CurrentThread.CurrentUICulture = ci;
@@ -159,7 +161,7 @@ namespace MyMoney
                         switch (_element)
                         {
                             case InfoElement.logfile:
-                                StreamWriter sw = File.AppendText(@"C:\logssmartcom\!!! temp text .txt");
+                                StreamWriter sw = File.AppendText(@"C:\logssmartcom\!!! temp text " + dtForLogFileName + ".txt");
                                 sw.WriteLine(_mess);
                                 sw.Close();
                                 break;

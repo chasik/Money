@@ -210,7 +210,7 @@ namespace MyMoney
                     allClaims.ActiveCookie = cookieTemp;
                     if (amount > 0 && allClaims.dicAllClaims[cookieTemp].ProfitLevel == 0) // если уровень профита еще нулевой - значит ставим профит (что бы не задублировался)
                     {
-                        pl = /*TradeAtVolume ? 50 : */paramTh.profitLongValue * (int)workStep;
+                        pl = /*TradeAtVolume ? 50 : paramTh.profitLongValue */ profitLongValueTemp * (int)workStep;
                         allClaims.dicAllClaims[cookieTemp].ProfitLevel = paramTh.profitLongValue;
                         allClaims.dicAllClaims[cookieTemp].LossLevel = paramTh.lossLongValue;
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
@@ -221,7 +221,7 @@ namespace MyMoney
                     }
                     if (amount < 0 && allClaims.dicAllClaims[cookieTemp].ProfitLevel == 0) // если уровень профита еще нулевой - значит ставим профит (что бы не задублировался)
                     {
-                        pl = /*TradeAtVolume ? 50 : */paramTh.profitShortValue * (int)workStep;
+                        pl = /*TradeAtVolume ? 50 : paramTh.profitShortValue */ profitShortValueTemp * (int)workStep;
                         allClaims.dicAllClaims[cookieTemp].ProfitLevel = paramTh.profitShortValue;
                         allClaims.dicAllClaims[cookieTemp].LossLevel = paramTh.lossShortValue;
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
@@ -236,6 +236,7 @@ namespace MyMoney
                 {
                 //    string idLossOrder = allClaims.GetOrderId(cookieTemp, TypeWorkOrder.loss, MartinLevel);
                 //    scom.CancelOrder(workPortfolioName, workSymbol, idLossOrder);
+                    profitShortValueTemp = paramTh.profitShortValue;
                     priceEnterLong = priceEnterShort = 0;
                     lotCount = 1;
                 }
@@ -383,39 +384,46 @@ namespace MyMoney
             //string messageInf = "(" + DateTime.Now.ToString("HH:mm:ss:fff", CultureInfo.InvariantCulture) + ")" 
             //    + "\tUpdateOrder(" + action.ToString() + "): " + cookie + "(" + orderid + " | " + orderno + ") price: " + price.ToString() + " stop: " + stop.ToString() + " filled: " + filled.ToString() + ": ";
             allClaims.AddOrderIdAndOrderNo(cookie, amount, action, orderid, orderno);
+            string roundtrip = "";
             switch (state) 
             {
                 case StOrder_State.StOrder_State_Pending:
                     allClaims.dicAllClaims[cookie].dt_State_Pending = DateTime.Now;
+                    roundtrip = (allClaims.dicAllClaims[cookie].dtEnter - allClaims.dicAllClaims[cookie].dt_State_Pending).TotalMilliseconds.ToString();
                     messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Размещен у брокера ";
                     break;
                 case StOrder_State.StOrder_State_Open:
                     allClaims.dicAllClaims[cookie].dt_State_Open = DateTime.Now;
+                    roundtrip = (allClaims.dicAllClaims[cookie].dtEnter - allClaims.dicAllClaims[cookie].dt_State_Open).TotalMilliseconds.ToString();
                     messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Выведен на рынок ";
                     break;
                 case StOrder_State.StOrder_State_Cancel:
                     allClaims.dicAllClaims[cookie].dt_State_Cancel = DateTime.Now;
+                    roundtrip = (allClaims.dicAllClaims[cookie].dtEnter - allClaims.dicAllClaims[cookie].dt_State_Cancel).TotalMilliseconds.ToString();
                     messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Отменён ";
                     break;
                 case StOrder_State.StOrder_State_Filled:
                     allClaims.dicAllClaims[cookie].dt_State_Filled = DateTime.Now;
+                    roundtrip = (allClaims.dicAllClaims[cookie].dtEnter - allClaims.dicAllClaims[cookie].dt_State_Filled).TotalMilliseconds.ToString();
                     messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Исполнен ";
                     break;
                 case StOrder_State.StOrder_State_Partial:
                     allClaims.dicAllClaims[cookie].dt_State_Partial = DateTime.Now;
+                    roundtrip = (allClaims.dicAllClaims[cookie].dtEnter - allClaims.dicAllClaims[cookie].dt_State_Partial).TotalMilliseconds.ToString();
                     messageInf += DateTime.Now.ToString("HH:mm:ss:fff") + " UpdateOrder Исполнен частично amount: " + amount.ToString() + " filled:" + filled.ToString();
                     break;
                 default:
                     break;
             }
             if (OnInformation != null)
-                OnInformation(InfoElement.logfile, messageInf + " cook:" + cookie + " orderid:" + orderid + " orderNo:" + orderno + " lotCount:" + lotCount.ToString());
+                OnInformation(InfoElement.logfile, messageInf + " cook:" + cookie + " orderid:" + orderid + " orderNo:" + orderno + " lotCount:" + lotCount.ToString() + " roundTrip:" + roundtrip);
         }
 
         void scom_OrderSucceeded(int cookie, string orderid) //orderid - id заявки на сервере котировок
         {
             allClaims.AddOrderId(cookie, orderid);
             string messageInf = DateTime.Now.ToString("HH:mm:ss:fff") + " OrderSucceeded cook:" + cookie + " id:" + orderid + " lotCount:" + lotCount.ToString();
+                                                        //+ " roundTrip:" + (allClaims.dicAllClaims[allClaims.GetCookieId(cookie)].dtEnter - DateTime.Now).TotalMilliseconds.ToString();
             if (OnInformation != null)
                 OnInformation(InfoElement.logfile, messageInf);
         }
@@ -615,10 +623,14 @@ namespace MyMoney
             {
                 //LongShotCount = ShortShotCount = 0;
                 lossLongValueTemp = paramTh.lossLongValue;
-                profitLongValueTemp = paramTh.profitLongValue;
                 string idProfitOrder = allClaims.GetOrderId(cookieId, TypeWorkOrder.profit, MartinLevel);
                 if (idProfitOrder != "")
+                {
                     scom.CancelOrder(workPortfolioName, workSymbol, idProfitOrder);
+                    profitLongValueTemp = (int) Math.Round(profitLongValueTemp * 1.5);
+                }
+                else
+                    profitLongValueTemp = paramTh.profitLongValue;
                 cookieId++;
                 //MartinLevel = 0;
                 int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
@@ -643,10 +655,14 @@ namespace MyMoney
             {
                 //ShortShotCount = LongShotCount = 0;
                 lossShortValueTemp = paramTh.lossShortValue;
-                profitShortValueTemp = paramTh.profitShortValue;
                 string idProfitOrder = allClaims.GetOrderId(cookieId, TypeWorkOrder.profit, MartinLevel);
                 if (idProfitOrder != "")
+                {
                     scom.CancelOrder(workPortfolioName, workSymbol, idProfitOrder);
+                    profitShortValueTemp = (int) Math.Round(profitShortValueTemp * 1.5);
+                }
+                else
+                    profitShortValueTemp = paramTh.profitShortValue;
                 cookieId++;
                 //MartinLevel = 0;
                 int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
