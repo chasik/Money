@@ -713,7 +713,7 @@ namespace MyMoney
                                 else
                                     indicator = (int)calculatedIndidcator.values[dttemp];
                                 if (OnChangeVisualIndicator != null && DoVisualisation)
-                                    OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray());
+                                    OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray(), -1);
                                 // старая версия индикатора
                                 /*foreach (int pkey in glass.Keys)
                                 {

@@ -310,14 +310,15 @@ namespace MyMoney
             GlValuesRefilling = glvaluesrefilling;
             GlValues = glvalues;
             tbGlassValue25.Text += "\r\n" + summiddle.ToString();
-            tbGlassValue.Text += "\r\n" + sumtop.ToString();
+            tbGlassValue.Text += "\r\nOpIn:" + summContractInGlass50.ToString();
 
             return GlValues25;
         }
-        public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage)
+        public void ChangeVisualIndicator(int[] _arrind, int[] _arrindAverage, int summContractInGlass50)
         {
             Array.Resize(ref atemp, _arrindAverage.Length);
             _arrindAverage.CopyTo(atemp, 0);
+            this.summContractInGlass50 = summContractInGlass50;
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
@@ -567,6 +568,7 @@ namespace MyMoney
 
         public SortedDictionary<double, GlassItem> GlassValues = new SortedDictionary<double, GlassItem>();
         public double StepGlass = 0;
+        public int summContractInGlass50 = 0;
         public Canvas canvas, ribboncanvas, tickGraphCanvas;
         public int centerCanvas;
         private double lastMinAsk, lastMaxBid;
@@ -678,7 +680,7 @@ namespace MyMoney
                 else if (j == _arrval.Length - 1 && sumnegative + sumpositive != 0) // если последняя итерация
                 {
                     _valtop = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
-                    _sumtop = sumpositive + sumnegative;
+                    _sumtop = sumpositive + Math.Abs(sumnegative);
                 }
             }
             _valrefilling = _valmiddle;
@@ -811,7 +813,7 @@ namespace MyMoney
         }
 
         public double maxp, maxInd, onePixelPrice, onePixelIndicator;
-
+        
         public List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
 
         public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
