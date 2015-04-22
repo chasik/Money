@@ -269,7 +269,7 @@ namespace MyMoney
                     if (amount > 0) 
                     {
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                            , averagePriceRound + (int)Math.Round((decimal)paramTh.profitLongValue / 1), lotCount, 0, _cidProfit); // 10 000 000
+                            , averagePriceRound + (int)Math.Round(paramTh.profitLongValue * 0.8), lotCount, 0, _cidProfit); // 10 000 000
 
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                             , averagePriceRound - paramTh.lossLongValue, lotCount, 0, _cidLoss); // 100 000 000
@@ -277,7 +277,7 @@ namespace MyMoney
                     else if (amount < 0)
                     {
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
-                            , averagePriceRound - (int)Math.Round((decimal)paramTh.profitLongValue / 1), lotCount, 0, _cidProfit); // 10 000 000
+                            , averagePriceRound - (int)Math.Round(paramTh.profitLongValue * 0.8), lotCount, 0, _cidProfit); // 10 000 000
 
                         scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Limit, StOrder_Validity.StOrder_Validity_Day
                             , averagePriceRound + paramTh.lossShortValue, lotCount, 0, _cidLoss); // 100 000 000
@@ -682,7 +682,7 @@ namespace MyMoney
                 int oldLotCount = priceEnterShort == 0 ? 0 : lotCount;
                 lotCount = priceEnterShort == 0 ? 1 : lotCount * 2;
                 // увеличиваем профит с каждым лоссом
-                profitLongValueTemp = lotCount == 1 ? paramTh.profitLongValue : (int)Math.Round(profitShortValueTemp * 1.4);
+                profitLongValueTemp = lotCount == 1 ? paramTh.profitLongValue : (int)Math.Round(profitShortValueTemp * 1.3);
                 scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
                     , 0, lotCount + oldLotCount, 0, _cid); // 1 000 000
                 allClaims.Add(_cid, DateTime.Now, (int)lastAsk, lotCount, StOrder_Action.StOrder_Action_Buy);
@@ -727,7 +727,7 @@ namespace MyMoney
                 int oldLotCount = priceEnterLong == 0 ? 0 : lotCount;
                 lotCount = priceEnterLong == 0 ? 1 : lotCount * 2;
                 // увеличиваем профит с каждым лоссом
-                profitShortValueTemp = lotCount == 1 ? paramTh.profitShortValue : (int) Math.Round(profitLongValueTemp * 1.4);
+                profitShortValueTemp = lotCount == 1 ? paramTh.profitShortValue : (int) Math.Round(profitLongValueTemp * 1.3);
                 scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
                     , 0, lotCount + oldLotCount, 0, _cid); // 1 000 000
                 allClaims.Add(_cid, DateTime.Now, (int)lastBid, lotCount, StOrder_Action.StOrder_Action_Sell);
