@@ -257,7 +257,7 @@ namespace MyMoney
                     string idProfitOrder = allClaims.GetOrderId(cookieId, TypeWorkOrder.profit, MartinLevel);
                     if (idProfitOrder != "")
                         scom.CancelOrder(workPortfolioName, workSymbol, idProfitOrder);
-                    lotCount += 2;
+                    lotCount *= 2;
 
                     int countTrade = 0;
                     double averagePrice = allClaims.GetAveragePrice(cookieTemp, MartinLevel, out countTrade);
@@ -680,7 +680,7 @@ namespace MyMoney
                 cookieId++;
                 int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
                 int oldLotCount = priceEnterShort == 0 ? 0 : lotCount;
-                lotCount = priceEnterShort == 0 ? 2 : lotCount + 2;
+                lotCount = priceEnterShort == 0 ? 2 : lotCount * 2;
                 // увеличиваем профит с каждым лоссом
                 profitLongValueTemp = lotCount == 2 ? paramTh.profitLongValue : (int)Math.Round(profitShortValueTemp * 1.0);
                 scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
@@ -725,7 +725,7 @@ namespace MyMoney
                 cookieId++;
                 int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
                 int oldLotCount = priceEnterLong == 0 ? 0 : lotCount;
-                lotCount = priceEnterLong == 0 ? 2 : lotCount + 2;
+                lotCount = priceEnterLong == 0 ? 2 : lotCount * 2;
                 // увеличиваем профит с каждым лоссом
                 profitShortValueTemp = lotCount == 2 ? paramTh.profitShortValue : (int) Math.Round(profitLongValueTemp * 1.0);
                 scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
