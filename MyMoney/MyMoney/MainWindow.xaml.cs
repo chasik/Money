@@ -538,6 +538,11 @@ namespace MyMoney
                 (dsource as QuotesFromSmartCom).Trading = false;
         }
 
+        private void canvasIndicator_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            backgroundBar.Width = (sender as Canvas).ActualWidth;
+        }
+
 
     }
 }
