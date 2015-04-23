@@ -230,11 +230,13 @@ namespace MyMoney
         public DateTime dtTick;
         public float Price;
         public float Volume;
-        public Tick(DateTime? _dtserver, float? _price, float? _volume)
+        public ActionGlassItem Action;
+        public Tick(DateTime? _dtserver, float? _price, float? _volume, ActionGlassItem _action = ActionGlassItem.zero)
         {
             dtTick = (DateTime)_dtserver;
             Price = (float)_price;
             Volume = (float)_volume;
+            Action = _action;
         }
     }
     public class Bar

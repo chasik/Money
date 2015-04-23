@@ -58,7 +58,6 @@ namespace MyMoney
 
             GradientBrushForIndicator = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
             GradientBrushForIndicator2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
-            GradientBrushForSpeed = new LinearGradientBrush { StartPoint = new Point(1, 0), EndPoint = new Point(0, 0) };
 
             //GradientBrushForIndicatorAverage = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
             //GradientBrushForIndicatorAverage2 = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
@@ -99,7 +98,7 @@ namespace MyMoney
                         (ThreadStart)delegate()
                         {
                             if (_row == 0) 
-                                CalcGlassValue();
+                                CalcGlassValue(new ResultOneTick());
                         });
                     lock (objLock)
                     {
@@ -253,63 +252,36 @@ namespace MyMoney
         {
             ribboncanvas.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                 (ThreadStart)delegate()
-                {
-                    if (_price == lastPriceTick)// && _action == lastActionTick)
+                {   
+                    Tick tmptick = new Tick((DateTime?)_dt, (float?) _price, (float?)_volume, _action);
+                    if (visualAllElements.AddTick(tmptick))
                         return;
-                    CalcGlassValue();
-                    if (GlValues25 > 70 && OnDoTradeLong != null)
-                    {
-                        OnDoTradeLong();
-                    }
-                    else if (GlValues25 < -70 && OnDoTradeShort != null)
-                    {
-                        OnDoTradeShort();
-                    }
 
-                    visualAllElements.listIndicatorSumm.Add(GlValues25);
-                    visualAllElements.listIndicatorRefilling.Add(GlValuesRefilling);
+                    ResultOneTick r = new ResultOneTick();
+                    visualAllElements.AddData( atemp, r, tmptick );
+
+                    CalcGlassValue(r);
+
+                    // вход
+                    if (GlValues25 > 70 && OnDoTradeLong != null)
+                        OnDoTradeLong();
+                    else if (GlValues25 < -70 && OnDoTradeShort != null)
+                        OnDoTradeShort();
 
                     visualAllElements.listGradient.Add(GradientBrushForIndicator.Clone());
                     visualAllElements.listGradient2.Add(GradientBrushForIndicator2.Clone());
 
-                    visualAllElements.AddData(atemp);
-                    //visualAllElements.AddTick(GradientBrushForSpeed, _dt, _price, _volume, _action);
-
-                    if (lastPriceAsk == 0) lastPriceAsk = _price;
-                    if (lastPriceBid == 0) lastPriceBid = _price;
-                    visualAllElements.listTicksPriceAsk.Add(lastPriceAsk);
-                    visualAllElements.listTicksPriceBid.Add(lastPriceBid);
-                    int periodsma = 60;
-                    double sumaskatperiod = 0;
-                    for (int j = visualAllElements.listTicksPriceAsk.Count - 1; j >= visualAllElements.listTicksPriceAsk.Count - periodsma; j--)
-                    {
-                        if (j < 0)
-                            break;
-
-                        //sumaskatperiod += visualAllElements.listTicksPriceAsk[j];
-                        sumaskatperiod += (visualAllElements.listTicksPriceAsk[j] + visualAllElements.listTicksPriceBid[j]) / 2;
-                    }
-                    visualAllElements.listSMA.Add(Math.Round(sumaskatperiod / periodsma));
-
-                    lastPriceTick = _price;
-                    lastActionTick = _action;
-                    if (_action == ActionGlassItem.buy)
-                        lastPriceAsk = _price;
-                    else if (_action == ActionGlassItem.sell)
-                        lastPriceBid = _price;
                     visualAllElements.ShowData();
                 }
             );
         }
 
-        private double CalcGlassValue()
+        private double CalcGlassValue(ResultOneTick _r)
         {
-            int summiddle = 0, sumtop = 0;
-            visualAllElements.CalcSummIndicatorValue(atemp, out glvalues25, out glvalues, out summiddle, out sumtop, out glvaluesrefilling);
-            GlValues25 = glvalues25;
-            GlValuesRefilling = glvaluesrefilling;
-            GlValues = glvalues;
-            tbGlassValue25.Text += "\r\n" + summiddle.ToString();
+            GlValues25 = _r.valPresetHeight;
+            GlValuesRefilling = _r.valRefilling;
+            GlValues = _r.valMaxHeight;
+            tbGlassValue25.Text += "\r\n" + _r.sumPresetHeight.ToString();
             tbGlassValue.Text += "\r\nOpIn:" + summContractInGlass50.ToString();
 
             return GlValues25;
@@ -572,9 +544,7 @@ namespace MyMoney
         public Canvas canvas, ribboncanvas, tickGraphCanvas;
         public int centerCanvas;
         private double lastMinAsk, lastMaxBid;
-        private double lastPriceTick, lastPriceAsk, lastPriceBid;
         private int glvalues, glvalues25, glvaluesrefilling;
-        private ActionGlassItem lastActionTick;
         private int[] atemp = { };
 
         public SolidColorBrush UpBrush, UpBrushAsk, DownBrush, DownBrushBid;
@@ -582,7 +552,6 @@ namespace MyMoney
         public SolidColorBrush ChangeVolUpBrush, ChangeVolDownBrush;
         public LinearGradientBrush GradientBrushForIndicator;
         public LinearGradientBrush GradientBrushForIndicator2;
-        public LinearGradientBrush GradientBrushForSpeed;
         //public LinearGradientBrush GradientBrushForIndicatorAverage;
         //public LinearGradientBrush GradientBrushForIndicatorAverage2;
         public Polyline tickGraphAsk, tickGraphBid;
@@ -648,16 +617,15 @@ namespace MyMoney
     public class VisualOneElement
     {
         public int[] atempValues = { };
+        public ResultOneTick resultOneTick;
     }
     public class VisualAllElemnts
     {
         public VisualAllElemnts()
         {
         }
-        public void CalcSummIndicatorValue(int[] _arrval, out int _valmiddle, out int _valtop, out int _summiddle, out int _sumtop, out int _valrefilling)
+        public void CalcSummIndicatorValue(int[] _arrval, ResultOneTick _resonetick)
         {
-            _valmiddle = _valtop = _summiddle = _sumtop = 0;
-
             int sumnegative = 0, sumpositive = 0, cnegative = 0, cpositive = 0;
             for (int j = LevelStartGlass; j < _arrval.Length; j++)
             {
@@ -673,47 +641,66 @@ namespace MyMoney
                 }
                 if (j == LevelHeightGlass && sumnegative + sumpositive != 0)
                 {
-                    _valmiddle = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
-                    _summiddle = sumpositive + sumnegative;
+                    _resonetick.valPresetHeight = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
+                    _resonetick.sumPresetHeight = sumpositive + sumnegative;
                     //_summiddle = 100 - Math.Min(sumpositive, Math.Abs(sumnegative)) / Math.Max(sumpositive, Math.Abs(sumnegative)) * 100;
                 }
                 else if (j == _arrval.Length - 1 && sumnegative + sumpositive != 0) // если последняя итерация
                 {
-                    _valtop = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
-                    _sumtop = sumpositive + Math.Abs(sumnegative);
+                    _resonetick.valMaxHeight = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
+                    _resonetick.sumMaxHeight = sumpositive + Math.Abs(sumnegative);
                 }
             }
-            _valrefilling = _valmiddle;
-            if (Math.Abs(_summiddle) < LevelIgnoreValue)// || Math.Abs(_valmiddle) < 100)
-            //if (Math.Abs(_valmiddle) < 100)
-                _valmiddle = 0;
-            if (Math.Abs(_summiddle) < LevelRefillingValue)
-                _valrefilling = 0;
+            _resonetick.valRefilling = _resonetick.valPresetHeight;
+            if (Math.Abs(_resonetick.sumPresetHeight) < LevelIgnoreValue)
+                _resonetick.valPresetHeight = 0;
+            if (Math.Abs(_resonetick.sumPresetHeight) < LevelRefillingValue)
+                _resonetick.valRefilling = 0;
         }
-        public void AddData(int[] _atemp)
+        public void AddData(int[] _atemp, ResultOneTick _r, Tick _tick)
         {
+            // расчет индикатора по стакану
+            CalcSummIndicatorValue( _atemp, _r );
+
+            listIndicatorSumm.Add( _r.valPresetHeight );
+            listIndicatorRefilling.Add( _r.valRefilling );
+
+            // расчет простой скользящей средней
+            double sumaskatperiod = 0;
+            for (int j = listTicksPriceAsk.Count - 1; j >= listTicksPriceAsk.Count - periodsma; j--)
+            {
+                if (j < 0)
+                    break;
+                //sumaskatperiod += visualAllElements.listTicksPriceAsk[j];
+                sumaskatperiod += (listTicksPriceAsk[j] + listTicksPriceBid[j]) / 2;
+            }
+            listSMA.Add(_r.valSMA = (int)Math.Round(sumaskatperiod / periodsma));
+
+            // добавление ask и bid
+            if (_tick.Action == ActionGlassItem.buy)
+                lastPriceAsk = _tick.Price;
+            else if (_tick.Action == ActionGlassItem.sell)
+                lastPriceBid = _tick.Price;
+
+            listTicksPriceAsk.Add(_r.valAsk = lastPriceAsk);
+            listTicksPriceBid.Add(_r.valBid = lastPriceBid);
+
             VisualOneElement tmpvis = new VisualOneElement();
+            tmpvis.resultOneTick = _r;
             Array.Resize(ref tmpvis.atempValues, _atemp.Length); // будем хранить значения индикатора для возможного дальнейшего пересчета
             _atemp.CopyTo(tmpvis.atempValues, 0);
             visualElementsList.Add(tmpvis);
         }
-        public void AddTick(GradientBrush _brush, DateTime _dt, double _price, double _volume, ActionGlassItem _action)
+        public bool AddTick(Tick _tick)
         {
-            listSpeedTicks.Add(_dt);
-            if (listSpeedTicks.Count > CanvasGraph.ActualWidth)
-                listSpeedTicks.RemoveRange(0, (int)(listSpeedTicks.Count - CanvasGraph.ActualWidth));
-            _brush.GradientStops.Clear();
-            DateTime lastdt = DateTime.Now;
-            for (int i = listSpeedTicks.Count - 1; i > 0; i--)
-            {
-                if (i % 10 == 0)
-                {
-                    double ts = Math.Abs((listSpeedTicks[i] - lastdt).TotalSeconds) * 100;
-                    byte tsb = Convert.ToByte(ts > 255 ? 255 : ts);
-                    _brush.GradientStops.Add(new GradientStop(Color.FromRgb(Convert.ToByte(255-tsb), tsb, 255), 1 - (double)i / listSpeedTicks.Count));
-                    lastdt = listSpeedTicks[i];
-                }
-            }
+            if (lastPriceAsk == 0) lastPriceAsk = _tick.Price;
+            if (lastPriceBid == 0) lastPriceBid = _tick.Price;
+
+            bool result = _tick.Price == lastPriceTick;  // && _action == lastActionTick);
+            lastPriceTick = _tick.Price;
+            lastActionTick = _tick.Action;
+
+            return result;
         }
         public void ShowData(bool _rebuild = false)
         {
@@ -756,10 +743,9 @@ namespace MyMoney
                 listIndicatorRefilling.Clear();
                 foreach (VisualOneElement ve in visualElementsList)
                 {
-                    int valmiddle, valtop, summiddle, sumtop, valrefilling;
-                    CalcSummIndicatorValue(ve.atempValues, out valmiddle, out valtop, out summiddle, out sumtop, out valrefilling);
-                    listIndicatorSumm.Add(valmiddle);
-                    listIndicatorRefilling.Add(valrefilling);
+                    CalcSummIndicatorValue( ve.atempValues, ve.resultOneTick );
+                    listIndicatorSumm.Add(ve.resultOneTick.valPresetHeight);
+                    listIndicatorRefilling.Add(ve.resultOneTick.valRefilling);
                 }
             }
             if (listIndicatorSumm.Count > CanvasGraph.ActualWidth)
@@ -784,12 +770,18 @@ namespace MyMoney
             _indicatorGraphSumm.Points.Clear();
             _indicatorRefilling.Points.Clear();
             _sma.Points.Clear();
+
+            for (int i = visualElementsList.Count - 1; i > (visualElementsList.Count > CanvasGraph.ActualWidth ? visualElementsList.Count - CanvasGraph.ActualWidth : 0); i++)
+            {
+                _sma.Points.Add(new Point((double) i, (maxp - visualElementsList[i].resultOneTick.valSMA) / onePixelPrice));
+            }
+
+
             x = 0;
             foreach (double p in listTicksPriceAsk)
             {
                 x++;
                 _tickGraphAsk.Points.Add(new Point((double)x + (CanvasGraph.ActualWidth - listTicksPriceAsk.Count - 0), (maxp - p) / onePixelPrice));
-                _sma.Points.Add(new Point((double)x + (CanvasGraph.ActualWidth - listSMA.Count - 0), (maxp - listSMA[x - 1]) / onePixelPrice));
             }
             x = 0;
             foreach (double p in listTicksPriceBid)
@@ -797,6 +789,12 @@ namespace MyMoney
                 x++;
                 _tickGraphBid.Points.Add(new Point((double)x + (CanvasGraph.ActualWidth - listTicksPriceBid.Count - 0), (maxp - p) / onePixelPrice));
             }
+            //x = 0;
+            //foreach (double p in listSMA)
+            //{
+            //    x++;
+            //    _sma.Points.Add(new Point((double)x + (CanvasGraph.ActualWidth - listSMA.Count - 0), (maxp - listSMA[x - 1]) / onePixelPrice));
+            //}
             x = 0;
             foreach (double indv in listIndicatorSumm)
             {
@@ -813,6 +811,9 @@ namespace MyMoney
         }
 
         public double maxp, maxInd, onePixelPrice, onePixelIndicator;
+        private double lastPriceTick, lastPriceAsk, lastPriceBid;
+        private ActionGlassItem lastActionTick;
+        private int periodsma = 40;
         
         public List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
 
@@ -826,6 +827,7 @@ namespace MyMoney
         public List<DateTime> listSpeedTicks = new List<DateTime>();
 
         public int levelignoreval, levelheightglass, levelstartglass, levelrefilling;
+        private Canvas canvasgraph = null;
         public int LevelHeightGlass
         {
             get { return levelheightglass; }
@@ -846,7 +848,6 @@ namespace MyMoney
             get { return levelrefilling; }
             set { levelrefilling = value; ShowData(true); }
         }
-        private Canvas canvasgraph = null;
         public Canvas CanvasGraph
         {
             get { return canvasgraph; }
@@ -886,5 +887,20 @@ namespace MyMoney
             return result;
         }
         public Dictionary<int, ClaimInfo> dicAllClaims = new Dictionary<int, ClaimInfo>();
+    }
+    public class ResultOneTick
+    {
+        public ResultOneTick() { }
+
+        //private int valpresetheight = 0, valmaxheight = 0, sumpresetheight = 0, summaxheight = 0, valrefilling = 0;
+        public double valAsk { get; set; }
+        public double valBid { get; set; }
+        public int valPresetHeight{ get; set; }
+        public int valMaxHeight{ get; set; }
+        public int sumPresetHeight{ get; set; }
+        public int sumMaxHeight{ get; set; }
+        public int valRefilling{ get; set; }
+        public int valSMA { get; set; }
+
     }
 }

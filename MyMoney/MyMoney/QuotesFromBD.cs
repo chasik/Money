@@ -703,11 +703,11 @@ namespace MyMoney
                                     //indicator = (int)s / paramTh.glassHeight;
                                     lock (lockObj)
                                     {
-                                        int _valtop, _summiddle, _sumtop, valrefilling;
-                                        threadGlassVisual.visualAllElements.CalcSummIndicatorValue(tempListForIndicatorAverage.ToArray(), out  indicator, out  _valtop, out _summiddle, out _sumtop, out valrefilling);
+                                        ResultOneTick r = new ResultOneTick();
+                                        threadGlassVisual.visualAllElements.CalcSummIndicatorValue(tempListForIndicatorAverage.ToArray(), r);
 
                                         if (!calculatedIndidcator.values.ContainsKey(dttemp))
-                                            calculatedIndidcator.values.Add(dttemp, indicator);
+                                            calculatedIndidcator.values.Add(dttemp, r.valPresetHeight);
                                     }
                                 }
                                 else
