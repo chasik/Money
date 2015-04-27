@@ -106,8 +106,8 @@ namespace MyMoney
             //scom.connect("mxr.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mxdemo.ittrade.ru", 8443, "JPBABPSD", "3QCCG8");  workPortfolioName = "ST69529-RF-01"; // тестовый доступ
-            //workSymbol = "RTS-6.15_FT";
-            workSymbol = "SBRF-6.15_FT";
+            workSymbol = "RTS-6.15_FT";
+            //workSymbol = "SBRF-6.15_FT";
             scom.Connected += scom_Connected;
             scom.Disconnected += scom_Disconnected;
         }
@@ -565,11 +565,11 @@ namespace MyMoney
                         if (glass.ContainsKey((int)lb - i * workStep))
                             sumshort += (int)glass[(int)lb - i * workStep];
                         sumlongAverage += glass.ContainsKey((int)la + i * workStep)
-                            && glass[(int)la + i * workStep] < averageGlass * 1/*paramTh.averageValue*/
-                            ? (int)glass[(int)la + i * workStep] : averageGlass * 1/*(int)paramTh.averageValue*/;
+                            && glass[(int)la + i * workStep] < averageGlass * 4/*paramTh.averageValue*/
+                            ? (int)glass[(int)la + i * workStep] : averageGlass * 4/*(int)paramTh.averageValue*/;
                         sumshortAverage += glass.ContainsKey((int)lb - i * workStep)
-                            && glass[(int)lb - i * workStep] < averageGlass * 1 /*paramTh.averageValue*/
-                            ? (int)glass[(int)lb - i * workStep] : averageGlass * 1 /*(int)paramTh.averageValue*/;
+                            && glass[(int)lb - i * workStep] < averageGlass * 4 /*paramTh.averageValue*/
+                            ? (int)glass[(int)lb - i * workStep] : averageGlass * 4 /*(int)paramTh.averageValue*/;
                         if (sumlong + sumshort == 0)
                             continue;
                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));

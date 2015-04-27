@@ -237,20 +237,21 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, row as rownum, typeprice, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(13, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
             "
-	         /*   UNION ALL
+	        + @"  -- UNION ALL
 
-                SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
-	            FROM [" + tabNam + @"_quotes] rts2 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(23, 0, 0, 0, 0)) 
-              */
+                --SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
+	            --FROM [" + tabNam + @"_quotes] rts2 
+	            --WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
+
+              "
             + @"
   	            UNION ALL
 
                 SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(13, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 10, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(18, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
@@ -685,11 +686,11 @@ namespace MyMoney
                                         if (glass.ContainsKey((int)(bid - i * symbolStep)))
                                             sumshort += (int)glass[(int)(bid - i * symbolStep)];
                                         sumlongAverage += glass.ContainsKey((int)(ask + i * symbolStep))
-                                            && glass[(int)(ask + i * symbolStep)] < averageGlass * 1 //paramTh.averageValue
-                                            ? (int)glass[(int)(ask + i * symbolStep)] : averageGlass * 1; //(int)paramTh.averageValue;
+                                            && glass[(int)(ask + i * symbolStep)] < averageGlass * 4 //paramTh.averageValue
+                                            ? (int)glass[(int)(ask + i * symbolStep)] : averageGlass * 4; //(int)paramTh.averageValue;
                                         sumshortAverage += glass.ContainsKey((int)(bid - i * symbolStep))
-                                            && glass[(int)(bid - i * symbolStep)] < averageGlass * 1 //paramTh.averageValue
-                                            ? (int)glass[(int)(bid - i * symbolStep)] : averageGlass * 1; // (int)paramTh.averageValue;
+                                            && glass[(int)(bid - i * symbolStep)] < averageGlass * 4 //paramTh.averageValue
+                                            ? (int)glass[(int)(bid - i * symbolStep)] : averageGlass * 4; // (int)paramTh.averageValue;
                                         if (sumlong + sumshort == 0)
                                             continue;
                                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
@@ -762,9 +763,12 @@ namespace MyMoney
                         }
 
                     }
-                    //else if (!dr.IsNull("bid"))
-                    //{
-                    //}
+                    // Обновление котировок
+                    else if (!dr.IsNull("bid"))
+                    {
+                        bid = (int)dr.Field<float?>("bid");
+                        ask = (int)dr.Field<float?>("ask");
+                    }
                     iterationNum++;
                     if (iterationNum == dt.Rows.Count)
                     {
