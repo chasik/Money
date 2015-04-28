@@ -144,7 +144,7 @@ namespace MyMoney
                 dsource.OnChangeGlass += GlassVisual.ChangeValues;
                 dsource.OnChangeVisualIndicator += GlassVisual.ChangeVisualIndicator;
                 dsource.OnAddTick += GlassVisual.AddTick;
-                dsource.OnAddTick += tradeGraphVisual.AddTick;
+                //dsource.OnAddTick += tradeGraphVisual.AddTick;
             }
             catch (Exception ee)
             {

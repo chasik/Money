@@ -748,9 +748,9 @@ namespace MyMoney
             double minp = visualElementsList.Count > 0 ? GetMaxMinVisibleValue("bid").MinValue - StepGlass : StepGlass;
             double delta = maxp - minp;
             double onePixelPrice = delta / CanvasGraph.ActualHeight;
-            double maxInd = Math.Max(Math.Abs(visualElementsList.Count > 0 ? GetMaxMinVisibleValue("valpreseth").MaxValue : 0), Math.Abs(visualElementsList.Count > 0 ? GetMaxMinVisibleValue("valpreseth").MaxValue : 0));
+            double maxInd = Math.Max(Math.Abs(GetMaxMinVisibleValue("valpreseth").MaxValue), Math.Abs(GetMaxMinVisibleValue("valpreseth").MaxValue));
             if (maxInd == 0)
-                maxInd = Math.Max(maxInd, visualElementsList.Count > 0 ? GetMaxMinVisibleValue("valrefilling").MaxValue : 0);
+                maxInd = Math.Max(maxInd, GetMaxMinVisibleValue("valrefilling").MaxValue);
             double deltaIndicator = 2 * maxInd;
             double onePixelIndicator = deltaIndicator / CanvasGraph.ActualHeight;
 
