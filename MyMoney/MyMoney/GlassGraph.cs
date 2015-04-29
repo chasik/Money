@@ -85,11 +85,11 @@ namespace MyMoney
             tickGraphCanvas.Children.Add(indicatorGraphSumm);
             tickGraphCanvas.Children.Add(indicatorRefilling);
             tickGraphCanvas.Children.Add(SMA);
-            Canvas.SetZIndex(tickGraphAsk, 3);
-            Canvas.SetZIndex(tickGraphBid, 2);
-            Canvas.SetZIndex(indicatorGraphSumm, 6);
-            Canvas.SetZIndex(indicatorRefilling, 5);
-            Canvas.SetZIndex(SMA, 4);
+            Canvas.SetZIndex(tickGraphAsk, 6);
+            Canvas.SetZIndex(tickGraphBid, 5);
+            Canvas.SetZIndex(indicatorGraphSumm, 3);
+            Canvas.SetZIndex(indicatorRefilling, 2);
+            Canvas.SetZIndex(SMA, 1);
 
             visualAllElements = new VisualAllElemnts() { _sma = SMA, _tickGraphAsk = tickGraphAsk, _tickGraphBid = tickGraphBid
                                                             , _indicatorGraphSumm = indicatorGraphSumm, _indicatorRefilling =  indicatorRefilling, CanvasGraph = tickGraphCanvas };
@@ -701,7 +701,7 @@ namespace MyMoney
             if (lastPriceBid == 0) lastPriceBid = _tick.Price;
 
             //bool result = false;
-            bool result = _tick.Price == lastPriceTick;  // && _action == lastActionTick);
+            bool result = _tick.Price == lastPriceTick && _tick.Action == lastActionTick;
             lastPriceTick = _tick.Price;
             lastActionTick = _tick.Action;
 
@@ -783,11 +783,11 @@ namespace MyMoney
                     {
                         Line linehorizontal = null;
                         if (yy % (10 * StepGlass) == 0)
-                            linehorizontal = new Line { X2 = CanvasGraph.ActualWidth, Stroke = Brushes.Silver, StrokeThickness = 1 };
+                            linehorizontal = new Line { X2 = CanvasGraph.ActualWidth, Stroke = Brushes.DarkGray, StrokeThickness = 1 };
                         else
-                            linehorizontal = new Line { X2 = CanvasGraph.ActualWidth, Stroke = Brushes.Silver, StrokeThickness = 1, StrokeDashArray = { 3, 5 } };
+                            linehorizontal = new Line { X2 = CanvasGraph.ActualWidth, Stroke = Brushes.DarkGray, StrokeThickness = 1, StrokeDashArray = { 3, 5 } };
                         Canvas.SetTop(linehorizontal, (maxp - yy) / onePixelPrice);
-                        Canvas.SetZIndex(linehorizontal, 5);
+                        Canvas.SetZIndex(linehorizontal, 0);
                         CanvasGraph.Children.Add(linehorizontal);
                         listHorizontalLine.Add(linehorizontal);
                     }
