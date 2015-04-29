@@ -768,6 +768,32 @@ namespace MyMoney
                 _indicatorGraphSumm.Points.Add(new Point((double)i + (CanvasGraph.ActualWidth - visualElementsList.Count - 0), (maxInd - visualElementsList[i].resultOneTick.valPresetHeight) / onePixelIndicator));
                 _indicatorRefilling.Points.Add(new Point((double)i + (CanvasGraph.ActualWidth - visualElementsList.Count - 0), (maxInd - visualElementsList[i].resultOneTick.valRefilling) / onePixelIndicator));
             }
+
+            // разметка цены
+            if (maxp != lastmaxpricegraph || minp != lastminpricegraph)
+            {
+                foreach (Line l in listHorizontalLine)
+                {
+                    CanvasGraph.Children.Remove(l);
+                }
+                listHorizontalLine.Clear();
+                for (double yy = minp; yy < maxp; yy += StepGlass)
+                {
+                    if (yy % (10 * StepGlass) == 0 || yy % (5 * StepGlass) == 0)
+                    {
+                        Line linehorizontal = null;
+                        if (yy % (10 * StepGlass) == 0)
+                            linehorizontal = new Line { X2 = CanvasGraph.ActualWidth, Stroke = Brushes.Silver, StrokeThickness = 1 };
+                        else
+                            linehorizontal = new Line { X2 = CanvasGraph.ActualWidth, Stroke = Brushes.Silver, StrokeThickness = 1, StrokeDashArray = { 3, 5 } };
+                        Canvas.SetTop(linehorizontal, (maxp - yy) / onePixelPrice);
+                        Canvas.SetZIndex(linehorizontal, 5);
+                        CanvasGraph.Children.Add(linehorizontal);
+                        listHorizontalLine.Add(linehorizontal);
+                    }
+                }
+                lastmaxpricegraph = maxp; lastminpricegraph = minp;
+            }
         }
 
         private MinMaxValue GetMaxMinVisibleValue(string p)
@@ -801,9 +827,12 @@ namespace MyMoney
 
         public double maxp, maxInd, onePixelPrice, onePixelIndicator;
         private double lastPriceTick, lastPriceAsk, lastPriceBid;
+        private double lastmaxpricegraph, lastminpricegraph;
         private ActionGlassItem lastActionTick;
         private int periodsma = 20;
         public double StepGlass = 0;
+        
+        public List<Line> listHorizontalLine = new List<Line>();
         
         public List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
 
