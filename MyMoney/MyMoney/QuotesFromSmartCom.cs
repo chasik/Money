@@ -545,20 +545,20 @@ namespace MyMoney
                 if (glass.Count > 50 && workStep > 0)
                 {
                     int sumGlass = 0;
-                    // среднее значение по стакану
-                    for (int i = 0; i < paramTh.glassHeight; i++)
+                    double la = lastAsk, lb = lastBid;
+                    // среднее значение по всему доступному стакану
+                    for (int i = 0; i < 50; i++)
                     {
-                        sumGlass += glass.ContainsKey(lastAsk + i * workStep) ? (int)glass[lastAsk + i * workStep] : 0;
-                        sumGlass += glass.ContainsKey(lastBid - i * workStep) ? (int)glass[lastBid - i * workStep] : 0;
+                        sumGlass += glass.ContainsKey(la + i * workStep) ? (int)glass[la + i * workStep] : 0;
+                        sumGlass += glass.ContainsKey(lb - i * workStep) ? (int)glass[lb - i * workStep] : 0;
                     }
-                    int averageGlass = (int)sumGlass / (paramTh.glassHeight * 2);
+                    int averageGlass = (int)sumGlass / (50 * 2);
                     int sumlong = 0, sumshort = 0;
                     int sumlongAverage = 0, sumshortAverage = 0;
                     tempListForIndicator.Clear();
                     tempListForIndicatorAverage.Clear();
                     // новая версия, более взвешенное значение (как год назад)
-                    double lb = lastBid, la = lastAsk;
-                    for (int i = 0; i < 50; i++)
+                    for (int i = 0; i < 50/*paramTh.glassHeight*/; i++)
                     {
                         if (glass.ContainsKey((int)la + i * workStep))
                             sumlong += (int)glass[(int)la + i * workStep];

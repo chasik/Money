@@ -653,12 +653,12 @@ namespace MyMoney
 
                                     int sumGlass = 0;
                                     // среднее значение по стакану
-                                    for (int i = 0; i < threadGlassVisual.visualAllElements.LevelHeightGlass; i++)
+                                    for (int i = 0; i < 50/*threadGlassVisual.visualAllElements.LevelHeightGlass*/; i++)
                                     {
                                         sumGlass += glass.ContainsKey((int)(ask + i * symbolStep)) ? (int)glass[(int)(ask + i * symbolStep)] : 0;
                                         sumGlass += glass.ContainsKey((int)(bid - i * symbolStep)) ? (int)glass[(int)(bid - i * symbolStep)] : 0;
                                     }
-                                    int averageGlass = (int)sumGlass / (threadGlassVisual.visualAllElements.LevelHeightGlass * 2);
+                                    int averageGlass = (int)sumGlass / (50/*threadGlassVisual.visualAllElements.LevelHeightGlass*/ * 2);
                                     int sumlong = 0, sumshort = 0;
                                     int sumlongAverage = 0, sumshortAverage = 0;
                                     tempListForIndicator.Clear();
@@ -676,10 +676,6 @@ namespace MyMoney
                                         //sumshort += glass.ContainsKey((int)bid - i * symbolStep)
                                         //    && glass[(int)bid - i * symbolStep] < averageGlass * paramTh.averageValue
                                         //    ? glass[(int)bid - i * symbolStep] : averageGlass;
-                                        if (sumlong + sumshort == 0)
-                                            continue;
-                                        tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
-
 
                                         if (glass.ContainsKey((int)(ask + i * symbolStep)))
                                             sumlong += (int)glass[(int)(ask + i * symbolStep)];
@@ -694,7 +690,8 @@ namespace MyMoney
                                         if (sumlong + sumshort == 0)
                                             continue;
                                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
-                                        tempListForIndicatorAverage.Add((int)(sumlongAverage - sumshortAverage) * 100 / (sumlongAverage + sumshortAverage));
+                                        int tempsumavr = (sumlongAverage + sumshortAverage) == 0 ? 1 : sumlongAverage + sumshortAverage;
+                                        tempListForIndicatorAverage.Add((int)(sumlongAverage - sumshortAverage) * 100 / tempsumavr);
                                     }
                                     //int s = 0;
                                     //foreach (int i in tempListForIndicator)
