@@ -49,7 +49,7 @@ namespace MyMoney
                 Thread.CurrentThread.CurrentUICulture = ci;
                 InitializeComponent();
                 tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
-                GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator, indicatorRect, indicatorRect2, null, null/*indicatorAverageRect, indicatorAverageRect2*/);
+                GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator);
                 GlassVisual.tbGlassValue = tbValuesGlass;
                 GlassVisual.tbGlassValue25 = tbValuesGlass25;
 
@@ -449,10 +449,7 @@ namespace MyMoney
         {
             if (e.HeightChanged)
             {
-                indicatorRect.Height = e.NewSize.Height;
-                indicatorRect2.Height = e.NewSize.Height;
-                indicatorAverageRect.Height = e.NewSize.Height;
-                indicatorAverageRect2.Height = e.NewSize.Height;
+
             }
         }
 
@@ -493,7 +490,7 @@ namespace MyMoney
 
         private void glassCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            //tbInformation.AppendText("\r\n" + e.Delta.ToString());
+            dsource.glassgraph.AnimateGlassToCenter(e.Delta);
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -541,8 +538,16 @@ namespace MyMoney
         private void canvasIndicator_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             backgroundBar.Width = (sender as Canvas).ActualWidth;
+            if (dsource != null)
+            {
+                dsource.glassgraph.visualAllElements.countAddedWithNotShowData++;
+                dsource.glassgraph.visualAllElements.ShowData(true);
+            }
         }
 
+        private void MyWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
 
+        }
     }
 }

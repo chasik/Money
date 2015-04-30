@@ -29,5 +29,7 @@ namespace MyMoney
         event ChangeGlass OnChangeGlass;
         event ChangeVisualIndicator OnChangeVisualIndicator;
         event AddTick OnAddTick;
+
+        GlassGraph glassgraph { get; set; }
     }
 }
