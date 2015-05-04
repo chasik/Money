@@ -323,12 +323,12 @@ namespace MyMoney
 
                     Canvas.SetLeft(recGradientUp, canvas.ActualWidth - 85);
                     Canvas.SetTop(recGradientUp, centerCanvas - 10 * 50);
-                    Canvas.SetZIndex(recGradientUp, 0);
+                    Canvas.SetZIndex(recGradientUp, 2);
                     recGradientUp.Fill = GradientBrushForIndicatorUp;
 
                     Canvas.SetLeft(recGradientDown, canvas.ActualWidth - 85);
                     Canvas.SetTop(recGradientDown, centerCanvas);
-                    Canvas.SetZIndex(recGradientDown, 0);
+                    Canvas.SetZIndex(recGradientDown, 2);
                     recGradientDown.Fill = GradientBrushForIndicatorDown;
 
                     canvas.Children.Add(recGradientUp);
@@ -623,7 +623,7 @@ namespace MyMoney
                 //sumaskatperiod += visualElementsList[j].resultOneTick.valAsk;
                 sumaskatperiod += (visualElementsList[j].resultOneTick.valAsk + visualElementsList[j].resultOneTick.valBid) / 2;
             }
-            _r.valSMA = (int)Math.Round(sumaskatperiod / periodsma);
+            _r.valSMA = sumaskatperiod / periodsma;
 
             // добавление ask и bid
             if (_tick.Action == ActionGlassItem.sell)
@@ -867,7 +867,7 @@ namespace MyMoney
         public int sumPresetHeight{ get; set; }
         public int sumMaxHeight{ get; set; }
         public int valRefilling{ get; set; }
-        public int valSMA { get; set; }
+        public double valSMA { get; set; }
 
     }
 }

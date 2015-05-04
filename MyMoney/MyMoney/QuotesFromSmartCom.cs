@@ -566,11 +566,11 @@ namespace MyMoney
                         if (glass.ContainsKey((int)lb - i * workStep))
                             sumshort += (int)glass[(int)lb - i * workStep];
                         sumlongAverage += glass.ContainsKey((int)la + i * workStep)
-                            && glass[(int)la + i * workStep] < averageGlass * 5/*paramTh.averageValue*/
-                            ? (int)glass[(int)la + i * workStep] : averageGlass * 5/*(int)paramTh.averageValue*/;
+                            && glass[(int)la + i * workStep] < averageGlass * 2/*paramTh.averageValue*/
+                            ? (int)glass[(int)la + i * workStep] : averageGlass * 2/*(int)paramTh.averageValue*/;
                         sumshortAverage += glass.ContainsKey((int)lb - i * workStep)
-                            && glass[(int)lb - i * workStep] < averageGlass * 5 /*paramTh.averageValue*/
-                            ? (int)glass[(int)lb - i * workStep] : averageGlass * 5 /*(int)paramTh.averageValue*/;
+                            && glass[(int)lb - i * workStep] < averageGlass * 2 /*paramTh.averageValue*/
+                            ? (int)glass[(int)lb - i * workStep] : averageGlass * 2 /*(int)paramTh.averageValue*/;
                         if (sumlong + sumshort == 0)
                             continue;
                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
