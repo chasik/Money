@@ -118,9 +118,9 @@ namespace MyMoney
                                 double maxBid = GetMaxBid();
                                 // смотрим, далеко ли "уполз" стакан
                                 double deltaAsk = minAsk - lastMinAsk;
-                                if (Math.Abs(deltaAsk) > 5 * StepGlass)
+                                if (Math.Abs(deltaAsk) > 20 * StepGlass)
                                 {
-                                    AnimateGlassToCenter(5 * Math.Sign(deltaAsk));
+                                    AnimateGlassToCenter(20 * (int)StepGlass * Math.Sign(deltaAsk));
                                     lastMinAsk = minAsk;
                                     lastMaxBid = maxBid;
                                 }
@@ -647,7 +647,7 @@ namespace MyMoney
             if (lastPriceBid == 0) lastPriceBid = _tick.Price;
 
             //bool result = false;
-            bool result = _tick.Price == lastPriceTick && _tick.Action == lastActionTick;
+            bool result = _tick.Price == lastPriceTick;// && _tick.Action == lastActionTick;
             lastPriceTick = _tick.Price;
             lastActionTick = _tick.Action;
 

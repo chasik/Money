@@ -103,11 +103,12 @@ namespace MyMoney
             scom.ConfigureClient(@"logLevel=4;CalcPlannedPos=no;logFilePath=" + pathLogs);
             scom.ConfigureServer(@"logLevel=4;pingTimeOut=20;logFilePath=" + pathLogs);
             //scom.connect("mx.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
-            scom.connect("mx2.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
-            //scom.connect("mxr.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            //scom.connect("mx2.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
+            scom.connect("mxr.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("st1.ittrade.ru", 8090, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mxdemo.ittrade.ru", 8443, "JPBABPSD", "3QCCG8");  workPortfolioName = "ST69529-RF-01"; // тестовый доступ
             workSymbol = "RTS-6.15_FT";
+            //workSymbol = "Si-6.15_FT";
             //workSymbol = "SBRF-6.15_FT";
             scom.Connected += scom_Connected;
             scom.Disconnected += scom_Disconnected;
@@ -566,11 +567,11 @@ namespace MyMoney
                         if (glass.ContainsKey((int)lb - i * workStep))
                             sumshort += (int)glass[(int)lb - i * workStep];
                         sumlongAverage += glass.ContainsKey((int)la + i * workStep)
-                            && glass[(int)la + i * workStep] < averageGlass * 2/*paramTh.averageValue*/
-                            ? (int)glass[(int)la + i * workStep] : averageGlass * 2/*(int)paramTh.averageValue*/;
+                            && glass[(int)la + i * workStep] < averageGlass * 100/*paramTh.averageValue*/
+                            ? (int)glass[(int)la + i * workStep] : averageGlass * 100/*(int)paramTh.averageValue*/;
                         sumshortAverage += glass.ContainsKey((int)lb - i * workStep)
-                            && glass[(int)lb - i * workStep] < averageGlass * 2 /*paramTh.averageValue*/
-                            ? (int)glass[(int)lb - i * workStep] : averageGlass * 2 /*(int)paramTh.averageValue*/;
+                            && glass[(int)lb - i * workStep] < averageGlass * 100 /*paramTh.averageValue*/
+                            ? (int)glass[(int)lb - i * workStep] : averageGlass * 100 /*(int)paramTh.averageValue*/;
                         if (sumlong + sumshort == 0)
                             continue;
                         tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
@@ -578,76 +579,8 @@ namespace MyMoney
                         tempListForIndicatorAverage.Add((int)(sumlongAverage - sumshortAverage) * 100 / (tempsumavr));
                     }
 
-                    //int s = 0;
-                    //for (int i = 0; i < Math.Min(50, tempListForIndicator.Count); i++ )
-                    //{
-                    //    s += tempListForIndicator[i];
-                    //}
-                    //int indicatorTemp = (int) s / paramTh.glassHeight;
-                    //int indicatorTemp = tempListForIndicator[paramTh.glassHeight - 1];
-                    //if (indicatorTemp != indicator && OnChangeIndicator != null)
-                    //    OnChangeIndicator(indicatorTemp.ToString() + "\tA: " + activeTradingVolume.ToString()
-                    //        + "\tV: " + activeTradingDiraction.ToString() 
-                    //        + "\tU: " + LongShotCount.ToString() + " D: " + ShortShotCount.ToString());
-                    //indicator = indicatorTemp;
                     if (OnChangeVisualIndicator != null)
                         OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray(), sumGlass);
-
-                    //// вход лонг
-                    //if (indicator <= -paramTh.indicatorLongValue)
-                    ////if ((activeTradingVolume < 500 && indicator <= -paramTh.indicatorLongValue)
-                    ////    || (activeTradingVolume > 500 && indicator >= paramTh.indicatorLongValue)) // || activeTradingDiraction > 400)
-                    //{
-                    //    //if (activeTradingVolume > 400 && !TradeAtVolume)
-                    //    //{
-                    //    //    TradeAtVolume = true;
-                    //    //    activeAmounts.Clear();
-                    //    //}
-                    //    //else
-                    //        LongShotCount++;
-                    //    if (priceEnterLong == 0 && priceEnterShort == 0 && Trading)
-                    //    {
-                    //        LongShotCount = ShortShotCount = 0;
-                    //        lossLongValueTemp = paramTh.lossLongValue;
-                    //        profitLongValueTemp = paramTh.profitLongValue;
-                    //        priceEnterLong = (int)ask;
-                    //        lotCount = 1;
-                    //        cookieId++;
-                    //        MartinLevel = 0;
-                    //        int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
-                    //        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Buy, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
-                    //            , 0, lotCount, 0, _cid); // 1 000 000
-                    //        allClaims.Add(_cid, priceEnterLong, lotCount, StOrder_Action.StOrder_Action_Buy);
-                    //    }
-                    //}
-                    //// вход шорт
-                    //else if (indicator >= paramTh.indicatorShortValue)
-                    ////else if ((activeTradingVolume < 500 && indicator >= paramTh.indicatorShortValue)
-                    ////    || (activeTradingVolume > 500 && indicator <= -paramTh.indicatorShortValue)) // || activeTradingDiraction < -400)
-                    //{
-                    //    //if (activeTradingVolume < -400 && !TradeAtVolume)
-                    //    //{
-                    //    //    TradeAtVolume = true;
-                    //    //    activeAmounts.Clear();
-                    //    //}
-                    //    //else
-                    //        ShortShotCount++;
-                    //    if (priceEnterLong == 0 && priceEnterShort == 0 && Trading)
-                    //    {
-                    //        ShortShotCount = LongShotCount = 0;
-                    //        lossShortValueTemp = paramTh.lossShortValue;
-                    //        profitShortValueTemp = paramTh.profitShortValue;
-                    //        priceEnterShort = (int)bid;
-                    //        lotCount = 1;
-                    //        cookieId++;
-                    //        MartinLevel = 0;
-                    //        int _cid = allClaims.GetCookieIdFromWorkType(cookieId, TypeWorkOrder.order);
-                    //        scom.PlaceOrder(workPortfolioName, workSymbol, StOrder_Action.StOrder_Action_Sell, StOrder_Type.StOrder_Type_Market, StOrder_Validity.StOrder_Validity_Day
-                    //            , 0, lotCount, 0, _cid); // 1 000 000
-                    //        allClaims.Add(_cid, priceEnterShort, lotCount, StOrder_Action.StOrder_Action_Sell);
-                    //    }
-                    //}
-
                 }
             }
         }
