@@ -625,8 +625,8 @@ namespace MyMoney
                         if (DoVisualisation && OnChangeGlass != null)
                         {
                             ActionGlassItem act = ActionGlassItem.zero;
-                            if (typeprice == 1)         act = ActionGlassItem.buy;
-                            else if (typeprice == 2)    act = ActionGlassItem.sell;
+                            if (typeprice == 1)         act = ActionGlassItem.sell;
+                            else if (typeprice == 2)    act = ActionGlassItem.buy;
 
                             OnChangeGlass(dtCurrentRow, updatepricegl, updatevolumegl, rownum, act);
                         }
@@ -685,7 +685,7 @@ namespace MyMoney
                                 else
                                     indicator = (int)calculatedIndidcator.values[dttemp];
                                 if (OnChangeVisualIndicator != null && DoVisualisation)
-                                    OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray(), -1);
+                                    OnChangeVisualIndicator(/*tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray(), -1*/);
                             }
                         }
 

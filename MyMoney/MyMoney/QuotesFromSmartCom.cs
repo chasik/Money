@@ -26,13 +26,10 @@ namespace MyMoney
         public string workPortfolioName = "";
         private string workSymbol = "";
         private double workStep = 0;
-        public double lastBid = 0;
-        public double lastAsk = 0;
-        //public int indicator = 0;
+        public double lastBid = 0, lastAsk = 0;
         public int priceEnterLong = 0, priceEnterShort = 0;
         public int lossLongValueTemp = 0, lossShortValueTemp = 0;
-        public int profitShortValueTemp = 0;
-        private int profitlongvaluetemp = 0;
+        public int profitShortValueTemp = 0, profitlongvaluetemp = 0;
         public int profitLongValueTemp
         {
             get { return profitlongvaluetemp; }
@@ -523,65 +520,16 @@ namespace MyMoney
 
         void scom_UpdateQuote(string symbol, DateTime datetime, double open, double high, double low, double close, double last, double volume, double size, double bid, double ask, double bidsize, double asksize, double open_int, double go_buy, double go_sell, double go_base, double go_base_backed, double high_limit, double low_limit, int trading_status, double volat, double theor_price)
         {
-            lastBid = bid; lastAsk = ask;
+            lastAsk = ask;
+            lastBid = bid;
         }
 
         void scom_UpdateBidAsk(string symbol, int row, int nrows, double bid, double bidsize, double ask, double asksize)
         {
             if (OnChangeGlass != null)
             {
-                OnChangeGlass(DateTime.Now, ask, asksize, row, ActionGlassItem.buy);
-                OnChangeGlass(DateTime.Now, bid, bidsize, row, ActionGlassItem.sell);
-            }
-            if (row == 0)
-            {
-                lastAsk = ask; lastBid = bid;
-            }
-            if (!glass.ContainsKey(bid)) { glass.Add(bid, bidsize); return; }
-            if (!glass.ContainsKey(ask)) { glass.Add(ask, asksize); return; }
-
-            if (glass[bid] != bidsize || glass[ask] != asksize)
-            {
-                glass[bid] = bidsize;
-                glass[ask] = asksize;
-                if (glass.Count > 50 && workStep > 0)
-                {
-                    int sumGlass = 0;
-                    double la = lastAsk, lb = lastBid;
-                    // среднее значение по всему доступному стакану
-                    for (int i = 0; i < 50; i++)
-                    {
-                        sumGlass += glass.ContainsKey(la + i * workStep) ? (int)glass[la + i * workStep] : 0;
-                        sumGlass += glass.ContainsKey(lb - i * workStep) ? (int)glass[lb - i * workStep] : 0;
-                    }
-                    int averageGlass = (int)sumGlass / (50 * 2);
-                    int sumlong = 0, sumshort = 0;
-                    int sumlongAverage = 0, sumshortAverage = 0;
-                    tempListForIndicator.Clear();
-                    tempListForIndicatorAverage.Clear();
-                    // новая версия, более взвешенное значение (как год назад)
-                    for (int i = 0; i < 50/*paramTh.glassHeight*/; i++)
-                    {
-                        if (glass.ContainsKey((int)la + i * workStep))
-                            sumlong += (int)glass[(int)la + i * workStep];
-                        if (glass.ContainsKey((int)lb - i * workStep))
-                            sumshort += (int)glass[(int)lb - i * workStep];
-                        sumlongAverage += glass.ContainsKey((int)la + i * workStep)
-                            && glass[(int)la + i * workStep] < averageGlass * 100/*paramTh.averageValue*/
-                            ? (int)glass[(int)la + i * workStep] : averageGlass * 100/*(int)paramTh.averageValue*/;
-                        sumshortAverage += glass.ContainsKey((int)lb - i * workStep)
-                            && glass[(int)lb - i * workStep] < averageGlass * 100 /*paramTh.averageValue*/
-                            ? (int)glass[(int)lb - i * workStep] : averageGlass * 100 /*(int)paramTh.averageValue*/;
-                        if (sumlong + sumshort == 0)
-                            continue;
-                        tempListForIndicator.Add((int)(sumlong - sumshort) * 100 / (sumlong + sumshort));
-                        int tempsumavr = (sumlongAverage + sumshortAverage) == 0 ? 1 : sumlongAverage + sumshortAverage;
-                        tempListForIndicatorAverage.Add((int)(sumlongAverage - sumshortAverage) * 100 / (tempsumavr));
-                    }
-
-                    if (OnChangeVisualIndicator != null)
-                        OnChangeVisualIndicator(tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray(), sumGlass);
-                }
+                OnChangeGlass(DateTime.Now, ask, asksize, row, ActionGlassItem.sell);
+                OnChangeGlass(DateTime.Now, bid, bidsize, row, ActionGlassItem.buy);
             }
         }
         public void ThreadInstruments()
