@@ -39,7 +39,7 @@ namespace MyMoney
         {
             visualAllElements = new VisualAllElemnts();
         }
-        public GlassGraph(Canvas _c, Canvas _g, Canvas _ribbon)
+        public GlassGraph(Canvas _c, Canvas _ribbon)
         {
             canvas = _c;
             ribboncanvas = _ribbon;
@@ -59,6 +59,7 @@ namespace MyMoney
 
             GradientBrushForIndicatorUp = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
             GradientBrushForIndicatorDown = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
+            GradientBrushForIndicatorAll = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(0, 1) };
 
             tickGraphAsk = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 0, 110) }, StrokeThickness = 1, SnapsToDevicePixels = true };
             tickGraphBid = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(110, 0, 0) }, StrokeThickness = 1, SnapsToDevicePixels = true };
@@ -152,9 +153,9 @@ namespace MyMoney
                             double maxBid = GetMaxBid();
                             // смотрим, далеко ли "уполз" стакан
                             double deltaAsk = minAsk - lastMinAsk;
-                            if (Math.Abs(deltaAsk) > 20 * StepGlass)
+                            if (Math.Abs(deltaAsk) > 6 * StepGlass)
                             {
-                                AnimateGlassToCenter(20 * (int)StepGlass * Math.Sign(deltaAsk));
+                                AnimateGlassToCenter(6 * (int)StepGlass * Math.Sign(deltaAsk));
                                 lastMinAsk = minAsk;
                                 lastMaxBid = maxBid;
                             }
@@ -170,7 +171,7 @@ namespace MyMoney
                                     List<ChangeValuesItem> templist = new List<ChangeValuesItem>();
                                     foreach (ChangeValuesItem v in gv.listChangeVal)
                                     {
-                                        if ((_dt - v.dt).TotalSeconds < 3)
+                                        if ((_dt - v.dt).TotalSeconds < 5)
                                         {
                                             if ((int)v.newvalue - (int)v.oldvalue < 0)
                                                 summchangevalout += 1;
@@ -192,7 +193,7 @@ namespace MyMoney
                                         //gv.tbChangeVal.Text = Math.Abs(summchangeval) > 0 ? "" : ""; //summchangeval.ToString() : "";
                                         gv.rectChangeVolumeOut.Width = Math.Abs(summchangevalout) * 2;
                                         gv.rectChangeVolumeIn.Width = Math.Abs(summchangevalin) * 2;
-                                        Canvas.SetLeft(gv.rectChangeVolumeIn, canvas.ActualWidth - 142 - gv.rectChangeVolumeIn.Width);
+                                        Canvas.SetLeft(gv.rectChangeVolumeIn, canvas.ActualWidth - 140 - gv.rectChangeVolumeIn.Width);
                                         //gv.rectChangeVolumeOut.Fill = ChangeVolDownBrush;
                                     }
                                 }
@@ -289,8 +290,7 @@ namespace MyMoney
                     tbGlassValue25.Text += "\r\n" + r.sumPresetHeight.ToString();
                     tbGlassValue.Text += "\r\nOpIn:" + summContractInGlass50.ToString();
 
-                    //visualAllElements.listGradient.Add(GradientBrushForIndicator.Clone());
-                    //visualAllElements.listGradient2.Add(GradientBrushForIndicator2.Clone());
+                    visualAllElements.listGradient.Add(GradientBrushForIndicatorAll.Clone());
                     // делаем рендеринг раз в минуту (1000ms)
                     DateTime ddd = DateTime.Now;
                     if (ddd.Subtract(lastShowDataCall).TotalMilliseconds > 200)
@@ -329,10 +329,10 @@ namespace MyMoney
                         //ivalAvr2 = sa / (i + 1);
 
                         byte b = Convert.ToByte(Math.Abs(Math.Abs(3 * ival) > 255 ? 255 : 3 * ival) + 0);
-                        byte b1 = Convert.ToByte(Math.Abs(Math.Abs(3 * ival) > 255 ? 255 : 3 * ival) + 0);
 
-                        GradientBrushForIndicatorUp.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b1, 255) : UpBrush.Color, 1 - (double)i / 50));
+                        GradientBrushForIndicatorUp.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b, 255) : UpBrush.Color, 1 - (double)i / 50));
                         GradientBrushForIndicatorDown.GradientStops.Add(new GradientStop(ival > 0 ? DownBrush.Color : Color.FromRgb(255, b, 0), (double)i / 50));
+                        GradientBrushForIndicatorAll.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b, 255) : Color.FromRgb(255, b, 0), (double)i / 50));
                     }
                 });
         }
@@ -396,12 +396,12 @@ namespace MyMoney
             Canvas.SetZIndex(block2, 1);
             block2.Fill = VolumeBrush;
 
-            Canvas.SetLeft(block3, canvas.ActualWidth - 24);
+            Canvas.SetLeft(block3, canvas.ActualWidth - 26);
             Canvas.SetTop(block3, centerCanvas - i * 10 + 1);
             Canvas.SetZIndex(block3, 1);
             block3.Fill = ChangeVolDownBrush;
 
-            Canvas.SetLeft(block4, canvas.ActualWidth - 142);
+            Canvas.SetLeft(block4, canvas.ActualWidth - 140);
             Canvas.SetTop(block4, centerCanvas - i * 10 + 1);
             Canvas.SetZIndex(block4, 1);
             block4.Fill = ChangeVolUpBrush;
@@ -446,11 +446,11 @@ namespace MyMoney
                 int summchangeval = 0;
                 lock (objLock)
                 {
-                    foreach (ChangeValuesItem v in GlassValues[_maxBid + i * StepGlass].listChangeVal)
-                        if ((_dt - v.dt).TotalSeconds < 3)
-                            summchangeval += (int) v.newvalue - (int) v.oldvalue > 0 ? 1 : -1;
-                    t2.Text = Math.Abs(summchangeval) > 0 ? "" : ""; //summchangeval.ToString() : "";
-                    block3.Width = Math.Abs(summchangeval) * 5;
+                    //foreach (ChangeValuesItem v in GlassValues[_maxBid + i * StepGlass].listChangeVal)
+                    //    if ((_dt - v.dt).TotalSeconds < 1)
+                    //        summchangeval += (int) v.newvalue - (int) v.oldvalue > 0 ? 1 : -1;
+                    //t2.Text = Math.Abs(summchangeval) > 0 ? "" : ""; //summchangeval.ToString() : "";
+                    //block3.Width = Math.Abs(summchangeval) * 5;
                     //block3.Fill = summchangeval < 0 ? ChangeVolDownBrush : ChangeVolUpBrush;
                 }
                 lock (objLock)
@@ -551,8 +551,7 @@ namespace MyMoney
         public SolidColorBrush UpBrush, UpBrushAsk, DownBrush, DownBrushBid;
         public SolidColorBrush ZeroBrush, VolumeBrush;
         public SolidColorBrush ChangeVolUpBrush, ChangeVolDownBrush;
-        public LinearGradientBrush GradientBrushForIndicatorUp;
-        public LinearGradientBrush GradientBrushForIndicatorDown;
+        public LinearGradientBrush GradientBrushForIndicatorUp, GradientBrushForIndicatorDown, GradientBrushForIndicatorAll;
         public Polyline tickGraphAsk, tickGraphBid;
         public Polyline indicatorGraphSumm, indicatorRefilling, SMA;
 
@@ -718,15 +717,15 @@ namespace MyMoney
                     CanvasGraph.Children.Remove(s);
                 }
                 tempshapes.Clear();
-                int x = 0;
-                if (listGradient.Count > 0)
-                    for (x = _rebuild ? 0 : listGradient.Count - countAddedWithNotShowData; x < listGradient.Count; x++) // LinearGradientBrush brushg in  listGradient)
-                    {
-                        Rectangle r = new Rectangle() { Fill = listGradient[x], Width = 1, Height = CanvasGraph.ActualHeight, Opacity = 1 };
-                        Canvas.SetLeft(r, CanvasGraph.ActualWidth - listGradient.Count + x);
-                        Canvas.SetTop(r, 0);
-                        CanvasGraph.Children.Add(r);
-                    }
+                //int x = 0;
+                //if (listGradient.Count > 0)
+                //    for (x = _rebuild ? 0 : listGradient.Count - countAddedWithNotShowData; x < listGradient.Count; x++) // LinearGradientBrush brushg in  listGradient)
+                //    {
+                //        Rectangle r = new Rectangle() { Fill = listGradient[x], Width = 1, Height = CanvasGraph.ActualHeight, Opacity = 1 };
+                //        Canvas.SetLeft(r, CanvasGraph.ActualWidth - listGradient.Count + x);
+                //        Canvas.SetTop(r, 0);
+                //        CanvasGraph.Children.Add(r);
+                //    }
 
                 if (_rebuild)
                 {
@@ -836,7 +835,6 @@ namespace MyMoney
         public List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
 
         public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
-        public List<LinearGradientBrush> listGradient2 = new List<LinearGradientBrush>();
 
         public int levelignoreval, levelheightglass, levelstartglass, levelrefilling;
         private Canvas canvasgraph = null;

@@ -48,8 +48,8 @@ namespace MyMoney
                 Thread.CurrentThread.CurrentCulture = ci;
                 Thread.CurrentThread.CurrentUICulture = ci;
                 InitializeComponent();
-                tradeGraphVisual = new TradeGraph(canvasGraph, canvasIndicator); // график для визуализации сделок
-                GlassVisual = new GlassGraph(glassCanvas, canvasGraph, canvasIndicator);
+                tradeGraphVisual = new TradeGraph(); // график для визуализации сделок
+                GlassVisual = new GlassGraph(glassCanvas, canvasIndicator);
                 GlassVisual.tbGlassValue = tbValuesGlass;
                 GlassVisual.tbGlassValue25 = tbValuesGlass25;
 
@@ -490,7 +490,7 @@ namespace MyMoney
 
         private void glassCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            dsource.glassgraph.AnimateGlassToCenter(e.Delta);
+            dsource.glassgraph.AnimateGlassToCenter((int)Math.Round((double)e.Delta / 2));
         }
 
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
