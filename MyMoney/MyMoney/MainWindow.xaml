@@ -114,25 +114,7 @@
             </dx:DXTabItem>
             <dx:DXTabItem Header="Стакан">
                 <Grid Background="Transparent" Margin="0,-9,-9,-9">
-                    <Canvas x:Name="canvasIndicator" Margin="0,0,1117,0" Height="248" VerticalAlignment="Top" SizeChanged="canvasIndicator_SizeChanged">
-                        <Canvas.Background>
-                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                <GradientStop Color="Black" Offset="0"/>
-                                <GradientStop Color="#FF762222" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Canvas.Background>
-                        <Rectangle x:Name="backgroundBar" Fill="White" Stroke="Black" Panel.ZIndex="1" Opacity="0.7" IsEnabled="False" Height="248" RenderTransformOrigin="0.5,0.5" Width="594">
-                            <Rectangle.RenderTransform>
-                                <TransformGroup>
-                                    <ScaleTransform ScaleY="-1"/>
-                                    <SkewTransform/>
-                                    <RotateTransform/>
-                                    <TranslateTransform/>
-                                </TransformGroup>
-                            </Rectangle.RenderTransform>
-                        </Rectangle>
-                    </Canvas>
-                    <Canvas x:Name="glassCanvas" SizeChanged="glassCanvas_SizeChanged" MouseWheel="glassCanvas_MouseWheel" HorizontalAlignment="Right" Width="774" ClipToBounds="True" Margin="0,0,0,0">
+                    <Canvas x:Name="glassCanvas" SizeChanged="glassCanvas_SizeChanged" MouseWheel="glassCanvas_MouseWheel" ClipToBounds="True" Margin="-9,0,0,0">
                         <Canvas.Background>
                             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                                 <GradientStop Color="#FFE9F2FD" Offset="0"/>

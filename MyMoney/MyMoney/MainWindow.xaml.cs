@@ -49,7 +49,7 @@ namespace MyMoney
                 Thread.CurrentThread.CurrentUICulture = ci;
                 InitializeComponent();
                 tradeGraphVisual = new TradeGraph(); // график для визуализации сделок
-                GlassVisual = new GlassGraph(glassCanvas, canvasIndicator);
+                GlassVisual = new GlassGraph(glassCanvas);
                 GlassVisual.tbGlassValue = tbValuesGlass;
                 GlassVisual.tbGlassValue25 = tbValuesGlass25;
 
@@ -537,7 +537,6 @@ namespace MyMoney
 
         private void canvasIndicator_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            backgroundBar.Width = (sender as Canvas).ActualWidth;
             if (dsource != null)
             {
                 dsource.glassgraph.visualAllElements.countAddedWithNotShowData++;
