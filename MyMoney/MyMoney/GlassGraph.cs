@@ -34,7 +34,6 @@ namespace MyMoney
         public delegate void DoTradeShort();
         public event DoTradeLong OnDoTradeLong;
         public event DoTradeShort OnDoTradeShort;
-        public int abssummchangeval;
         public GlassGraph()
         {
             visualAllElements = new VisualAllElemnts();
@@ -221,7 +220,7 @@ namespace MyMoney
                                 }
                                 if (GlassValues[minAsk].rectMain != null && GlassValues[maxBid].rectMain != null)
                                 {
-                                    recGradientUp.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(Canvas.GetTop(recGradientUp), Canvas.GetTop(GlassValues[minAsk].rectMain) - 49 * 10, TimeSpan.FromMilliseconds(50)));
+                                    recGradientUp.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(Canvas.GetTop(recGradientUp), Canvas.GetTop(GlassValues[minAsk].rectMain) - 49 * HieghtOneItem, TimeSpan.FromMilliseconds(50)));
                                     recGradientDown.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(Canvas.GetTop(recGradientDown), Canvas.GetTop(GlassValues[maxBid].rectMain), TimeSpan.FromMilliseconds(50)));
                                 }
                             }
@@ -250,7 +249,7 @@ namespace MyMoney
                         double top = 0;
                         DoubleAnimation danimation = new DoubleAnimation();
                         danimation.By = _deltamove;
-                        danimation.Duration = TimeSpan.FromMilliseconds(300);
+                        danimation.Duration = TimeSpan.FromMilliseconds(200);
                         if (o is Shape)
                         {
                             top = Canvas.GetTop((o as Shape));
@@ -290,7 +289,7 @@ namespace MyMoney
                     tbGlassValue25.Text += "\r\n" + r.sumPresetHeight.ToString();
                     tbGlassValue.Text += "\r\nOpIn:" + summContractInGlass50.ToString();
 
-                    visualAllElements.listGradient.Add(GradientBrushForIndicatorAll.Clone());
+                    //visualAllElements.listGradient.Add(GradientBrushForIndicatorAll.Clone());
                     // делаем рендеринг раз в минуту (1000ms)
                     DateTime ddd = DateTime.Now;
                     if (ddd.Subtract(lastShowDataCall).TotalMilliseconds > 200)
@@ -354,11 +353,11 @@ namespace MyMoney
                         if (i != 0)
                             DrawItem(_dt, -i, lastMinAsk, lastMaxBid);
                     }
-                    recGradientUp = new Rectangle { SnapsToDevicePixels = true, Width = 12, Height = 10 * 50 };
-                    recGradientDown =  new Rectangle { SnapsToDevicePixels = true, Width = 12, Height = 10 * 50 };
+                    recGradientUp = new Rectangle { SnapsToDevicePixels = true, Width = 12, Height = HieghtOneItem * 50 };
+                    recGradientDown = new Rectangle { SnapsToDevicePixels = true, Width = 12, Height = HieghtOneItem * 50 };
 
                     Canvas.SetLeft(recGradientUp, canvas.ActualWidth - 85);
-                    Canvas.SetTop(recGradientUp, centerCanvas - 10 * 50);
+                    Canvas.SetTop(recGradientUp, centerCanvas - HieghtOneItem * 50);
                     Canvas.SetZIndex(recGradientUp, 2);
                     recGradientUp.Fill = GradientBrushForIndicatorUp;
 
@@ -373,49 +372,49 @@ namespace MyMoney
         }
         public void DrawItem(DateTime _dt, int i, double _minAsk, double _maxBid)
         {
-            Rectangle block = new Rectangle { SnapsToDevicePixels = true, Width = 110, Height = 10 };
-            Rectangle block2 = new Rectangle { SnapsToDevicePixels = true, Height = 10 };
-            Rectangle block3 = new Rectangle { SnapsToDevicePixels = true, Height = 10 };
-            Rectangle block4 = new Rectangle { SnapsToDevicePixels = true, Height = 10 };
+            Rectangle block = new Rectangle { SnapsToDevicePixels = true, Width = 110, Height = HieghtOneItem };
+            Rectangle block2 = new Rectangle { SnapsToDevicePixels = true, Height = HieghtOneItem };
+            Rectangle block3 = new Rectangle { SnapsToDevicePixels = true, Height = HieghtOneItem };
+            Rectangle block4 = new Rectangle { SnapsToDevicePixels = true, Height = HieghtOneItem };
 
             if (i > 0)
                 block.Fill = UpBrush;
             else if (i < 0)
                 block.Fill = DownBrush;
 
-            TextBlock t = new TextBlock { FontSize = 10 };
-            TextBlock t1 = new TextBlock { FontSize = 10 };
-            TextBlock t2 = new TextBlock { FontSize = 10 };
+            TextBlock t = new TextBlock { FontSize = 8 };
+            TextBlock t1 = new TextBlock { FontSize = 8 };
+            TextBlock t2 = new TextBlock { FontSize = 8 };
 
-            Canvas.SetLeft(block, canvas.ActualWidth - 108 - 30);
-            Canvas.SetTop(block, centerCanvas - i * 10 + 1);
+            Canvas.SetLeft(block, canvas.ActualWidth - 138);
+            Canvas.SetTop(block, centerCanvas - i * HieghtOneItem);
             Canvas.SetZIndex(block, 0);
 
-            Canvas.SetLeft(block2, canvas.ActualWidth - 108 - 30);
-            Canvas.SetTop(block2, centerCanvas - i * 10 + 1);
+            Canvas.SetLeft(block2, canvas.ActualWidth - 138);
+            Canvas.SetTop(block2, centerCanvas - i * HieghtOneItem);
             Canvas.SetZIndex(block2, 1);
             block2.Fill = VolumeBrush;
 
             Canvas.SetLeft(block3, canvas.ActualWidth - 26);
-            Canvas.SetTop(block3, centerCanvas - i * 10 + 1);
+            Canvas.SetTop(block3, centerCanvas - i * HieghtOneItem);
             Canvas.SetZIndex(block3, 1);
             block3.Fill = ChangeVolDownBrush;
 
             Canvas.SetLeft(block4, canvas.ActualWidth - 140);
-            Canvas.SetTop(block4, centerCanvas - i * 10 + 1);
+            Canvas.SetTop(block4, centerCanvas - i * HieghtOneItem);
             Canvas.SetZIndex(block4, 1);
             block4.Fill = ChangeVolUpBrush;
 
-            Canvas.SetLeft(t, canvas.ActualWidth - 40 - 30);
-            Canvas.SetTop(t, centerCanvas - 1 - i * 10);
+            Canvas.SetLeft(t, canvas.ActualWidth - 70);
+            Canvas.SetTop(t, centerCanvas - 1 - i * HieghtOneItem);
             Canvas.SetZIndex(t, 9);
 
-            Canvas.SetLeft(t1, canvas.ActualWidth - 105 - 30);
-            Canvas.SetTop(t1, centerCanvas - 1 - i * 10);
+            Canvas.SetLeft(t1, canvas.ActualWidth - 135);
+            Canvas.SetTop(t1, centerCanvas - 1 - i * HieghtOneItem);
             Canvas.SetZIndex(t1, 9);
 
             Canvas.SetLeft(t2, canvas.ActualWidth - 20);
-            Canvas.SetTop(t2, centerCanvas - 1 - i * 10);
+            Canvas.SetTop(t2, centerCanvas - 1 - i * HieghtOneItem);
             Canvas.SetZIndex(t2, 9);
 
             canvas.Children.Add(block);
@@ -431,7 +430,7 @@ namespace MyMoney
             {
                 line100 = new Line { X2 = canvas.ActualWidth - 21, Stroke = Brushes.Silver, StrokeThickness = 1 };
                 t.FontWeight = System.Windows.FontWeights.Black;
-                Canvas.SetTop(line100, centerCanvas - i * 10 + 6);
+                Canvas.SetTop(line100, centerCanvas - i * HieghtOneItem + 6);
                 Canvas.SetZIndex(t, 5);
                 Canvas.SetZIndex(line100, 0);
                 canvas.Children.Add(line100);
@@ -537,13 +536,19 @@ namespace MyMoney
         }
 
         public SortedDictionary<double, GlassItem> GlassValues = new SortedDictionary<double, GlassItem>();
+        private int abssummchangeval;
+        private double lastMinAsk, lastMaxBid;
+        public double lastBid = 0, lastAsk = 0;
+
         private double stepglass = 0;
         public double StepGlass { get { return stepglass; } set { stepglass = value;  visualAllElements.StepGlass = value; } }
+
+        private double heightoneitem = 9;
+        public double HieghtOneItem { get { return heightoneitem; } private set { heightoneitem = 9; } }
+
         public int summContractInGlass50 = 0;
         public Canvas canvas, ribboncanvas, tickGraphCanvas;
         public int centerCanvas;
-        private double lastMinAsk, lastMaxBid;
-        public double lastBid = 0, lastAsk = 0;
         private int glvalues, glvalues25, glvaluesrefilling;
         private int[] atemp = new int[50];
         private DateTime lastShowDataCall = DateTime.Now;
@@ -834,7 +839,7 @@ namespace MyMoney
         
         public List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
 
-        public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
+        //public List<LinearGradientBrush> listGradient = new List<LinearGradientBrush>();
 
         public int levelignoreval, levelheightglass, levelstartglass, levelrefilling;
         private Canvas canvasgraph = null;
