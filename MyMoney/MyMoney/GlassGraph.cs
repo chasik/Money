@@ -117,7 +117,7 @@ namespace MyMoney
                 }
                 int averageGlass = (int)sumGlass / (50 * 2);
                 int sumlong = 0, sumshort = 0;
-                int sumlongAverage = 0, sumshortAverage = 0;
+                //int sumlongAverage = 0, sumshortAverage = 0;
 
                 // новая версия, более взвешенное значение (как год назад)
                 for (int i = 0; i < 50/*paramTh.glassHeight*/; i++)

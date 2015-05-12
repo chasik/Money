@@ -45,11 +45,6 @@ namespace MyMoney
 
         public int cookieId = 0;
         public AllClaimsInfo allClaims = new AllClaimsInfo();
-        public Dictionary<DateTime, int> activeAmounts = new Dictionary<DateTime, int>();
-        public List<DateTime> oldAmounts = new List<DateTime>();
-        public TimeSpan intervalT = new TimeSpan(0, 0, 30);
-        public int activeTradingVolume;
-        public int activeTradingDiraction;
         public bool TradeAtVolume = false;
 
         public SmartCOM3Lib.StServerClass scom;
@@ -64,7 +59,6 @@ namespace MyMoney
         public event GetInformation OnInformation;
 
         public event ChangeGlass OnChangeGlass;
-        public event ChangeVisualIndicator OnChangeVisualIndicator;
 
         public GlassGraph glassgraph { get; set; }
 
@@ -494,28 +488,6 @@ namespace MyMoney
                 if (OnAddTick != null)
                     OnAddTick(datetime, price, volume, ActionGlassItem.sell);
             }
-            DateTime dttemp = DateTime.Now;
-            if (!activeAmounts.ContainsKey(dttemp))
-                activeAmounts.Add(dttemp, (int)v);
-            else
-                activeAmounts[dttemp] += (int)v;
-
-            oldAmounts.Clear();
-            int s = 0, s1 = 0;
-            foreach (DateTime dt in activeAmounts.Keys)
-            {
-                if (dttemp.Subtract(dt) > intervalT)
-                    oldAmounts.Add(dt);
-                else
-                {
-                    s += Math.Abs(activeAmounts[dt]);
-                    s1 += activeAmounts[dt];
-                }
-            }
-            foreach (DateTime dt in oldAmounts)
-                activeAmounts.Remove(dt);
-            activeTradingVolume = s;
-            activeTradingDiraction = s1;
         }
 
         void scom_UpdateQuote(string symbol, DateTime datetime, double open, double high, double low, double close, double last, double volume, double size, double bid, double ask, double bidsize, double asksize, double open_int, double go_buy, double go_sell, double go_base, double go_base_backed, double high_limit, double low_limit, int trading_status, double volat, double theor_price)

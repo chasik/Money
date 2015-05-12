@@ -81,15 +81,7 @@
                     <CheckBox x:Name="chbVisualisationTest" Content="Визуализация" HorizontalAlignment="Left" Margin="4,402,0,0" VerticalAlignment="Top" Width="118" Height="16" Grid.Column="1" Grid.ColumnSpan="2"/>
                     <Slider x:Name="speedSlider" Grid.Column="1" HorizontalAlignment="Left" Margin="40,0,0,172" VerticalAlignment="Bottom" Height="24" Width="194" Interval="44" Minimum="-15" Maximum="30" ValueChanged="speedSlider_ValueChanged" SmallChange="1" Grid.ColumnSpan="2"/>
                     <Label x:Name="speedLabel" Content="0" HorizontalAlignment="Left" Margin="4,0,0,170" VerticalAlignment="Bottom" Width="48" Height="26" Grid.Column="1"/>
-                    <Slider x:Name="sliderStartGlassLevel" HorizontalAlignment="Left" Margin="42,784,0,0" VerticalAlignment="Top" Width="190" Maximum="30" SmallChange="1" ValueChanged="Slider_ValueChanged_1" Value="5" Height="24" Grid.Column="1" Grid.ColumnSpan="2"/>
-                    <Slider x:Name="sliderIndicatorLevel" Margin="42,812,0,-7" VerticalAlignment="Top" Maximum="1500" SmallChange="10" LargeChange="20" Value="250" ValueChanged="Slider_ValueChanged" TickFrequency="10" Height="22" HorizontalAlignment="Left" Width="190" Grid.Column="1" Grid.ColumnSpan="2"/>
-                    <Label x:Name="lbLevelIngoreVal" Content="0" HorizontalAlignment="Left" Margin="4,812,0,-7" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="22" Grid.Column="1"/>
-                    <Label x:Name="lbLevelIngoreGlass" Content="0" HorizontalAlignment="Left" Margin="4,784,0,0" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="24" Grid.Column="1"/>
-                    <Slider x:Name="sliderGlassHeightLevel" HorizontalAlignment="Left" Margin="42,760,0,0" VerticalAlignment="Top" Width="190" Minimum="1" Maximum="50" SmallChange="1" Value="15" ValueChanged="Slider_ValueChanged_2" Height="22" Interval="1" Grid.Column="1" Grid.ColumnSpan="2"/>
-                    <Label x:Name="lbLevelHeighGlass" Content="0" HorizontalAlignment="Left" Margin="4,760,0,0" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="22" Grid.Column="1"/>
                     <Label Content="glassStart:" HorizontalAlignment="Left" Margin="4,430,0,0" VerticalAlignment="Top" Width="82" FontFamily="Arial Narrow" Height="20" FontSize="10" Grid.Column="1"/>
-                    <Slider x:Name="sliderRefillingLevel" Margin="42,838,0,-33" VerticalAlignment="Top" Maximum="1500" SmallChange="10" LargeChange="20" Value="1500" TickFrequency="10" ValueChanged="sliderRefillingLevel_ValueChanged" Height="22" HorizontalAlignment="Left" Width="190" Grid.Column="1" Grid.ColumnSpan="2"/>
-                    <Label x:Name="lbLevelRefillingVal" Content="0" HorizontalAlignment="Left" Margin="4,834,0,-31" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="24" Grid.Column="1"/>
                 </Grid>
             </dx:DXTabItem>
             <dx:DXTabItem Header="Тест">
@@ -122,7 +114,14 @@
                             </LinearGradientBrush>
                         </Canvas.Background>
                     </Canvas>
-
+                    <Slider x:Name="sliderStartGlassLevel" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Maximum="30" SmallChange="1" ValueChanged="Slider_ValueChanged_1" Value="5" Height="24" Canvas.Left="48" Canvas.Top="819" Margin="37,29,0,0"/>
+                    <Slider x:Name="sliderIndicatorLevel" VerticalAlignment="Top" Maximum="1500" SmallChange="10" LargeChange="20" Value="250" ValueChanged="Slider_ValueChanged" TickFrequency="10" Height="22" HorizontalAlignment="Left" Width="123" Canvas.Left="48" Canvas.Top="847" Margin="37,58,0,0"/>
+                    <Label x:Name="lbLevelIngoreVal" Content="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="22" Canvas.Left="10" Canvas.Top="847" Margin="2,56,0,0"/>
+                    <Label x:Name="lbLevelIngoreGlass" Content="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="24" Canvas.Left="10" Canvas.Top="819" Margin="2,27,0,0"/>
+                    <Slider x:Name="sliderGlassHeightLevel" HorizontalAlignment="Left" VerticalAlignment="Top" Width="123" Minimum="1" Maximum="50" SmallChange="1" Value="15" ValueChanged="Slider_ValueChanged_2" Height="22" Interval="1" Canvas.Left="48" Canvas.Top="795" Margin="37,4,0,0"/>
+                    <Label x:Name="lbLevelHeighGlass" Content="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="22" Canvas.Left="10" Canvas.Top="795" Margin="2,2,0,0"/>
+                    <Slider x:Name="sliderRefillingLevel" VerticalAlignment="Top" Maximum="1500" SmallChange="10" LargeChange="20" Value="1500" TickFrequency="10" ValueChanged="sliderRefillingLevel_ValueChanged" Height="22" HorizontalAlignment="Left" Width="123" Canvas.Left="48" Canvas.Top="873" Margin="37,85,0,0"/>
+                    <Label x:Name="lbLevelRefillingVal" Content="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="24" Canvas.Left="10" Canvas.Top="869" Margin="2,83,0,0"/>
                 </Grid>
             </dx:DXTabItem>
 

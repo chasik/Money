@@ -13,7 +13,6 @@ namespace MyMoney
     public delegate void GetInformation(InfoElement _element, string _mess);
     public delegate void ChangeGlass(DateTime _dt, double _p, double _v, int _row, ActionGlassItem _a);
     public delegate void AddTick(DateTime _dt, double _p, double _v, ActionGlassItem _a);
-    public delegate void ChangeVisualIndicator();
 
     public interface IDataSource
     {
@@ -27,7 +26,6 @@ namespace MyMoney
         event GetInformation OnInformation;
 
         event ChangeGlass OnChangeGlass;
-        event ChangeVisualIndicator OnChangeVisualIndicator;
         event AddTick OnAddTick;
 
         GlassGraph glassgraph { get; set; }

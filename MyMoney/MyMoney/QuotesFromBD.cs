@@ -63,7 +63,6 @@ namespace MyMoney
         public event GetInformation OnInformation;
 
         public event ChangeGlass OnChangeGlass;
-        public event ChangeVisualIndicator OnChangeVisualIndicator;
         public event AddTick OnAddTick;
         public QuotesFromBD() 
         {
@@ -434,7 +433,7 @@ namespace MyMoney
                             indicatorGoToZero = true;
                         actiontick = dr.Field<byte?>("idaction");
                         volumetick = dr.Field<float?>("volumetick");
-                        if (OnAddTick != null && DoVisualisation)
+                        if (DoVisualisation && OnAddTick != null)
                             OnAddTick(dtCurrentRow, (double)pricetick, (double)volumetick, actiontick == 2 ? ActionGlassItem.sell : ActionGlassItem.buy);
                         if (priceEnterShort != 0 && indicator > 0 && actiontick == 1)
                         {
@@ -624,11 +623,7 @@ namespace MyMoney
                         }
                         if (DoVisualisation && OnChangeGlass != null)
                         {
-                            ActionGlassItem act = ActionGlassItem.zero;
-                            if (typeprice == 1)         act = ActionGlassItem.sell;
-                            else if (typeprice == 2)    act = ActionGlassItem.buy;
-
-                            OnChangeGlass(dtCurrentRow, updatepricegl, updatevolumegl, rownum, act);
+                            OnChangeGlass(dtCurrentRow, updatepricegl, updatevolumegl, rownum, typeprice == 1 ? ActionGlassItem.sell : ActionGlassItem.buy);
                         }
                         if (!glass.ContainsKey(updatepricegl))
                             glass.Add(updatepricegl, updatevolumegl);
@@ -684,8 +679,6 @@ namespace MyMoney
                                 }
                                 else
                                     indicator = (int)calculatedIndidcator.values[dttemp];
-                                if (OnChangeVisualIndicator != null && DoVisualisation)
-                                    OnChangeVisualIndicator(/*tempListForIndicator.ToArray(), tempListForIndicatorAverage.ToArray(), -1*/);
                             }
                         }
 
