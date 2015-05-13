@@ -4,6 +4,9 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace MyMoney
 {
@@ -535,4 +538,75 @@ namespace MyMoney
         }
     }
 
+}
+
+public enum IndicatorCommand
+{
+    none = 0, up = 1, down = -1
+}
+public class GraphAreaForGlass
+{
+    public static List<GraphAreaForGlass> areasList = new List<GraphAreaForGlass>();
+    private static List<Rectangle> allBarList = new List<Rectangle>();
+
+    public static void AddData(IndicatorCommand _lastIndicatorCommand, double _xAll, double _yAsk, double _yBid){
+        if (areasList.Count == 0
+            || (areasList[areasList.Count - 1].lastIndicatorCommand != _lastIndicatorCommand
+                && _lastIndicatorCommand != IndicatorCommand.none))
+            areasList.Add(new GraphAreaForGlass(_lastIndicatorCommand, _xAll, _yAsk, _yBid));
+        else
+            AddDataToCurrentItem(_lastIndicatorCommand, _xAll, _yAsk, _yBid);
+    }
+
+    private static void AddDataToCurrentItem(IndicatorCommand _lastIndicatorCommand, double _xAll, double _yAsk, double _yBid)
+    {
+        GraphAreaForGlass ga = areasList[areasList.Count - 1];
+        ga.exitX = _xAll;
+        ga.maxY = Math.Max(ga.maxY, _yBid);
+        ga.minY = Math.Min(ga.minY, _yAsk);
+    }
+    internal static void ShowAllBars(Canvas _canvas)
+    {
+
+        foreach (Rectangle r in allBarList)
+            _canvas.Children.Remove(r);
+
+        allBarList.Clear();
+        foreach (GraphAreaForGlass baritem in GraphAreaForGlass.areasList)
+        {
+            Rectangle r = new Rectangle()
+            {
+                Height = Math.Abs(baritem.maxY - baritem.minY),
+                Width = baritem.exitX - baritem.enterX,
+                Opacity = 0.3,
+                Fill = baritem.lastIndicatorCommand == IndicatorCommand.up ? Brushes.Blue : Brushes.Red
+            };
+            Canvas.SetZIndex(r, 1);
+            Canvas.SetTop(r, baritem.minY);
+            Canvas.SetLeft(r, baritem.enterX);
+            _canvas.Children.Add(r);
+            allBarList.Add(r);
+        }
+    }
+    private GraphAreaForGlass(IndicatorCommand _lastIndicatorCommand, double _xAll, double _yAsk, double _yBid)
+    {
+        lastIndicatorCommand = _lastIndicatorCommand;
+        enterX = exitX = _xAll;
+        switch (_lastIndicatorCommand)
+        {
+            case IndicatorCommand.none:
+                break;
+            case IndicatorCommand.up:
+                minY = maxY = enterY = _yAsk;
+                break;
+            case IndicatorCommand.down:
+                minY = maxY = enterY = _yBid;
+                break;
+        }
+    }
+
+    public IndicatorCommand lastIndicatorCommand;
+    public double enterX, enterY;
+    public double exitX, exitY;
+    public double minY, maxY;
 }
