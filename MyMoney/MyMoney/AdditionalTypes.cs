@@ -549,6 +549,10 @@ public class GraphAreaForGlass
     public static List<GraphAreaForGlass> areasList = new List<GraphAreaForGlass>();
     private static List<Rectangle> allBarList = new List<Rectangle>();
 
+    public IndicatorCommand lastIndicatorCommand;
+    public double enterX, enterY;
+    public double exitX, exitY;
+    public double minY, maxY;
     public static void AddData(IndicatorCommand _lastIndicatorCommand, double _xAll, double _yAsk, double _yBid){
         if (areasList.Count == 0
             || (areasList[areasList.Count - 1].lastIndicatorCommand != _lastIndicatorCommand
@@ -568,11 +572,11 @@ public class GraphAreaForGlass
                 break;
             case IndicatorCommand.up:
                 ga.maxY = Math.Max(ga.maxY, _yBid);
-                ga.minY = Math.Min(ga.minY, _yAsk);
+                ga.minY = Math.Min(ga.minY, _yBid);
                 break;
             case IndicatorCommand.down:
                 ga.maxY = Math.Max(ga.maxY, _yAsk);
-                ga.minY = Math.Min(ga.minY, _yBid);
+                ga.minY = Math.Min(ga.minY, _yAsk);
                 break;
         }
     }
@@ -608,16 +612,11 @@ public class GraphAreaForGlass
             case IndicatorCommand.none:
                 break;
             case IndicatorCommand.up:
-                minY = maxY = enterY = _yAsk;
+                minY = maxY = enterY = _yBid;
                 break;
             case IndicatorCommand.down:
-                minY = maxY = enterY = _yBid;
+                minY = maxY = enterY = _yAsk;
                 break;
         }
     }
-
-    public IndicatorCommand lastIndicatorCommand;
-    public double enterX, enterY;
-    public double exitX, exitY;
-    public double minY, maxY;
 }
