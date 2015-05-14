@@ -562,8 +562,19 @@ public class GraphAreaForGlass
     {
         GraphAreaForGlass ga = areasList[areasList.Count - 1];
         ga.exitX = _xAll;
-        ga.maxY = Math.Max(ga.maxY, _yBid);
-        ga.minY = Math.Min(ga.minY, _yAsk);
+        switch (ga.lastIndicatorCommand)
+        {
+            case IndicatorCommand.none:
+                break;
+            case IndicatorCommand.up:
+                ga.maxY = Math.Max(ga.maxY, _yBid);
+                ga.minY = Math.Min(ga.minY, _yAsk);
+                break;
+            case IndicatorCommand.down:
+                ga.maxY = Math.Max(ga.maxY, _yAsk);
+                ga.minY = Math.Min(ga.minY, _yBid);
+                break;
+        }
     }
     internal static void ShowAllBars(Canvas _canvas)
     {
