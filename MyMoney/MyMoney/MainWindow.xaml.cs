@@ -445,9 +445,9 @@ namespace MyMoney
 
         private void glassCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (e.HeightChanged)
+            if (dsource != null)
             {
-
+                dsource.glassgraph.visualAllElements.ShowData(true, true);
             }
         }
 
@@ -532,16 +532,6 @@ namespace MyMoney
             if (dsource != null && dsource is QuotesFromSmartCom)
                 (dsource as QuotesFromSmartCom).Trading = false;
         }
-
-        private void canvasIndicator_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (dsource != null)
-            {
-                dsource.glassgraph.visualAllElements.countAddedWithNotShowData++;
-                dsource.glassgraph.visualAllElements.ShowData(true);
-            }
-        }
-
         private void MyWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
 

@@ -263,7 +263,7 @@ namespace MyMoney
 
                     // делаем рендеринг раз в минуту (1000ms)
                     DateTime ddd = DateTime.Now;
-                    if (ddd.Subtract(lastShowDataCall).TotalMilliseconds > 300)
+                    if (ddd.Subtract(lastShowDataCall).TotalMilliseconds > 100)
                     {
                         visualAllElements.ShowData();
                         lastShowDataCall = ddd;
@@ -345,6 +345,11 @@ namespace MyMoney
                             canvas.Children.Add(indicatorGraphSumm);
                             canvas.Children.Add(indicatorRefilling);
                             canvas.Children.Add(SMA);
+
+                    foreach (FrameworkElement fe in visualAllElements.listFElemnts)
+                        canvas.Children.Add(fe);
+
+                    GraphAreaForGlass.ShowAllBars(canvas);
                 });
         }
 
@@ -580,7 +585,7 @@ namespace MyMoney
             List<ChangeValuesItem> templist = new List<ChangeValuesItem>();
             foreach (ChangeValuesItem v in listChangeVal)
             {
-                if ((_dt - v.dt).TotalSeconds < 3) // за последние n секунд
+                if ((_dt - v.dt).TotalMilliseconds < 500) // за последние n секунд
                 {
                     double deltaval = v.newvalue - v.oldvalue;
                     if (deltaval < 0)
@@ -716,8 +721,10 @@ namespace MyMoney
 
             return result;
         }
-        public void ShowData(bool _rebuild = false)
+        public void ShowData(bool _rebuild = false, bool _resize = false)
         {
+            if (visualElementsList.Count < 1 || (visualElementsList.Count - countAddedWithNotShowData < 0))
+                return;
             try
             {
                 // смещение градиента -------------------------------------------------------------------------------
@@ -756,8 +763,9 @@ namespace MyMoney
                     foreach (VisualOneElement ve in visualElementsList)
                         CalcSummIndicatorValue(ve.atempValues, ve.resultOneTick);
                 }
+
                 // удаляем все, что за пределами видимости
-                if (visualElementsList.Count > 2 * CanvasGraph.ActualWidth)
+                if (visualElementsList.Count > 1 * CanvasGraph.ActualWidth && CanvasGraph.ActualWidth > 0)
                     visualElementsList.RemoveRange(0, (int)(visualElementsList.Count - 2 * CanvasGraph.ActualWidth));
 
                 double maxp = visualElementsList.Count > 0 ? lastvisibleask : StepGlass;
@@ -779,11 +787,6 @@ namespace MyMoney
                 _sma.Points.Clear();
                 int c = visualElementsList.Count;
                 GraphAreaForGlass.areasList.Clear();
-                // уберем с canvas объекты
-                foreach (FrameworkElement fe in listFElemnts)
-                    CanvasGraph.Children.Remove(fe);
-                // и очистим список этих объектов
-                listFElemnts.Clear();
                 for (int i = (int)(c > CanvasGraph.ActualWidth ? c - CanvasGraph.ActualWidth : 0); i < c; i++)
                 {
                     ResultOneTick rt = visualElementsList[i].resultOneTick;
@@ -795,54 +798,41 @@ namespace MyMoney
                     _tickGraphBid.Points.Add(new Point(xAll, yBid));
                     _indicatorGraphSumm.Points.Add(new Point(xAll, (maxInd - rt.valPresetHeight) / onePixelIndicator));
                     _indicatorRefilling.Points.Add(new Point(xAll, (maxInd - rt.valRefilling) / onePixelIndicator));
-                    GraphAreaForGlass.AddData((IndicatorCommand) Math.Sign(rt.valPresetHeight), xAll, yAsk, yBid);
-                    ShowSpeedChange(CanvasGraph, rt.resultChangeSpeed, xAll);
+                    GraphAreaForGlass.AddData((IndicatorCommand)Math.Sign(rt.valPresetHeight), xAll, yAsk, yBid);
                 }
                 GraphAreaForGlass.ShowAllBars(CanvasGraph);
+                if (_resize)
+                    listFElemnts.Clear();
 
-                // разметка цены
-                //if (_rebuild || maxp != lastmaxpricegraph || minp != lastminpricegraph)
-                //{
-                //    foreach (Line l in listHorizontalLine)
-                //    {
-                //        CanvasGraph.Children.Remove(l);
-                //    }
-                //    listHorizontalLine.Clear();
-                //    for (double yy = minp; yy < maxp; yy += StepGlass)
-                //    {
-                //        if (yy % (10 * StepGlass) == 0 || yy % (5 * StepGlass) == 0)
-                //        {
-                //            Line linehorizontal = null;
-                //            if (yy % (10 * StepGlass) == 0)
-                //                linehorizontal = new Line { X2 = CanvasGraph.ActualWidth, Stroke = Brushes.DarkGray, StrokeThickness = 1 };
-                //            else
-                //                linehorizontal = new Line { X2 = CanvasGraph.ActualWidth, Stroke = Brushes.DarkGray, StrokeThickness = 1, StrokeDashArray = { 3, 5 } };
-                //            Canvas.SetTop(linehorizontal, (maxp - yy) / onePixelPrice);
-                //            Canvas.SetZIndex(linehorizontal, 1);
-                //            CanvasGraph.Children.Add(linehorizontal);
-                //            listHorizontalLine.Add(linehorizontal);
-                //        }
-                //    }
-                //    lastmaxpricegraph = maxp; lastminpricegraph = minp;
-                //}
+                foreach (FrameworkElement fe in listFElemnts)
+                {
+                    (fe as Line).X1 = (fe as Line).X1 - countAddedWithNotShowData;
+                    (fe as Line).X2 = (fe as Line).X2 - countAddedWithNotShowData;
+                }
+                for (int x = _resize ? 0 : visualElementsList.Count - countAddedWithNotShowData; x < visualElementsList.Count; x++)
+                {
+                    ResultOneTick rt = visualElementsList[x].resultOneTick;
+                    ShowSpeedChange(CanvasGraph, rt.resultChangeSpeed, CanvasGraph.ActualWidth - visualElementsList.Count - widthGlassValues + x);
+                }
                 countAddedWithNotShowData = 0;
-            } catch (Exception e )
+
+            } catch (Exception e)
             {
-                MessageBox.Show(e.Message + " " + e.Source);
+                MessageBox.Show("метод ShowData:\r\n" + e.Message);
             }
         }
 
         private void ShowSpeedChange(Canvas CanvasGraph, ResultSummSpeedChangeGlass _resultChangeSpeed, double _xAll)
         {
-            double ycenter = 120;
-            Line l1 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - _resultChangeSpeed.summChangeUp.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.2 };
-            Line l2 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + _resultChangeSpeed.summChangeDown.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.2 };
-            Line l3 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - _resultChangeSpeed.summChangeUp.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.2 };
-            Line l4 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + _resultChangeSpeed.summChangeDown.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.2 };
-            Canvas.SetZIndex(l1, 5);
-            Canvas.SetZIndex(l2, 5);
-            Canvas.SetZIndex(l3, 5);
-            Canvas.SetZIndex(l4, 5);
+            double ycenter = 100;
+            Line l1 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - _resultChangeSpeed.summChangeUp.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
+            Line l2 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + _resultChangeSpeed.summChangeDown.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
+            Line l3 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - _resultChangeSpeed.summChangeUp.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
+            Line l4 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + _resultChangeSpeed.summChangeDown.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
+            Canvas.SetZIndex(l1, 15);
+            Canvas.SetZIndex(l2, 15);
+            Canvas.SetZIndex(l3, 15);
+            Canvas.SetZIndex(l4, 15);
             CanvasGraph.Children.Add(l1);
             CanvasGraph.Children.Add(l2);
             CanvasGraph.Children.Add(l3);
@@ -891,22 +881,22 @@ namespace MyMoney
         public int LevelHeightGlass
         {
             get { return levelheightglass; }
-            set { levelheightglass = value; countAddedWithNotShowData++; ShowData(true); }
+            set { levelheightglass = value; ShowData(true); }
         }
         public int LevelStartGlass
         {
             get { return levelstartglass; }
-            set { levelstartglass = value; countAddedWithNotShowData++; ShowData(true); }
+            set { levelstartglass = value; ShowData(true); }
         }
         public int LevelIgnoreValue
         {
             get { return levelignoreval; }
-            set { levelignoreval = value; countAddedWithNotShowData++; ShowData(true); }
+            set { levelignoreval = value; ShowData(true); }
         }
         public int LevelRefillingValue
         {
             get { return levelrefilling; }
-            set { levelrefilling = value; countAddedWithNotShowData++; ShowData(true); }
+            set { levelrefilling = value; ShowData(true); }
         }
         public Canvas CanvasGraph
         {
