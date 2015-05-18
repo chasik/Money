@@ -263,7 +263,7 @@ namespace MyMoney
 
                     // делаем рендеринг раз в минуту (1000ms)
                     DateTime ddd = DateTime.Now;
-                    if (ddd.Subtract(lastShowDataCall).TotalMilliseconds > 100)
+                    if (ddd.Subtract(lastShowDataCall).TotalMilliseconds > 300)
                     {
                         visualAllElements.ShowData();
                         lastShowDataCall = ddd;
