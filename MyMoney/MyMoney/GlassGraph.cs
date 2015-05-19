@@ -765,8 +765,8 @@ namespace MyMoney
                 }
 
                 // удаляем все, что за пределами видимости
-                if (visualElementsList.Count > 1 * CanvasGraph.ActualWidth && CanvasGraph.ActualWidth > 0)
-                    visualElementsList.RemoveRange(0, (int)(visualElementsList.Count - 2 * CanvasGraph.ActualWidth));
+                if (visualElementsList.Count > 3 * CanvasGraph.ActualWidth && CanvasGraph.ActualWidth > 0)
+                    visualElementsList.RemoveRange(0, (int)(visualElementsList.Count - 3 * CanvasGraph.ActualWidth));
 
                 double maxp = visualElementsList.Count > 0 ? lastvisibleask : StepGlass;
                 double minp = visualElementsList.Count > 0 ? lastvisiblebid : StepGlass;
