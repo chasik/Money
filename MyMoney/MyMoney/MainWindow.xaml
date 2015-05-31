@@ -79,8 +79,6 @@
                     <TextBox x:Name="tbDelayStep" HorizontalAlignment="Left" Height="18" Margin="88,620,0,0" TextWrapping="Wrap" Text="2000" VerticalAlignment="Top" Width="32" TextAlignment="Right" FontSize="10" FontFamily="Arial Narrow" Grid.Column="2"/>
                     <TextBox x:Name="tbDelayCurrent" HorizontalAlignment="Left" Height="18" Margin="84,620,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="30" TextAlignment="Right" FontSize="10" FontFamily="Arial Narrow" Grid.Column="1"/>
                     <CheckBox x:Name="chbVisualisationTest" Content="Визуализация" HorizontalAlignment="Left" Margin="4,402,0,0" VerticalAlignment="Top" Width="118" Height="16" Grid.Column="1" Grid.ColumnSpan="2" IsChecked="True"/>
-                    <Slider x:Name="speedSlider" Grid.Column="1" HorizontalAlignment="Left" Margin="40,0,0,172" VerticalAlignment="Bottom" Height="24" Width="194" Interval="44" Minimum="-15" Maximum="30" ValueChanged="speedSlider_ValueChanged" SmallChange="1" Grid.ColumnSpan="2"/>
-                    <Label x:Name="speedLabel" Content="0" HorizontalAlignment="Left" Margin="4,0,0,170" VerticalAlignment="Bottom" Width="48" Height="26" Grid.Column="1"/>
                     <Label Content="glassStart:" HorizontalAlignment="Left" Margin="4,430,0,0" VerticalAlignment="Top" Width="82" FontFamily="Arial Narrow" Height="20" FontSize="10" Grid.Column="1"/>
                 </Grid>
             </dx:DXTabItem>
@@ -122,6 +120,8 @@
                     <Label x:Name="lbLevelHeighGlass" Content="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="22" Canvas.Left="10" Canvas.Top="795" Margin="2,2,0,0"/>
                     <Slider x:Name="sliderRefillingLevel" VerticalAlignment="Top" Maximum="1500" SmallChange="10" LargeChange="20" Value="1500" TickFrequency="10" ValueChanged="sliderRefillingLevel_ValueChanged" Height="22" Canvas.Left="48" Canvas.Top="873" Margin="37,85,0,0" HorizontalAlignment="Left" Width="123" RenderTransformOrigin="1.199,0.409"/>
                     <Label x:Name="lbLevelRefillingVal" Content="0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="38" FontSize="11" FontFamily="Roboto Th" Height="24" Canvas.Left="10" Canvas.Top="869" Margin="2,83,0,0"/>
+                    <Slider x:Name="speedSlider" HorizontalAlignment="Center" Margin="40,0,1529,12" VerticalAlignment="Bottom" Height="24" Width="194" Interval="44" Minimum="-15" Maximum="30" ValueChanged="speedSlider_ValueChanged" SmallChange="1"/>
+                    <Label x:Name="speedLabel" Content="0" HorizontalAlignment="Left" Margin="4,0,0,10" VerticalAlignment="Bottom" Width="48" Height="26"/>
                 </Grid>
             </dx:DXTabItem>
 

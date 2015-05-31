@@ -140,7 +140,7 @@ namespace MyMoney
             if (symbol == workSymbol)
             {
                 workStep = step;
-                glassgraph.StepGlass = step;
+                GlassItem.stepGlass = step;
             }
             //StreamWriter sw = File.AppendText(@"C:\logssmartcom\!!!symbol.txt");
             //sw.WriteLine("symbol:" + symbol + "           short_name:" + short_name + "                  long_name:" + long_name + "              type:" + type);

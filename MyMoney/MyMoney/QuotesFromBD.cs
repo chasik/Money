@@ -157,7 +157,7 @@ namespace MyMoney
                         ti.dateTable = item["shortdate"].ToString().Remove(10);
                         ti.symbolstep = item.Field<float>("symbolstep");
                         symbolStep = ti.symbolstep;
-                        glassgraph.StepGlass = symbolStep;
+                        GlassItem.stepGlass = symbolStep;
                         ti.dtTable = DateTime.Parse(item["datecre"].ToString());
                         ti.dayNum = int.Parse(mc[0].Groups[2].ToString());
                         ti.monthNum = int.Parse(mc[0].Groups[3].ToString());
@@ -236,13 +236,13 @@ namespace MyMoney
                 sqlcom.CommandText = @"
                 SELECT dtserver, price as price, volume as volume, row as rownum, typeprice, null as bid, null as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            FROM [" + tabNam + @"_bidask] rts 
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 50, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(20, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 50, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(11, 55, 0, 0, 0)) 
             "
 	        + @"  -- UNION ALL
 
                 --SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, bid as bid, ask as ask, null AS priceTick, null AS volumetick, null AS idaction, null AS tradeno
 	            --FROM [" + tabNam + @"_quotes] rts2 
-	            --WHERE (convert(time, dtserver, 108) > timefromparts(10, 50, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(20, 55, 0, 0, 0)) 
+	            --WHERE (convert(time, dtserver, 108) > timefromparts(10, 50, 0, 0, 0)) and (convert(time, dtserver, 108) < timefromparts(11, 55, 0, 0, 0)) 
 
               "
             + @"
@@ -250,7 +250,7 @@ namespace MyMoney
 
                 SELECT dtserver, null as price, null as volume, null as rownum, null as typeprice, null as bid, null as ask, price AS priceTick, volume AS volumetick, idaction AS idaction, tradeno AS tradeno
 	            FROM [" + tabNam + @"_ticks] rft
-	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 50, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(20, 55, 0, 0, 0)) 
+	            WHERE (convert(time, dtserver, 108) > timefromparts(10, 50, 0, 0, 0)) AND (convert(time, dtserver, 108) < timefromparts(11, 55, 0, 0, 0)) 
 
             	ORDER BY dtserver ASC;
             ";
