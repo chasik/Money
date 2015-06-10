@@ -45,7 +45,7 @@ namespace WpfRobot
         {
             foreach (string s in InstrumentsList.Items)
             {
-                var q = new QuotesThread(this, s, "BP12800", "WaNo11998811it");
+                var q = new QuotesThread(this, s, "BP12800", "WaNo11998811IT");
                 q.OnBeforeStart += q_OnBeforeStart;
                 _quotesThreads.Add(q);
                 //break;

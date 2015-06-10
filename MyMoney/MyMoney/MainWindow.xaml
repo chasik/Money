@@ -21,7 +21,7 @@
                     <Button Content="Запуск" Margin="10,0,0,835" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="84" Click="Button_Click_1" Grid.Column="2"/>
                     <TextBox x:Name="textBox1" HorizontalAlignment="Left" Height="24" Margin="16,344,0,0" TextWrapping="Wrap" Text="BP12800" VerticalAlignment="Top" Width="98" Grid.Column="1"/>
                     <CheckBox x:Name="chbConnectToServer" Content="Подключение к серверу" HorizontalAlignment="Left" Margin="4,378,0,0" VerticalAlignment="Top" Width="158" Height="16" Grid.Column="1" Grid.ColumnSpan="2"/>
-                    <PasswordBox x:Name="passBox1" HorizontalAlignment="Left" Height="24" Margin="32,346,0,0" VerticalAlignment="Top" Width="102" Password="WaNo11998811it" Grid.Column="2"/>
+                    <PasswordBox x:Name="passBox1" HorizontalAlignment="Left" Height="24" Margin="32,346,0,0" VerticalAlignment="Top" Width="102" Password="WaNo11998811IT" Grid.Column="2"/>
                     <TextBox x:Name="tbThreadCount" HorizontalAlignment="Left" Height="22" Margin="70,402,0,0" TextWrapping="Wrap" Text="7" VerticalAlignment="Top" Width="48" ToolTip="Количество потоков в тесте" FontFamily="Arial Narrow" FontSize="10" Grid.Column="2"/>
                     <Label Content="Потоков:" HorizontalAlignment="Left" Margin="10,400,0,0" VerticalAlignment="Top" Width="52" Height="20" FontFamily="Arial Narrow" FontSize="10" Grid.Column="2"/>
                     <TextBox x:Name="tbAverageStart" HorizontalAlignment="Left" Height="18" Margin="6,430,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top" Width="30" TextAlignment="Right" FontSize="10" FontFamily="Arial Narrow" Grid.Column="2"/>
