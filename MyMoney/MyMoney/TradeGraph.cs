@@ -72,15 +72,15 @@ namespace MyMoney
             Bars.Clear();
             if (drData == null || drData.Length < 1)
                 return;
-            foreach (DataRow dr in drData)
+            foreach (var dr in drData)
             {
-                DateTime dt1 = (DateTime)dr.Field<DateTime?>("dtserver");
-                float pt = (float)dr.Field<float?>("priceTick");
-                float pv = (float)dr.Field<float?>("volumeTick");
+                var dt1 = (DateTime) dr.Field<DateTime?>("dtserver");
+                var pt = (int)dr.Field<float?>("priceTick");
+                var pv = (int)dr.Field<float?>("volumeTick");
                 btemp = b.AddTick(new Tick(dt1, pt, pv));
                 if (btemp != b)
                 {
-                    Bars.Add(b.openTick.dtTick, b);
+                    Bars.Add(b.openTick.TickDateTime, b);
                     b = btemp;
                 }
             }
@@ -95,38 +95,38 @@ namespace MyMoney
             graphC.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
-                    SolidColorBrush barBrushUp = new SolidColorBrush();
-                    barBrushUp.Color = Color.FromArgb(255, 90, 20, 255);
-                    SolidColorBrush barBrushDown = new SolidColorBrush();
-                    barBrushDown.Color = Color.FromArgb(255, 255, 53, 50);
+                    var barBrushUp = new SolidColorBrush {Color = Color.FromArgb(255, 90, 20, 255)};
+                    var barBrushDown = new SolidColorBrush {Color = Color.FromArgb(255, 255, 53, 50)};
 
-                    MinMaxValue mm = this.GetMinMaxValues();
-                    double widthBar = (graphC.ActualWidth - widthYArea) / Bars.Count / 1.3;
-                    double pixelInPunkt = (mm.MaxValue - mm.MinValue) / (graphC.ActualHeight - heightXArea);
+                    var mm = GetMinMaxValues();
+                    var widthBar = (graphC.ActualWidth - widthYArea) / Bars.Count / 1.3;
+                    var pixelInPunkt = (mm.MaxValue - mm.MinValue) / (graphC.ActualHeight - heightXArea);
                     if (widthBar > 5)
                         widthBar = 5;
 
                     ClearWorkAreaGraph(pixelInPunkt);
 
-                    int i = -1;
-                    foreach (Bar b in Bars.Values)
+                    var i = -1;
+                    foreach (var bar in Bars.Values)
                     {
                         i++;
-                        double topB = (mm.MaxValue - b.hiTick.Price) / pixelInPunkt;
-                        double leftB = i * widthBar * 1.3 + widthYArea;
-                        double heightB = (b.hiTick.Price - b.lowTick.Price) / pixelInPunkt;
+                        var topB = (mm.MaxValue - bar.hiTick.Price) / pixelInPunkt;
+                        var leftB = i * widthBar * 1.3 + widthYArea;
+                        var heightB = (bar.hiTick.Price - bar.lowTick.Price) / pixelInPunkt;
 
-                        Line currentShadow = new Line();
-                        currentShadow.X1 = leftB + widthBar / 2;
-                        currentShadow.X2 = leftB + widthBar / 2;
-                        currentShadow.Y1 = topB;
-                        currentShadow.Y2 = topB + heightB;
-                        currentShadow.Stroke = Brushes.Black;
-                        currentShadow.StrokeThickness = 1;
-                        currentShadow.SnapsToDevicePixels = true;
+                        var currentShadow = new Line
+                        {
+                            X1 = leftB + widthBar/2,
+                            X2 = leftB + widthBar/2,
+                            Y1 = topB,
+                            Y2 = topB + heightB,
+                            Stroke = Brushes.Black,
+                            StrokeThickness = 1,
+                            SnapsToDevicePixels = true
+                        };
 
-                        Rectangle currentBar = new Rectangle();
-                        if (b.closeTick.Price >= b.openTick.Price)
+                        var currentBar = new Rectangle();
+                        if (bar.closeTick.Price >= bar.openTick.Price)
                             currentBar.Fill = barBrushUp;
                         else
                             currentBar.Fill = barBrushDown;
@@ -136,8 +136,8 @@ namespace MyMoney
                         currentBar.SnapsToDevicePixels = true;
 
                         currentBar.Width = widthBar;
-                        currentBar.Height = Math.Abs((b.openTick.Price - b.closeTick.Price) / pixelInPunkt);
-                        Canvas.SetTop(currentBar, (mm.MaxValue - Math.Max(b.openTick.Price, b.closeTick.Price)) / pixelInPunkt);
+                        currentBar.Height = Math.Abs((bar.openTick.Price - bar.closeTick.Price) / pixelInPunkt);
+                        Canvas.SetTop(currentBar, (mm.MaxValue - Math.Max(bar.openTick.Price, bar.closeTick.Price)) / pixelInPunkt);
                         Canvas.SetLeft(currentBar, leftB);
 
                         graphC.Children.Add(currentShadow);
@@ -148,34 +148,36 @@ namespace MyMoney
 
         private MinMaxValue GetMinMaxValues()
         {
-            MinMaxValue _minmaxv = new MinMaxValue(1000000, -1000000);
-            foreach (Bar b in Bars.Values)
+            var minmaxv = new MinMaxValue(1000000, -1000000);
+            foreach (var bar in Bars.Values)
             {
-                if (b.hiTick.Price > _minmaxv.MaxValue)
-                    _minmaxv.MaxValue = b.hiTick.Price;
-                if (b.lowTick.Price < _minmaxv.MinValue)
-                    _minmaxv.MinValue = b.lowTick.Price;
+                if (bar.hiTick.Price > minmaxv.MaxValue)
+                    minmaxv.MaxValue = bar.hiTick.Price;
+                if (bar.lowTick.Price < minmaxv.MinValue)
+                    minmaxv.MinValue = bar.lowTick.Price;
             }
-            return _minmaxv;
+            return minmaxv;
         }
 
         private void ClearWorkAreaGraph(double _pixelInPunkt)
         {
             graphC.Children.Clear();
-            Rectangle gback = new Rectangle();
-            gback.StrokeThickness = 1;
-            gback.Stroke = Brushes.Black;
-            gback.Fill = Brushes.LightGray;
-            gback.SnapsToDevicePixels = true;
-            gback.Width = graphC.ActualWidth - widthYArea;
-            gback.Height = graphC.ActualHeight - heightXArea;
+            var gback = new Rectangle
+            {
+                StrokeThickness = 1,
+                Stroke = Brushes.Black,
+                Fill = Brushes.LightGray,
+                SnapsToDevicePixels = true,
+                Width = graphC.ActualWidth - widthYArea,
+                Height = graphC.ActualHeight - heightXArea
+            };
             Canvas.SetLeft(gback, widthYArea);
             Canvas.SetTop(gback, 0);
             graphC.Children.Add(gback);
 
-            MinMaxValue mm = this.GetMinMaxValues();
-            float stepY = mm.DeltaValue > 1600 ? 500 : 100;
-            float remainderY = mm.MaxValue % stepY;
+            var mm = GetMinMaxValues();
+            var stepY = mm.DeltaValue > 1600 ? 500 : 100;
+            var remainderY = mm.MaxValue % stepY;
             for (float y = mm.MaxValue - remainderY; y > mm.MinValue; y -= stepY)
             {
                 Line horizontLine = new Line();
@@ -197,18 +199,20 @@ namespace MyMoney
 
         public void AddTick(DateTime _dt, double _price, double _volume, ActionGlassItem _action)
         {
+            var price = (int) _price;
+            var volume = (int) _volume;
             graphC.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
                 (ThreadStart)delegate()
                 {
 
-                    btemp = b.AddTick(new Tick(DateTime.Now, (float) _price, (float) _volume));
+                    btemp = b.AddTick(new Tick(DateTime.Now, price, volume));
                     if (btemp != b)
                     {
-                        while (Bars.ContainsKey(b.openTick.dtTick))
+                        while (Bars.ContainsKey(b.openTick.TickDateTime))
                         {
-                            b.openTick.dtTick = b.openTick.dtTick.AddMilliseconds(1);
+                            b.openTick.TickDateTime = b.openTick.TickDateTime.AddMilliseconds(1);
                         }
-                        Bars.Add(b.openTick.dtTick, b);
+                        Bars.Add(b.openTick.TickDateTime, b);
                         b = btemp;
                     }
                     if (graphC != null)
@@ -227,16 +231,16 @@ namespace MyMoney
 
     public class Tick
     {
-        public DateTime dtTick;
-        public float Price;
-        public float Volume;
+        public DateTime TickDateTime;
+        public int Price;
+        public int Volume;
         public ActionGlassItem Action;
-        public Tick(DateTime? _dtserver, float? _price, float? _volume, ActionGlassItem _action = ActionGlassItem.zero)
+        public Tick(DateTime? serverDateTime, int price, int volume, ActionGlassItem action = ActionGlassItem.Zero)
         {
-            dtTick = (DateTime)_dtserver;
-            Price = (float)_price;
-            Volume = (float)_volume;
-            Action = _action;
+            TickDateTime = (DateTime)serverDateTime;
+            Price = price;
+            Volume = volume;
+            Action = action;
         }
     }
     public class Bar
@@ -281,7 +285,7 @@ namespace MyMoney
             TimeSpan ts;
             double deltaT = 0;
             if (_lasttick != null)
-                ts = _tick.dtTick.Subtract(this.openTick.dtTick);
+                ts = _tick.TickDateTime.Subtract(this.openTick.TickDateTime);
             else
             {
                 openTick = _tick;
@@ -310,11 +314,11 @@ namespace MyMoney
                 hiTick = _tick;
             if (lowTick == null || _tick.Price < lowTick.Price)
                 lowTick = _tick;
-            while (Ticks.ContainsKey(_tick.dtTick))
+            while (Ticks.ContainsKey(_tick.TickDateTime))
             {
-                _tick.dtTick = _tick.dtTick.AddMilliseconds(1);
+                _tick.TickDateTime = _tick.TickDateTime.AddMilliseconds(1);
             }
-            Ticks.Add(_tick.dtTick, _tick);
+            Ticks.Add(_tick.TickDateTime, _tick);
             if ((typebar != TypeBar.VolumeBar && deltaT >= (float)valuebar) || (typebar == TypeBar.VolumeBar && SummVolume > (float) valuebar))
             {
                 closeTick = _tick;

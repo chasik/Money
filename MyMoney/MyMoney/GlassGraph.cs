@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -17,16 +14,16 @@ namespace MyMoney
 {
     public enum ActionGlassItem
     {
-        zero = 0,
-        sell = 1,
-        buy = 2,
+        Zero = 0,
+        Sell = 1,
+        Buy = 2
     };
     public struct ChangeValuesItem
     {
-        public DateTime dt;
-        public double price;
-        public double oldvalue;
-        public double newvalue;
+        public DateTime DateTime;
+        public int Price;
+        public int OldValue;
+        public int NewValue;
     }
     public class GlassGraph
     {
@@ -36,7 +33,7 @@ namespace MyMoney
         public event DoTradeShort OnDoTradeShort;
         public GlassGraph()
         {
-            visualAllElements = new VisualAllElemnts();
+            VisualAllElements = new VisualAllElemnts();
         }
         public GlassGraph(Canvas _c)
         {
@@ -67,51 +64,54 @@ namespace MyMoney
             canvas.Children.Add(indicatorRefilling);
             canvas.Children.Add(SMA);
 
-            Canvas.SetZIndex(indicatorGraphSumm, 3);
-            Canvas.SetZIndex(indicatorRefilling, 2);
-            Canvas.SetZIndex(SMA, 1);
+            Panel.SetZIndex(indicatorGraphSumm, 3);
+            Panel.SetZIndex(indicatorRefilling, 2);
+            Panel.SetZIndex(SMA, 1);
 
-            visualAllElements = new VisualAllElemnts() {CanvasGraph = canvas, _sma = SMA, _indicatorGraphSumm = indicatorGraphSumm, _indicatorRefilling =  indicatorRefilling };
+            VisualAllElements = new VisualAllElemnts {CanvasGraph = canvas, _sma = SMA/*, _indicatorGraphSumm = indicatorGraphSumm, _indicatorRefilling =  indicatorRefilling*/ };
         }
 
-        void canvas_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void canvas_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (GlassValues.Count > 20)
                 RebuildGlass(DateTime.Now);
         }
         public void ChangeValues(DateTime _dt, double _price, double _volume, int _row, ActionGlassItem _action)
         {
+            var price = (int) _price;
+            var volume = (int) _volume;
             if (_row == 0)
             {
-                if (_action == ActionGlassItem.sell) lastAsk = _price;
-                else if (_action == ActionGlassItem.buy) lastBid = _price;
+                if (_action == ActionGlassItem.Sell) lastAsk = price;
+                else if (_action == ActionGlassItem.Buy) lastBid = price;
             }
 
-            if (GlassValues.ContainsKey(_price) && (GlassValues[_price].volume != _volume || GlassValues[_price].action != _action))
+            if (GlassValues.ContainsKey(price) && (GlassValues[price].Volume != volume || GlassValues[price].Action != _action))
             {
-                lock (objLock)
+                lock (ObjectForLock)
                 {
-                    GlassValues[_price].listChangeVal.Add(new ChangeValuesItem() { dt = _dt, price = _price, oldvalue = GlassValues[_price].volume, newvalue = _volume });
-                    GlassValues[_price].volume = _volume;
-                    GlassValues[_price].action = _action;
+                    GlassValues[price].ChangeValuesItems.Add(new ChangeValuesItem { DateTime = _dt, Price = price, OldValue = GlassValues[price].Volume, NewValue = volume });
+                    GlassValues[price].Volume = volume;
+                    GlassValues[price].Action = _action;
                 }
 
-                int sumGlass = 0;
-                double la = lastAsk, lb = lastBid;
+                var sumGlass = 0;
+                int la = lastAsk, lb = lastBid;
                 // среднее значение по всему доступному стакану
-                for (int i = 0; i < (GlassValues.Count < 50 ? GlassValues.Count : 50); i++)
+                for (var i = 0; i < (GlassValues.Count < 50 ? GlassValues.Count : 50); i++)
                 {
-                    sumGlass += GlassValues.ContainsKey(la + i * StepGlass) ? (int)GlassValues[la + i * StepGlass].volume : 0;
-                    sumGlass += GlassValues.ContainsKey(lb - i * StepGlass) ? (int)GlassValues[lb - i * StepGlass].volume : 0; 
+                    sumGlass += GlassValues.ContainsKey(la + i * StepGlass) ? GlassValues[la + i * StepGlass].Volume : 0;
+                    sumGlass += GlassValues.ContainsKey(lb - i * StepGlass) ? GlassValues[lb - i * StepGlass].Volume : 0; 
                 }
-                this.summContractInGlass50 = sumGlass;
-                int averageGlass = (int)sumGlass / (50 * 2);
-                int sumlong = 0, sumshort = 0;
+                summContractInGlass50 = sumGlass;
+                var averageGlass = sumGlass / (50 * 2);
+                var sumlong = 0;
+                var sumshort = 0;
 
                 int sumlongAverage = 0, sumshortAverage = 0;
 
                 // новая версия, более взвешенное значение (как год назад)
-                for (int i = 0; i < 50/*paramTh.glassHeight*/; i++)
+                for (var i = 0; i < 50/*ParamForTest.glassHeight*/; i++)
                 {
                     //if (GlassValues.ContainsKey((int)la + i * StepGlass))
                     //    sumlong += (int)GlassValues[(int)la + i * StepGlass].volume;
@@ -120,100 +120,104 @@ namespace MyMoney
                     //int tempsum = (sumlong + sumshort) == 0 ? 1 : sumlong + sumshort;
                     //atemp[i] = (int)(sumlong - sumshort) * 100 / (tempsum);
 
-                    sumlongAverage += GlassValues.ContainsKey((int)la + i * StepGlass)
-                        && GlassValues[(int)la + i * StepGlass].volume < averageGlass * 3/*paramTh.averageValue*/
-                        ? (int)GlassValues[(int)la + i * StepGlass].volume : averageGlass * 3/*(int)paramTh.averageValue*/;
-                    sumshortAverage += GlassValues.ContainsKey((int)lb - i * StepGlass)
-                        && GlassValues[(int)lb - i * StepGlass].volume < averageGlass * 3 /*paramTh.averageValue*/
-                        ? (int)GlassValues[(int)lb - i * StepGlass].volume : averageGlass * 3 /*(int)paramTh.averageValue*/;
-                    int tempsumavr = (sumlongAverage + sumshortAverage) == 0 ? 1 : sumlongAverage + sumshortAverage;
-                    atemp[i] = (int)(sumlongAverage - sumshortAverage) * 100 / (tempsumavr);
+                    sumlongAverage += GlassValues.ContainsKey(la + i * StepGlass) && GlassValues[la + i * StepGlass].Volume < averageGlass * 3/*ParamForTest.averageValue*/ ? GlassValues[la + i * StepGlass].Volume : averageGlass * 3/*(int)ParamForTest.averageValue*/;
+                    sumshortAverage += GlassValues.ContainsKey(lb - i * StepGlass) && GlassValues[lb - i * StepGlass].Volume < averageGlass * 3 /*ParamForTest.averageValue*/ ? GlassValues[lb - i * StepGlass].Volume : averageGlass * 3 /*(int)ParamForTest.averageValue*/;
+                    var tempsumavr = (sumlongAverage + sumshortAverage) == 0 ? 1 : sumlongAverage + sumshortAverage;
+                    atemp[i] = (sumlongAverage - sumshortAverage) * 100 / tempsumavr;
                 }
                 ChangeVisualIndicator();
 
-                double minAsk = GetMinAsk();
-                double maxBid = GetMaxBid();
+                var minAsk = GetMinAsk();
+                var maxBid = GetMaxBid();
                 GetLastVisiblePrices();
-                if (GlassValues[_price].rectMain != null)
+                if (GlassValues[price].RectangleMain != null)
                     canvas.Dispatcher.BeginInvoke(DispatcherPriority.Normal,
-                        (ThreadStart)delegate()
+                        (ThreadStart)delegate
                         {
                             // смотрим, далеко ли "уполз" стакан
-                            double deltaAsk = minAsk - lastMinAsk;
-                            if (Math.Abs(deltaAsk) > doAnimationValue * StepGlass)
+                            var deltaAsk = minAsk - lastMinAsk;
+                            if (Math.Abs(deltaAsk) > _doAnimationValue * StepGlass)
                             {
-                                AnimateGlassToCenter(doAnimationValue * (int)StepGlass * Math.Sign(deltaAsk));
+                                AnimateGlassToCenter(_doAnimationValue * (int)StepGlass * Math.Sign(deltaAsk));
                             }
 
-                            lock (objLock)
+                            lock (ObjectForLock)
                             {
                                 // подсчет скорости изменений объема по каждому значению стакана за интервал времени
-                                foreach(GlassItem gv in GlassValues.Values)
+                                foreach(var gv in GlassValues.Values)
                                 {
                                     gv.CalcSpeedChange(canvas.ActualWidth, _dt);
                                 }
 
-                                double tw = _volume / 5;
-                                GlassValues[_price].rectVolume.Width = tw > 65 ? 65 : tw;
-                                GlassValues[_price].tbVolume.Text = _volume.ToString();
+                                var tw = _volume / 5;
+                                GlassValues[price].RectangleVolume.Width = tw > 65 ? 65 : tw;
+                                GlassValues[price].VolumeTextBlock.Text = _volume.ToString();
 
-                                bool issellaction = _action == ActionGlassItem.sell;
-                                GlassValues[_price].rectMain.Fill = issellaction ? (_row == 0 ? UpBrushAsk : UpBrush) : (_row == 0 ? DownBrushBid : DownBrush);
+                                var issellaction = _action == ActionGlassItem.Sell;
+                                GlassValues[price].RectangleMain.Fill = issellaction ? (_row == 0 ? UpBrushAsk : UpBrush) : (_row == 0 ? DownBrushBid : DownBrush);
 
                                 // пространство спреда белым цветом
-                                int signdiraction = issellaction ? -1 : 1;
+                                var signdiraction = issellaction ? -1 : 1;
                                 if (_row == 0)
                                 {
-                                    for (double j = _price + StepGlass * signdiraction; issellaction ? j >= minAsk : j <= maxBid; j = j + StepGlass * signdiraction)
+                                    for (var j = price + StepGlass * signdiraction; issellaction ? j >= minAsk : j <= maxBid; j = j + StepGlass * signdiraction)
                                     {
-                                        if (!GlassValues.ContainsKey(j) || GlassValues[j].rectMain == null)
+                                        if (!GlassValues.ContainsKey(j) || GlassValues[j].RectangleMain == null)
                                             continue;
-                                        GlassValues[j].action = ActionGlassItem.zero;
-                                        GlassValues[j].rectMain.Fill = ZeroBrush;
-                                        GlassValues[j].tbVolume.Text = "";
-                                        GlassValues[j].rectVolume.Width = GlassValues[j].tbChangeVal.Width = GlassValues[j].rectChangeVolumeOut.Width = GlassValues[j].rectChangeVolumeIn.Width = 0;
-                                        GlassValues[j].listChangeVal.Clear();
+                                        GlassValues[j].Action = ActionGlassItem.Zero;
+                                        GlassValues[j].RectangleMain.Fill = ZeroBrush;
+                                        GlassValues[j].VolumeTextBlock.Text = "";
+                                        GlassValues[j].RectangleVolume.Width = GlassValues[j].ChangeValuesTextBlock.Width = GlassValues[j].RectangleChangeVolumeOut.Width = GlassValues[j].RectangleChangeVolumeIn.Width = 0;
+                                        GlassValues[j].ChangeValuesItems.Clear();
                                     }
-                                    if (GlassValues[minAsk].rectMain != null && GlassValues[maxBid].rectMain != null)
+                                    try
                                     {
-                                        recGradientUp.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(Canvas.GetTop(recGradientUp), Canvas.GetTop(GlassValues[minAsk].rectMain) - 49 * HeightOneItem, TimeSpan.FromMilliseconds(50)));
-                                        recGradientDown.BeginAnimation(Canvas.TopProperty, new DoubleAnimation(Canvas.GetTop(recGradientDown), Canvas.GetTop(GlassValues[maxBid].rectMain), TimeSpan.FromMilliseconds(50)));
+                                        if (GlassValues[minAsk].RectangleMain != null && GlassValues[maxBid].RectangleMain != null)
+                                        {
+                                            RecGradientUp.BeginAnimation(Canvas.TopProperty,
+                                                new DoubleAnimation(Canvas.GetTop(RecGradientUp),
+                                                    Canvas.GetTop(GlassValues[minAsk].RectangleMain) - 49*HeightOneItem,
+                                                    TimeSpan.FromMilliseconds(50)));
+                                            RecGradientDown.BeginAnimation(Canvas.TopProperty,
+                                                new DoubleAnimation(Canvas.GetTop(RecGradientDown),
+                                                    Canvas.GetTop(GlassValues[maxBid].RectangleMain),
+                                                    TimeSpan.FromMilliseconds(50)));
+                                        }
                                     }
+                                    catch { }
                                 }
                             }
                         });
                 GetLastVisiblePrices();
             }
-            else if (!GlassValues.ContainsKey(_price))
+            else if (!GlassValues.ContainsKey(price))
             {
-                lock (objLock)
+                lock (ObjectForLock)
                 {
-                    GlassValues.Add(_price, new GlassItem(_price, _volume, _action));
+                    GlassValues.Add(price, new GlassItem(price, volume, _action));
                 }
                 RebuildGlass(_dt);
             }
         }
         public void AnimateGlassToCenter(int _deltamove)
         {
-            lock (objLock)
+            lock (ObjectForLock)
             {
-                foreach (GlassItem gi in GlassValues.Values)
+                foreach (var gi in GlassValues.Values)
                 {
-                    DoubleAnimation danimation = new DoubleAnimation();
-                    danimation.By = _deltamove;
-                    danimation.Duration = TimeSpan.FromMilliseconds(200);
-                    danimation.Completed += delegate(object sender, EventArgs e) { visualAllElements.AnimateElemntsToCenter(_deltamove); };
+                    var danimation = new DoubleAnimation
+                    {
+                        By = _deltamove,
+                        Duration = TimeSpan.FromMilliseconds(200)
+                    };
+                    danimation.Completed += delegate(object sender, EventArgs e) { VisualAllElements.AnimateElemntsToCenter(_deltamove); };
                     if (gi.AnimatedShapesList == null) continue;
-                    foreach (object o in gi.AnimatedShapesList)
+                    foreach (var o in gi.AnimatedShapesList)
                     {
                         if (o == null) continue;
-                        double top = 0;
 
-                        if (o is FrameworkElement)
-                        {
-                            top = Canvas.GetTop((o as FrameworkElement));
-                            (o as FrameworkElement).BeginAnimation(Canvas.TopProperty, danimation);
-                        }
+                        var element = o as FrameworkElement;
+                        element?.BeginAnimation(Canvas.TopProperty, danimation);
                     }
                 }
                 lastMinAsk = GetMinAsk();
@@ -222,34 +226,36 @@ namespace MyMoney
         }
         public void AddTick(DateTime _dt, double _price, double _volume, ActionGlassItem _action)
         {
+            var price = (int)_price;
+            var volume = (int) _volume;
             canvas.Dispatcher.BeginInvoke(DispatcherPriority.Render,
                 (ThreadStart)delegate()
                 {
-                    ResultOneTick r = new ResultOneTick();
+                    var r = new ResultOneTick();
                     r.resultChangeSpeed.CalcSummChangeSpeedInGlass(GlassValues, lastAsk, lastBid, StepGlass);
-                    Tick tmptick = new Tick((DateTime?)_dt, (float?)_price, (float?)_volume, _action);
-                    if (visualAllElements.AddTick(tmptick))
+                    var tmptick = new Tick(_dt, price, volume, _action);
+                    if (VisualAllElements.AddTick(tmptick))
                         return;
-                    visualAllElements.AddData(atemp, r, tmptick);
+                    VisualAllElements.AddData(atemp, r, tmptick);
 
                     GlValues25 = r.valPresetHeight;
                     GlValuesRefilling = r.valRefilling;
                     GlValues = r.valMaxHeight;
 
                     // вход
-                    if (GlValues25 > 20 && OnDoTradeLong != null)
-                        OnDoTradeLong();
-                    else if (GlValues25 < -20 && OnDoTradeShort != null)
-                        OnDoTradeShort();
+                    if (GlValues25 > 20)
+                        OnDoTradeLong?.Invoke();
+                    else if (GlValues25 < -20)
+                        OnDoTradeShort?.Invoke();
 
-                    tbGlassValue25.Text += "\r\n" + r.sumPresetHeight.ToString();
-                    tbGlassValue.Text += "\r\nOpIn:" + summContractInGlass50.ToString();
+                    GlassValue25TextBlock.Text += "\r\n" + r.sumPresetHeight;
+                    GlassValueTextBlock.Text += "\r\nOpIn:" + summContractInGlass50;
 
                     // делаем рендеринг раз в минуту (1000ms)
-                    DateTime ddd = DateTime.Now;
+                    var ddd = DateTime.Now;
                     if (ddd.Subtract(lastShowDataCall).TotalMilliseconds > 300)
                     {
-                        visualAllElements.ShowData();
+                        VisualAllElements.ShowData();
                         lastShowDataCall = ddd;
                     }
                 }
@@ -263,8 +269,8 @@ namespace MyMoney
                     GradientBrushForIndicatorUp.GradientStops.Clear();
                     GradientBrushForIndicatorDown.GradientStops.Clear();
                     GradientBrushForIndicatorAll.GradientStops.Clear();
-                    int s = 0;
-                    int ival = 0;
+                    var s = 0;
+                    var ival = 0;
                     //int ivalAvr = 0, ivalAvr2 = 0;
                     for (int i = 0; i < atemp.Length; i++)
                     {
@@ -280,7 +286,7 @@ namespace MyMoney
                         //ivalAvr = _arrindAverage[i];
                         //ivalAvr2 = sa / (i + 1);
 
-                        byte b = Convert.ToByte(Math.Abs(Math.Abs(3 * ival) > 255 ? 255 : 3 * ival) + 0);
+                        var b = Convert.ToByte(Math.Abs(Math.Abs(3 * ival) > 255 ? 255 : 3 * ival) + 0);
 
                         GradientBrushForIndicatorUp.GradientStops.Add(new GradientStop(ival > 0 ? Color.FromRgb(0, b, 255) : UpBrush.Color, 1 - (double)i / 50));
                         GradientBrushForIndicatorDown.GradientStops.Add(new GradientStop(ival > 0 ? DownBrush.Color : Color.FromRgb(255, b, 0), (double)i / 50));
@@ -297,178 +303,189 @@ namespace MyMoney
                 (ThreadStart)delegate()
                 {
                     canvas.Children.Clear();
-                    canvas.Children.Add(visualAllElements.movedCanvas2D);
-                    canvas.Children.Add(visualAllElements.movedCanvasGlass);
-                    visualAllElements.ClearMovedCanvas();
-                    double centerPrice = lastMaxBid;
+                    canvas.Children.Add(VisualAllElements.MovedCanvas2D);
+                    canvas.Children.Add(VisualAllElements.MovedCanvasGlass);
+                    VisualAllElements.ClearMovedCanvas();
+                    var centerPrice = lastMaxBid;
                     double st;
                     centerCanvas = (int)(canvas.ActualHeight / 2);
 
-                    for (int i = 0; i <= (int)(GlassValues.Count / 2); i++)
+                    for (var i = 0; i <= (int)(GlassValues.Count / 2); i++)
                     {
                         st = centerPrice + i * StepGlass;
-                        DrawItem(visualAllElements.movedCanvasGlass, _dt, i, lastMinAsk, lastMaxBid);
+                        DrawItem(VisualAllElements.MovedCanvasGlass, _dt, i, lastMinAsk, lastMaxBid);
                         if (i != 0)
-                            DrawItem(visualAllElements.movedCanvasGlass, _dt, -i, lastMinAsk, lastMaxBid);
+                            DrawItem(VisualAllElements.MovedCanvasGlass, _dt, -i, lastMinAsk, lastMaxBid);
                     }
-                    recGradientUp = new Rectangle { SnapsToDevicePixels = true, Width = 12, Height = HeightOneItem * 50 };
-                    recGradientDown = new Rectangle { SnapsToDevicePixels = true, Width = 12, Height = HeightOneItem * 50 };
+                    RecGradientUp = new Rectangle { SnapsToDevicePixels = true, Width = 12, Height = HeightOneItem * 50 };
+                    RecGradientDown = new Rectangle { SnapsToDevicePixels = true, Width = 12, Height = HeightOneItem * 50 };
 
-                    Canvas.SetLeft(recGradientUp, canvas.ActualWidth - 85);
-                    Canvas.SetTop(recGradientUp, centerCanvas - HeightOneItem * 50);
-                    Canvas.SetZIndex(recGradientUp, 2);
-                    recGradientUp.Fill = GradientBrushForIndicatorUp;
+                    Canvas.SetLeft(RecGradientUp, canvas.ActualWidth - 85);
+                    Canvas.SetTop(RecGradientUp, centerCanvas - HeightOneItem * 50);
+                    Canvas.SetZIndex(RecGradientUp, 2);
+                    RecGradientUp.Fill = GradientBrushForIndicatorUp;
 
-                    Canvas.SetLeft(recGradientDown, canvas.ActualWidth - 85);
-                    Canvas.SetTop(recGradientDown, centerCanvas);
-                    Canvas.SetZIndex(recGradientDown, 2);
-                    recGradientDown.Fill = GradientBrushForIndicatorDown;
+                    Canvas.SetLeft(RecGradientDown, canvas.ActualWidth - 85);
+                    Canvas.SetTop(RecGradientDown, centerCanvas);
+                    Canvas.SetZIndex(RecGradientDown, 2);
+                    RecGradientDown.Fill = GradientBrushForIndicatorDown;
 
-                    canvas.Children.Add(recGradientUp);
-                    canvas.Children.Add(recGradientDown);
+                    canvas.Children.Add(RecGradientUp);
+                    canvas.Children.Add(RecGradientDown);
 
                     canvas.Children.Add(indicatorGraphSumm);
                     canvas.Children.Add(indicatorRefilling);
                     canvas.Children.Add(SMA);
 
-                    foreach (FrameworkElement fe in visualAllElements.listFElemnts)
-                        visualAllElements.movedCanvas2D.Children.Add(fe);
+                    foreach (var fe in VisualAllElements.ListFElemnts)
+                        VisualAllElements.MovedCanvas2D.Children.Add(fe);
 
                     GraphAreaForGlass.ShowAllBars(canvas);
-                    visualAllElements.ShowData(true, true);
+                    VisualAllElements.ShowData(true, true);
                 });
         }
         private void GetLastVisiblePrices()
         {
-            lastVisibleAsk = Math.Round(lastMinAsk + (canvas.ActualHeight - centerCanvas) / heightoneitem * stepglass);
-            lastVisibleBid = Math.Round(lastMaxBid - (canvas.ActualHeight - centerCanvas) / heightoneitem * stepglass);
+            LastVisibleAsk = (int)(lastMinAsk + (canvas.ActualHeight - centerCanvas) / heightoneitem * _stepGlass);
+            LastVisibleBid = (int)(lastMaxBid - (canvas.ActualHeight - centerCanvas) / heightoneitem * _stepGlass);
         }
-        public void DrawItem(Canvas _canvasforglass, DateTime _dt, int i, double _minAsk, double _maxBid)
+        public void DrawItem(Canvas canvasForGlass, DateTime dateTime, int i, int minAsk, int maxBid)
         {
-            Rectangle block = new Rectangle { SnapsToDevicePixels = true, Width = 100, Height = HeightOneItem };
-            Rectangle block2 = new Rectangle { SnapsToDevicePixels = true, Height = HeightOneItem };
-            Rectangle block3 = new Rectangle { SnapsToDevicePixels = true, Height = HeightOneItem };
-            Rectangle block4 = new Rectangle { SnapsToDevicePixels = true, Height = HeightOneItem };
+            var block = new Rectangle { SnapsToDevicePixels = true, Width = 100, Height = HeightOneItem };
+            var block2 = new Rectangle { SnapsToDevicePixels = true, Height = HeightOneItem };
+            var block3 = new Rectangle { SnapsToDevicePixels = true, Height = HeightOneItem };
+            var block4 = new Rectangle { SnapsToDevicePixels = true, Height = HeightOneItem };
 
             if (i > 0)
                 block.Fill = UpBrush;
             else if (i < 0)
                 block.Fill = DownBrush;
 
-            TextBlock t = new TextBlock { FontSize = 8 };
-            TextBlock t1 = new TextBlock { FontSize = 8 };
-            TextBlock t2 = new TextBlock { FontSize = 8 };
+            var t = new TextBlock { FontSize = 8 };
+            var t1 = new TextBlock { FontSize = 8 };
+            var t2 = new TextBlock { FontSize = 8 };
 
             Canvas.SetLeft(block, 0);
             Canvas.SetTop(block, centerCanvas - i * HeightOneItem);
-            Canvas.SetZIndex(block, 0);
+            Panel.SetZIndex(block, 0);
 
             Canvas.SetLeft(block2, 0);
             Canvas.SetTop(block2, centerCanvas - i * HeightOneItem);
-            Canvas.SetZIndex(block2, 1);
+            Panel.SetZIndex(block2, 1);
             block2.Fill = VolumeBrush;
 
             Canvas.SetLeft(block3, 121);
             Canvas.SetTop(block3, centerCanvas - i * HeightOneItem);
-            Canvas.SetZIndex(block3, 1);
+            Panel.SetZIndex(block3, 1);
             block3.Fill = ChangeVolDownBrush;
 
             Canvas.SetLeft(block4, 121);
             Canvas.SetTop(block4, centerCanvas - i * HeightOneItem);
-            Canvas.SetZIndex(block4, 1);
+            Panel.SetZIndex(block4, 1);
             block4.Fill = ChangeVolUpBrush;
 
             Canvas.SetLeft(t, 68);
             Canvas.SetTop(t, centerCanvas - 1 - i * HeightOneItem);
-            Canvas.SetZIndex(t, 9);
+            Panel.SetZIndex(t, 9);
 
             Canvas.SetLeft(t1, 3);
             Canvas.SetTop(t1, centerCanvas - 1 - i * HeightOneItem);
-            Canvas.SetZIndex(t1, 9);
+            Panel.SetZIndex(t1, 9);
 
             Canvas.SetLeft(t2, 118);
             Canvas.SetTop(t2, centerCanvas - 1 - i * HeightOneItem);
-            Canvas.SetZIndex(t2, 9);
+            Panel.SetZIndex(t2, 9);
 
-            _canvasforglass.Children.Add(block);
-            _canvasforglass.Children.Add(block2);
-            _canvasforglass.Children.Add(block3);
-            _canvasforglass.Children.Add(block4);
-            _canvasforglass.Children.Add(t);
-            _canvasforglass.Children.Add(t1);
-            _canvasforglass.Children.Add(t2);
+            canvasForGlass.Children.Add(block);
+            canvasForGlass.Children.Add(block2);
+            canvasForGlass.Children.Add(block3);
+            canvasForGlass.Children.Add(block4);
+            canvasForGlass.Children.Add(t);
+            canvasForGlass.Children.Add(t1);
+            canvasForGlass.Children.Add(t2);
 
             Line line100 = null;
-            if ((_maxBid + i * StepGlass) % (10 * StepGlass) == 0)
+            if ((maxBid + i * StepGlass) % (10 * StepGlass) == 0)
             {
                 line100 = new Line { X2 = 117, Stroke = Brushes.Silver, StrokeThickness = 1 };
                 t.FontWeight = System.Windows.FontWeights.Black;
-                Canvas.SetTop(line100, centerCanvas - i * HeightOneItem + doAnimationValue);
-                Canvas.SetZIndex(t, 5);
-                Canvas.SetZIndex(line100, 0);
-                _canvasforglass.Children.Add(line100);
+                Canvas.SetTop(line100, centerCanvas - i * HeightOneItem + _doAnimationValue);
+                Panel.SetZIndex(t, 5);
+                Panel.SetZIndex(line100, 0);
+                canvasForGlass.Children.Add(line100);
             }
 
-            if (!GlassValues.ContainsKey(_maxBid + i * StepGlass))
+            if (!GlassValues.ContainsKey(maxBid + i * StepGlass))
             {
-                GlassValues.Add(_maxBid + i * StepGlass, new GlassItem(_maxBid + i * StepGlass, 0, ActionGlassItem.zero));
+                GlassValues.Add(maxBid + i * StepGlass, new GlassItem(maxBid + i * StepGlass, 0, ActionGlassItem.Zero));
             }
-            t.Text = (_maxBid + i * StepGlass).ToString("### ###");
-            double tw = GlassValues[_maxBid + i * StepGlass].volume / 5;
+            t.Text = (maxBid + i * StepGlass).ToString("### ###");
+            double tw = GlassValues[maxBid + i * StepGlass].Volume / 5;
             block2.Width = tw > 65 ? 65 : tw;
-            t1.Text = GlassValues[_maxBid + i * StepGlass].volume.ToString();
+            t1.Text = GlassValues[maxBid + i * StepGlass].Volume.ToString();
             //int summchangeval = 0;
             //lock (objLock)
             //{
-                //foreach (ChangeValuesItem v in GlassValues[_maxBid + i * StepGlass].listChangeVal)
-                //    if ((_dt - v.dt).TotalSeconds < 1)
-                //        summchangeval += (int) v.newvalue - (int) v.oldvalue > 0 ? 1 : -1;
+                //foreach (ChangeValuesItem v in GlassValues[_maxBid + i * StepGlass].ChangeValuesItems)
+                //    if ((dateTime - v.dateTime).TotalSeconds < 1)
+                //        summchangeval += (int) v.NewValue - (int) v.OldValue > 0 ? 1 : -1;
                 //t2.Text = Math.Abs(summchangeval) > 0 ? "" : ""; //summchangeval.ToString() : "";
                 //block3.Width = Math.Abs(summchangeval) * 5;
                 //block3.Fill = summchangeval < 0 ? ChangeVolDownBrush : ChangeVolUpBrush;
             //}
-            GlassItem gi = GlassValues[_maxBid + i * StepGlass];
-            gi.rectMain = block;
-            gi.tbPrice = t;
-            gi.tbVolume = t1;
-            gi.tbChangeVal = t2;
-            gi.rectVolume = block2;
-            gi.rectChangeVolumeOut = block3;
-            gi.rectChangeVolumeIn = block4;
+            var gi = GlassValues[maxBid + i * StepGlass];
+            gi.RectangleMain = block;
+            gi.PriceTextBlock = t;
+            gi.VolumeTextBlock = t1;
+            gi.ChangeValuesTextBlock = t2;
+            gi.RectangleVolume = block2;
+            gi.RectangleChangeVolumeOut = block3;
+            gi.RectangleChangeVolumeIn = block4;
             if (line100 != null)
-                gi.line100 = line100;
-            gi.AnimatedShapesList = new List<object>() { gi.rectMain, gi.rectVolume, gi.rectChangeVolumeOut, gi.rectChangeVolumeIn, gi.line100, gi.tbVolume, gi.tbPrice, gi.tbChangeVal };
+                gi.Line100 = line100;
+            gi.AnimatedShapesList = new List<object>() { gi.RectangleMain, gi.RectangleVolume, gi.RectangleChangeVolumeOut, gi.RectangleChangeVolumeIn, gi.Line100, gi.VolumeTextBlock, gi.PriceTextBlock, gi.ChangeValuesTextBlock };
 
         }
-        public void ChangeBidAsk(double _ask, double _bid)
+        public void ChangeBidAsk(double ask, double bid)
         {
 
         }
-        private double GetMinAsk()
+        private int GetMinAsk()
         {
-            double _minA = 1000000;
-            lock (objLock)
+            var minA = 1000000;
+            lock (ObjectForLock)
             {
-                foreach (double p in GlassValues.Keys)
+                try
                 {
-                    if (GlassValues[p].action == ActionGlassItem.sell && p < _minA)
-                        _minA = p;
-                }                
-            }
-            return _minA;
-        }
-        private double GetMaxBid()
-        {
-            double _maxB = -1000000;
-            lock (objLock)
-            {
-                foreach (double p in GlassValues.Keys)
+                    foreach (var p in GlassValues.Keys.Where(p => GlassValues[p].Action == ActionGlassItem.Sell && p < minA))
+                    {
+                        minA = p;
+                    }
+                }
+                catch
                 {
-                    if (GlassValues[p].action == ActionGlassItem.buy && p > _maxB)
-                        _maxB = p;
+   
                 }
             }
-            return _maxB;
+            return minA;
+        }
+        private int GetMaxBid()
+        {
+            var maxB = -1000000;
+            lock (ObjectForLock)
+            {
+                try
+                {
+                    foreach (var p in GlassValues.Keys.Where(p => GlassValues[p].Action == ActionGlassItem.Buy && p > maxB))
+                    {
+                        maxB = p;
+                    }
+                }
+                catch
+                {
+                }
+            }
+            return maxB;
         }
         public int GlValues
         {
@@ -476,11 +493,11 @@ namespace MyMoney
             set{ 
                 glvalues = value;
                 if (value < 0)
-                    tbGlassValue.Foreground = Brushes.Red;
+                    GlassValueTextBlock.Foreground = Brushes.Red;
                 else
-                    tbGlassValue.Foreground = Brushes.Blue;
-                if (tbGlassValue != null)
-                    tbGlassValue.Text = glvalues.ToString() + "%";
+                    GlassValueTextBlock.Foreground = Brushes.Blue;
+                if (GlassValueTextBlock != null)
+                    GlassValueTextBlock.Text = glvalues.ToString() + "%";
             }
         }
         public int GlValues25
@@ -489,32 +506,52 @@ namespace MyMoney
             set { 
                 glvalues25 = value;
                 if (value < 0)
-                    tbGlassValue25.Foreground = Brushes.Red;
+                    GlassValue25TextBlock.Foreground = Brushes.Red;
                 else
-                    tbGlassValue25.Foreground = Brushes.Blue;
-                if (tbGlassValue25 != null)
-                    tbGlassValue25.Text = glvalues25.ToString() + "%";
+                    GlassValue25TextBlock.Foreground = Brushes.Blue;
+                if (GlassValue25TextBlock != null)
+                    GlassValue25TextBlock.Text = glvalues25 + "%";
             }
         }
-        public int GlValuesRefilling
+        public int GlValuesRefilling { get; set; }
+
+        public SortedDictionary<int, GlassItem> GlassValues = new SortedDictionary<int, GlassItem>();
+        private int _doAnimationValue = 15;
+        private int lastMinAsk, lastMaxBid;
+        private int lastvisibleask, lastvisiblebid;
+
+        public int LastVisibleAsk
         {
-            get { return glvaluesrefilling;  }
+            get { return lastvisibleask; }
+            private set
+            {
+                lastvisibleask = value;
+                VisualAllElements.LastVisibleAsk = value;
+            }
+        }
+
+        public int LastVisibleBid
+        {
+            get { return lastvisiblebid; }
+            private set
+            {
+                lastvisiblebid = value;
+                VisualAllElements.LastVisibleBid = value;
+            }
+        }
+        public int lastBid, lastAsk;
+
+        private byte _stepGlass;
+
+        public byte StepGlass
+        {
+            get { return _stepGlass; }
             set
             {
-                glvaluesrefilling = value;
+                _stepGlass = value;
+                VisualAllElements.StepGlass = value;
             }
         }
-
-        public SortedDictionary<double, GlassItem> GlassValues = new SortedDictionary<double, GlassItem>();
-        private int doAnimationValue = 15;
-        private double lastMinAsk, lastMaxBid;
-        private double lastvisibleask, lastvisiblebid;
-        public double lastVisibleAsk { get { return lastvisibleask; } private set { lastvisibleask = value; visualAllElements.lastVisibleAsk = value; } }
-        public double lastVisibleBid { get { return lastvisiblebid; } private set { lastvisiblebid = value; visualAllElements.lastVisibleBid = value; } }
-        public double lastBid = 0, lastAsk = 0;
-
-        private double stepglass = 0;
-        public double StepGlass { get { return stepglass; } set { stepglass = value;  visualAllElements.StepGlass = value; } }
 
         private double heightoneitem = 9;
         public double HeightOneItem { get { return heightoneitem; } private set { heightoneitem = 9; } }
@@ -522,7 +559,7 @@ namespace MyMoney
         public int summContractInGlass50 = 0;
         public Canvas canvas;
         public int centerCanvas;
-        private int glvalues, glvalues25, glvaluesrefilling;
+        private int glvalues, glvalues25;
         private int[] atemp = new int[50];
         private DateTime lastShowDataCall = DateTime.Now;
 
@@ -532,138 +569,136 @@ namespace MyMoney
         public LinearGradientBrush GradientBrushForIndicatorUp, GradientBrushForIndicatorDown, GradientBrushForIndicatorAll;
         public Polyline indicatorGraphSumm, indicatorRefilling, SMA;
 
-        public Rectangle recGradientUp, recGradientDown;
+        public Rectangle RecGradientUp, RecGradientDown;
 
         private Dictionary<int, IndicatorValuesTextBlock> dicTBForIndicators = new Dictionary<int, IndicatorValuesTextBlock>();
-        public TextBlock tbGlassValue;
-        public TextBlock tbGlassValue25;
+        public TextBlock GlassValueTextBlock;
+        public TextBlock GlassValue25TextBlock;
 
-        public object objLock = new Object();
-        public List<int[]> listArrayValues = new List<int[]>();
+        public object ObjectForLock = new object();
 
         public SortedDictionary<int, ResTestLocal> resultsribbon = new SortedDictionary<int, ResTestLocal>();
 
-        public VisualAllElemnts visualAllElements;
-        public AllTradesAtGraph allTradesAtGraph = new AllTradesAtGraph();
+        public VisualAllElemnts VisualAllElements;
+        public AllTradesAtGraph AllTradesAtGraph = new AllTradesAtGraph();
     }
 
     public class GlassItem
     {
-        public GlassItem(double _price, double _volume, ActionGlassItem _action)
+        public int Volume;
+        public int Price;
+        public GlassItem(int price, int volume, ActionGlassItem action)
         {
-            price = _price;
-            volume = _volume;
-            action = _action;
+            Price = price;
+            Volume = volume;
+            Action = action;
         }
         public List<object> AnimatedShapesList;
-        public List<ChangeValuesItem> listChangeVal = new List<ChangeValuesItem>();
-        public double volume;
-        public double price;
-        public ActionGlassItem action;
-        public Line line100;
-        public Rectangle rectMain, rectVolume, rectChangeVolumeOut, rectChangeVolumeIn;
-        public TextBlock tbVolume, tbPrice, tbChangeVal;
+        public List<ChangeValuesItem> ChangeValuesItems = new List<ChangeValuesItem>();
+        public ActionGlassItem Action;
+        public Line Line100;
+        public Rectangle RectangleMain, RectangleVolume, RectangleChangeVolumeOut, RectangleChangeVolumeIn;
+        public TextBlock VolumeTextBlock, PriceTextBlock, ChangeValuesTextBlock;
 
-        internal ResultSpeedChangeGlass speedChangeGlass = new ResultSpeedChangeGlass();
+        internal ResultSpeedChangeGlass ResultSpeedChangeGlass = new ResultSpeedChangeGlass();
 
-        internal void CalcSpeedChange(double _canvasWidth, DateTime _dt)
+        internal void CalcSpeedChange(double canvasWidth, DateTime dateTime)
         {
-            speedChangeGlass.changeCountIn = 0;
-            speedChangeGlass.changeCountOut = 0;
-            List<ChangeValuesItem> templist = new List<ChangeValuesItem>();
-            foreach (ChangeValuesItem v in listChangeVal)
+            ResultSpeedChangeGlass.changeCountIn = 0;
+            ResultSpeedChangeGlass.changeCountOut = 0;
+            var tempChangeValuesItems = new List<ChangeValuesItem>();
+            foreach (var v in ChangeValuesItems)
             {
-                if ((_dt - v.dt).TotalMilliseconds < 500) // за последние n секунд
+                if ((dateTime - v.DateTime).TotalMilliseconds < 500) // за последние n секунд
                 {
-                    double deltaval = v.newvalue - v.oldvalue;
+                    var deltaval = v.NewValue - v.OldValue;
                     if (deltaval < 0)
-                        speedChangeGlass.changeCountOut += 1;
+                        ResultSpeedChangeGlass.changeCountOut += 1;
                     else if (deltaval > 0)
-                        speedChangeGlass.changeCountIn += 1;
-                    speedChangeGlass.changeVolume += Math.Abs(deltaval);
+                        ResultSpeedChangeGlass.changeCountIn += 1;
+                    ResultSpeedChangeGlass.changeVolume += Math.Abs(deltaval);
                 }
                 else
-                    templist.Add(v);
+                    tempChangeValuesItems.Add(v);
             }
-            foreach (ChangeValuesItem o in templist)
+            foreach (var o in tempChangeValuesItems.Where(o => ChangeValuesItems.Contains(o)))
             {
-                if (listChangeVal.Contains(o))
-                    listChangeVal.Remove(o);
+                ChangeValuesItems.Remove(o);
             }
-            templist.Clear();
-            if (tbChangeVal != null)
-            {
-                rectChangeVolumeOut.Width = Math.Abs(speedChangeGlass.changeCountOut) * 1;
-                rectChangeVolumeIn.Width = Math.Abs(speedChangeGlass.changeCountIn) * 1;
-                Canvas.SetLeft(rectChangeVolumeIn, _canvasWidth - rectChangeVolumeIn.Width - 17);
-            }
+
+            if (ChangeValuesTextBlock == null)
+                return;
+
+            RectangleChangeVolumeOut.Width = Math.Abs(ResultSpeedChangeGlass.changeCountOut) * 1;
+            RectangleChangeVolumeIn.Width = Math.Abs(ResultSpeedChangeGlass.changeCountIn) * 1;
+            Canvas.SetLeft(RectangleChangeVolumeIn, canvasWidth - RectangleChangeVolumeIn.Width - 17);
         }
     }
     public class ResTestLocal
     {
-        public ResTestLocal(int _key, double _deltaprice) 
+        public int ProfitCount;
+        public int LossCount;
+
+        public ResTestLocal(int key, double deltaPrice) 
         {
-            if ((_key < 0 && _deltaprice < 0) || (_key > 0 && _deltaprice > 0))
-                profitCount++;
+            if ((key < 0 && deltaPrice < 0) || (key > 0 && deltaPrice > 0))
+                ProfitCount++;
             else 
-                lossCount++;
+                LossCount++;
         }
-        public void AddValues(int _key, double _deltaprice)
+
+        public void AddValues(int key, double deltaPrice)
         {
-            if ((_key < 0 && _deltaprice < 0) || (_key > 0 && _deltaprice > 0))
-                profitCount++;
+            if ((key < 0 && deltaPrice < 0) || (key > 0 && deltaPrice > 0))
+                ProfitCount++;
             else
-                lossCount++;
+                LossCount++;
         }
-        public int profitCount = 0;
-        public int lossCount = 0;
     }
+
     public class IndicatorValuesTextBlock
     {
-        public double value;
-        public TextBlock textblock;
+        public double Value;
+        public TextBlock Textblock;
     }
+
     public class VisualOneElement
     {
         internal int[] atempValues = {};
-        internal ResultOneTick resultOneTick;
+        internal ResultOneTick ResultOneTick;
     }
     public class VisualAllElemnts
     {
-        public VisualAllElemnts()
+        public void CalcSummIndicatorValue(int[] arrVal, ResultOneTick resonetick)
         {
-        }
-        public void CalcSummIndicatorValue(int[] _arrval, ResultOneTick _resonetick)
-        {
-            int sumnegative = 0, sumpositive = 0, cnegative = 0, cpositive = 0;
-            for (int j = LevelStartGlass; j < _arrval.Length; j++)
+            var sumnegative = 0;
+            var sumpositive = 0;
+            for (var j = LevelStartGlass; j < arrVal.Length; j++)
             {
-                if (_arrval[j] > 0)
+                if (arrVal[j] > 0)
                 {
-                    sumpositive += _arrval[j];
-                    cpositive++;
+                    sumpositive += arrVal[j];
                 }
                 else
                 {
-                    sumnegative += _arrval[j];
-                    cnegative++;
+                    sumnegative += arrVal[j];
                 }
                 if (j == LevelHeightGlass && sumnegative + sumpositive != 0)
                 {
-                    _resonetick.valPresetHeight = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
-                    _resonetick.sumPresetHeight = sumpositive + sumnegative;
+                    resonetick.valPresetHeight = (100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
+                    resonetick.sumPresetHeight = sumpositive + sumnegative;
                 }
-                else if (j == _arrval.Length - 1 && sumnegative + sumpositive != 0) // если последняя итерация
+                else if (j == arrVal.Length - 1 && sumnegative + sumpositive != 0) // если последняя итерация
                 {
-                    _resonetick.valMaxHeight = (int)(100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
-                    _resonetick.sumMaxHeight = sumpositive + Math.Abs(sumnegative);
+                    resonetick.valMaxHeight = (100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
+                    resonetick.sumMaxHeight = sumpositive + Math.Abs(sumnegative);
                 }
             }
-            _resonetick.valRefilling = _resonetick.valPresetHeight;
-            if (Math.Abs(_resonetick.sumPresetHeight) < LevelIgnoreValue)
-                _resonetick.valPresetHeight = 0;
-            if (Math.Abs(_resonetick.sumPresetHeight) < LevelRefillingValue)
-                _resonetick.valRefilling = 0;
+            resonetick.valRefilling = resonetick.valPresetHeight;
+            if (Math.Abs(resonetick.sumPresetHeight) < LevelIgnoreValue)
+                resonetick.valPresetHeight = 0;
+            if (Math.Abs(resonetick.sumPresetHeight) < LevelRefillingValue)
+                resonetick.valRefilling = 0;
         }
         public void AddData(int[] _atemp, ResultOneTick _r, Tick _tick)
         {
@@ -672,182 +707,153 @@ namespace MyMoney
             
             // расчет простой скользящей средней
             double sumaskatperiod = 0;
-            for (int j = visualElementsList.Count - 1; j >= visualElementsList.Count - periodsma; j--)
+            for (var j = VisualElementsList.Count - 1; j >= VisualElementsList.Count - _periodsma; j--)
             {
                 if (j < 0)
                     break;
                 //sumaskatperiod += visualElementsList[j].resultOneTick.valAsk;
-                sumaskatperiod += (visualElementsList[j].resultOneTick.valAsk + visualElementsList[j].resultOneTick.valBid) / 2;
+                sumaskatperiod += (VisualElementsList[j].ResultOneTick.valAsk + VisualElementsList[j].ResultOneTick.valBid) / 2;
             }
-            _r.valSMA = sumaskatperiod / periodsma;
+            _r.valSMA = sumaskatperiod / _periodsma;
 
             // добавление ask и bid
-            if (_tick.Action == ActionGlassItem.sell)
-                lastPriceAsk = _tick.Price;
-            else if (_tick.Action == ActionGlassItem.buy)
-                lastPriceBid = _tick.Price;
+            switch (_tick.Action)
+            {
+                case ActionGlassItem.Sell:
+                    lastPriceAsk = _tick.Price;
+                    break;
+                case ActionGlassItem.Buy:
+                    lastPriceBid = _tick.Price;
+                    break;
+            }
 
             _r.valAsk = lastPriceAsk;
             _r.valBid = lastPriceBid;
 
-            VisualOneElement tmpvis = new VisualOneElement();
-            tmpvis.resultOneTick = _r;
+            var tmpvis = new VisualOneElement {ResultOneTick = _r};
             Array.Resize(ref tmpvis.atempValues, _atemp.Length); // будем хранить значения индикатора для возможного дальнейшего пересчета
             _atemp.CopyTo(tmpvis.atempValues, 0);
-            visualElementsList.Add(tmpvis);
-            countAddedWithNotShowData++;
+            VisualElementsList.Add(tmpvis);
+            CountAddedWithNotShowData++;
         }
-        public bool AddTick(Tick _tick)
+        public bool AddTick(Tick tick)
         {
-            if (lastPriceAsk == 0) lastPriceAsk = _tick.Price;
-            if (lastPriceBid == 0) lastPriceBid = _tick.Price;
+            if (Math.Abs(lastPriceAsk) < 0.0000001) lastPriceAsk = tick.Price;
+            if (Math.Abs(lastPriceBid) < 0.0000001) lastPriceBid = tick.Price;
 
-            //bool result = false;
-            bool result = _tick.Price == lastPriceTick;// && _tick.Action == lastActionTick;
-            lastPriceTick = _tick.Price;
-            lastActionTick = _tick.Action;
+            var result = Math.Abs(tick.Price - lastPriceTick) < 0.000001; // && tick.Action == lastActionTick;
+
+            lastPriceTick = tick.Price;
+            lastActionTick = tick.Action;
 
             return result;
         }
-        public void ShowData(bool _rebuild = false, bool _resize = false)
+        public void ShowData(bool rebuild = false, bool resize = false)
         {
-            if (visualElementsList.Count < 1 || (visualElementsList.Count - countAddedWithNotShowData < 0))
+            if (VisualElementsList.Count < 1 || (VisualElementsList.Count - CountAddedWithNotShowData < 0))
                 return;
             try
             {
-                // смещение градиента -------------------------------------------------------------------------------
-                //List<Shape> tempshapes = new List<Shape>();
-                //foreach (FrameworkElement s in CanvasGraph.Children)
-                //{
-                //    if (s is Rectangle && s.Width == 1)
-                //    {
-                //        if (Canvas.GetLeft(s) - 1 < 0 || _rebuild)
-                //            tempshapes.Add(s as Shape);
-                //        else
-                //            Canvas.SetLeft(s, Canvas.GetLeft(s) - 1);
-                //    }
-                //}
-                //foreach (Shape s in tempshapes)
-                //{
-                //    CanvasGraph.Children.Remove(s);
-                //}
-                //tempshapes.Clear();
-                // --------------------------------------------------------------------------------------------------
-
-
-                //int x = 0;
-                //if (listGradient.Count > 0)
-                //    for (x = _rebuild ? 0 : listGradient.Count - countAddedWithNotShowData; x < listGradient.Count; x++) // LinearGradientBrush brushg in  listGradient)
-                //    {
-                //        Rectangle r = new Rectangle() { Fill = listGradient[x], Width = 1, Height = CanvasGraph.ActualHeight, Opacity = 1 };
-                //        Canvas.SetLeft(r, CanvasGraph.ActualWidth - listGradient.Count + x);
-                //        Canvas.SetTop(r, 0);
-                //        CanvasGraph.Children.Add(r);
-                //    }
-
                 // пересчет значений индикатора
-                if (_rebuild)
+                if (rebuild)
                 {
-                    foreach (VisualOneElement ve in visualElementsList)
-                        CalcSummIndicatorValue(ve.atempValues, ve.resultOneTick);
+                    VisualElementsList.ForEach(visualElement =>
+                    {
+                        CalcSummIndicatorValue(visualElement.atempValues, visualElement.ResultOneTick);
+                    });
                 }
 
                 // удаляем все, что за пределами видимости
-                if (visualElementsList.Count > 3 * CanvasGraph.ActualWidth && CanvasGraph.ActualWidth > 0)
-                    visualElementsList.RemoveRange(0, (int)(visualElementsList.Count - 3 * CanvasGraph.ActualWidth));
+                if (VisualElementsList.Count > 1.5 * CanvasGraph.ActualWidth && CanvasGraph.ActualWidth > 0)
+                    VisualElementsList.RemoveRange(0, (int)(VisualElementsList.Count - 1.5 * CanvasGraph.ActualWidth));
 
-                double maxp = visualElementsList.Count > 0 ? lastVisibleAsk : StepGlass;
-                double minp = visualElementsList.Count > 0 ? lastVisibleBid : StepGlass;
-                double delta = maxp - minp;
-                double onePixelPrice = delta / CanvasGraph.ActualHeight;
-                if (onePixelPrice == 0)
-                    onePixelPrice = 10;
+                var maxPrice = VisualElementsList.Count > 0 ? LastVisibleAsk : StepGlass;
+                var minPrice = VisualElementsList.Count > 0 ? LastVisibleBid : StepGlass;
+                var delta = maxPrice - minPrice;
+                var pixelPrice = delta / CanvasGraph.ActualHeight;
+                if (pixelPrice == 0)
+                    pixelPrice = 10;
                 double maxInd = Math.Max(Math.Abs(GetMaxMinVisibleValue("valpreseth").MaxValue), Math.Abs(GetMaxMinVisibleValue("valpreseth").MaxValue));
                 if (maxInd == 0)
                     maxInd = Math.Max(maxInd, GetMaxMinVisibleValue("valrefilling").MaxValue);
-                double deltaIndicator = 2 * maxInd;
-                double onePixelIndicator = deltaIndicator / CanvasGraph.ActualHeight;
+                var deltaIndicator = 2 * maxInd;
+                var onePixelIndicator = deltaIndicator / CanvasGraph.ActualHeight;
 
-                _indicatorGraphSumm.Points.Clear();
-                _indicatorRefilling.Points.Clear();
+                //_indicatorGraphSumm.Points.Clear();
+                //_indicatorRefilling.Points.Clear();
                 _sma.Points.Clear();
-                int c = visualElementsList.Count;
+                var c = VisualElementsList.Count;
                 GraphAreaForGlass.areasList.Clear();
-                for (int i = (int)(c > CanvasGraph.ActualWidth ? c - CanvasGraph.ActualWidth : 0); i < c; i++)
+                for (var i = (int)(c > CanvasGraph.ActualWidth ? c - CanvasGraph.ActualWidth : 0); i < c; i++)
                 {
-                    ResultOneTick rt = visualElementsList[i].resultOneTick;
-                    double yAsk = (maxp - rt.valAsk) / onePixelPrice;
-                    double yBid = (maxp - rt.valBid) / onePixelPrice;
-                    double xAll = (double)i + (CanvasGraph.ActualWidth - c - widthGlassValues);
-                    _sma.Points.Add(new Point(xAll, (maxp - rt.valSMA) / onePixelPrice));
-                    _indicatorGraphSumm.Points.Add(new Point(xAll, (maxInd - rt.valPresetHeight) / onePixelIndicator));
-                    _indicatorRefilling.Points.Add(new Point(xAll, (maxInd - rt.valRefilling) / onePixelIndicator));
-                    GraphAreaForGlass.AddData((IndicatorCommand)Math.Sign(rt.valPresetHeight), xAll, yAsk, yBid);
+                    var resultOneTick = VisualElementsList[i].ResultOneTick;
+                    var yAsk = (maxPrice - resultOneTick.valAsk) / pixelPrice;
+                    var yBid = (maxPrice - resultOneTick.valBid) / pixelPrice;
+                    var xAll = (double)i + (CanvasGraph.ActualWidth - c - _widthGlassValues);
+                    _sma.Points.Add(new Point(xAll, (maxPrice - resultOneTick.valSMA) / pixelPrice));
+                    //_indicatorGraphSumm.Points.Add(new Point(xAll, (maxInd - rt.valPresetHeight) / onePixelIndicator));
+                    //_indicatorRefilling.Points.Add(new Point(xAll, (maxInd - rt.valRefilling) / onePixelIndicator));
+                    GraphAreaForGlass.AddData((IndicatorCommand)Math.Sign(resultOneTick.valPresetHeight), xAll, yAsk, yBid);
                 }
                 GraphAreaForGlass.ShowAllBars(CanvasGraph);
-                if (_resize)
+                if (resize)
                 {
-                    listFElemnts.Clear();
-                    tickGraphAsk.Points.Clear();
-                    tickGraphBid.Points.Clear();
+                    ListFElemnts.Clear();
+                    TickGraphAsk.Points.Clear();
+                    TickGraphBid.Points.Clear();
                 }
 
-                //foreach (FrameworkElement fe in listFElemnts)
-                //{
-                    //(fe as Line).X1 = (fe as Line).X1 - countAddedWithNotShowData;
-                    //(fe as Line).X2 = (fe as Line).X2 - countAddedWithNotShowData;
-                //}
-                movedCanvas2D.Margin = new Thickness(CanvasGraph.ActualWidth - widthGlassValues - visualElementsList.Count, movedCanvas2D.Margin.Top, 0, 0);
+                MovedCanvas2D.Margin = new Thickness(CanvasGraph.ActualWidth - _widthGlassValues - VisualElementsList.Count, MovedCanvas2D.Margin.Top, 0, 0);
 
-                for (int x = _resize ? 0 : visualElementsList.Count - countAddedWithNotShowData; x < visualElementsList.Count; x++)
+                for (var x = resize ? 0 : VisualElementsList.Count - CountAddedWithNotShowData; x < VisualElementsList.Count; x++)
                 {
-                    ResultOneTick rt = visualElementsList[x].resultOneTick;
-                    double yAsk = (maxp - rt.valAsk) / onePixelPrice;
-                    double yBid = (maxp - rt.valBid) / onePixelPrice;
-                    tickGraphAsk.Points.Add(new Point(x, yAsk));
-                    tickGraphBid.Points.Add(new Point(x, yBid));
+                    var rt = VisualElementsList[x].ResultOneTick;
+                    var yAsk = (maxPrice - rt.valAsk) / pixelPrice;
+                    var yBid = (maxPrice - rt.valBid) / pixelPrice;
+                    TickGraphAsk.Points.Add(new Point(x, yAsk));
+                    TickGraphBid.Points.Add(new Point(x, yBid));
 
-                    ShowSpeedChange(movedCanvas2D, rt.resultChangeSpeed, /*CanvasGraph.ActualWidth - visualElementsList.Count - widthGlassValues */ x);
+                    ShowSpeedChange(MovedCanvas2D, rt.resultChangeSpeed, /*CanvasGraph.ActualWidth - visualElementsList.Count - widthGlassValues */ x);
                 }
-                countAddedWithNotShowData = 0;
+                CountAddedWithNotShowData = 0;
 
             } catch (Exception e)
             {
                 MessageBox.Show("метод ShowData:\r\n" + e.Message);
             }
         }
-        private void ShowSpeedChange(Canvas _canvas, ResultSummSpeedChangeGlass _resultChangeSpeed, double _xAll)
+        private void ShowSpeedChange(Canvas canvas, ResultSummSpeedChangeGlass resultChangeSpeed, double _xAll)
         {
             double ycenter = 100;
-            Line l1 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - _resultChangeSpeed.summChangeUp.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
-            Line l2 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + _resultChangeSpeed.summChangeDown.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
-            Line l3 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - _resultChangeSpeed.summChangeUp.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
-            Line l4 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + _resultChangeSpeed.summChangeDown.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
-            Canvas.SetZIndex(l1, 15);
-            Canvas.SetZIndex(l2, 15);
-            Canvas.SetZIndex(l3, 15);
-            Canvas.SetZIndex(l4, 15);
-            _canvas.Children.Add(l1);
-            _canvas.Children.Add(l2);
-            _canvas.Children.Add(l3);
-            _canvas.Children.Add(l4);
-            listFElemnts.AddRange( new List<Line> { l1, l2, l3, l4 } );
+            var l1 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - resultChangeSpeed.summChangeUp.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
+            var l2 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + resultChangeSpeed.summChangeDown.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
+            var l3 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - resultChangeSpeed.summChangeUp.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
+            var l4 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + resultChangeSpeed.summChangeDown.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
+            Panel.SetZIndex(l1, 15);
+            Panel.SetZIndex(l2, 15);
+            Panel.SetZIndex(l3, 15);
+            Panel.SetZIndex(l4, 15);
+            canvas.Children.Add(l1);
+            canvas.Children.Add(l2);
+            canvas.Children.Add(l3);
+            canvas.Children.Add(l4);
+            ListFElemnts.AddRange(new List<Line> {l1, l2, l3, l4});
         }
         private MinMaxValue GetMaxMinVisibleValue(string p = "")
         {
             
-            MinMaxValue result = new MinMaxValue(1000000000, -1000000000);
-            for (int i = visualElementsList.Count - 1; i > (visualElementsList.Count > CanvasGraph.ActualWidth ? visualElementsList.Count - CanvasGraph.ActualWidth : 0); i--)
+            var result = new MinMaxValue(1000000000, -1000000000);
+            for (var i = VisualElementsList.Count - 1; i > (VisualElementsList.Count > CanvasGraph.ActualWidth ? VisualElementsList.Count - CanvasGraph.ActualWidth : 0); i--)
             {
                 switch (p)
                 {
                     case "valpreseth":
-                        result.MaxValue = visualElementsList[i].resultOneTick.valPresetHeight > result.MaxValue ? (float)visualElementsList[i].resultOneTick.valPresetHeight : result.MaxValue;
-                        result.MinValue = visualElementsList[i].resultOneTick.valPresetHeight < result.MinValue ? (float)visualElementsList[i].resultOneTick.valPresetHeight : result.MinValue;
+                        result.MaxValue = VisualElementsList[i].ResultOneTick.valPresetHeight > result.MaxValue ? (float)VisualElementsList[i].ResultOneTick.valPresetHeight : result.MaxValue;
+                        result.MinValue = VisualElementsList[i].ResultOneTick.valPresetHeight < result.MinValue ? (float)VisualElementsList[i].ResultOneTick.valPresetHeight : result.MinValue;
                         break;
                     case "valrefilling":
-                        result.MaxValue = visualElementsList[i].resultOneTick.valRefilling > result.MaxValue ? (float)visualElementsList[i].resultOneTick.valRefilling : result.MaxValue;
-                        result.MinValue = visualElementsList[i].resultOneTick.valRefilling < result.MinValue ? (float)visualElementsList[i].resultOneTick.valRefilling : result.MinValue;
+                        result.MaxValue = VisualElementsList[i].ResultOneTick.valRefilling > result.MaxValue ? (float)VisualElementsList[i].ResultOneTick.valRefilling : result.MaxValue;
+                        result.MinValue = VisualElementsList[i].ResultOneTick.valRefilling < result.MinValue ? (float)VisualElementsList[i].ResultOneTick.valRefilling : result.MinValue;
                         break;
                     default: result.MaxValue = 0; result.MinValue = 0; break;
                 }
@@ -856,32 +862,28 @@ namespace MyMoney
         }
 
         public double maxp, maxInd, onePixelPrice, onePixelIndicator;
-        private double lastPriceTick, lastPriceAsk, lastPriceBid;
-        private double lastvisibleask, lastvisiblebid;
-        public double lastVisibleAsk
+        private int lastPriceTick, lastPriceAsk, lastPriceBid;
+        private int lastvisibleask;
+        public int LastVisibleAsk
         {
             get { return lastvisibleask; }
             set {
                 if (lastvisibleask != value)
-                lastvisibleask = value; 
+                    lastvisibleask = value; 
             }
         }
-        public double lastVisibleBid
-        {
-            get { return lastvisiblebid; }
-            set { lastvisiblebid = value; }
-        }
+        public int LastVisibleBid { get; set; }
 
-        private double widthGlassValues = 138;
+        private readonly double _widthGlassValues = 138;
+        private readonly int _periodsma = 20;
         private ActionGlassItem lastActionTick;
-        private int periodsma = 80;
-        public double StepGlass = 0;
-        public int countAddedWithNotShowData = 0;
+
+        public byte StepGlass;
+        public int CountAddedWithNotShowData;
         
-        public List<Line> listHorizontalLine = new List<Line>();
-        
-        internal List<VisualOneElement> visualElementsList = new List<VisualOneElement>();
-        internal List<FrameworkElement> listFElemnts = new List<FrameworkElement>();
+        internal List<Line> ListHorizontalLine = new List<Line>();
+        internal List<VisualOneElement> VisualElementsList = new List<VisualOneElement>();
+        internal List<FrameworkElement> ListFElemnts = new List<FrameworkElement>();
 
         public int levelignoreval, levelheightglass, levelstartglass, levelrefilling;
         public int LevelHeightGlass
@@ -905,35 +907,35 @@ namespace MyMoney
             set { levelrefilling = value; ShowData(true); }
         }
 
-        private Canvas canvasgraph = null;
+        private Canvas _canvasgraph;
         public Canvas CanvasGraph
         {
-            get { return canvasgraph; }
+            get { return _canvasgraph; }
             set { 
-                canvasgraph = value;
-                movedCanvas2D = new Canvas() { /*Background = Brushes.Green,*/ Opacity = 1, Margin = new Thickness(0, 0, widthGlassValues, 0) };
-                movedCanvasGlass = new Canvas() { /*Background = Brushes.Red,*/ Opacity = 1, Width = widthGlassValues};
-                canvasgraph.Children.Add(movedCanvas2D);
-                canvasgraph.Children.Add(movedCanvasGlass);
-                canvasgraph.SizeChanged += canvasgraph_SizeChanged;
+                _canvasgraph = value;
+                MovedCanvas2D = new Canvas() { /*Background = Brushes.Green,*/ Opacity = 1, Margin = new Thickness(0, 0, _widthGlassValues, 0) };
+                MovedCanvasGlass = new Canvas() { /*Background = Brushes.Red,*/ Opacity = 1, Width = _widthGlassValues};
+                _canvasgraph.Children.Add(MovedCanvas2D);
+                _canvasgraph.Children.Add(MovedCanvasGlass);
+                _canvasgraph.SizeChanged += canvasgraph_SizeChanged;
 
-                tickGraphAsk = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 0, 110) }, StrokeThickness = 1, SnapsToDevicePixels = true };
-                tickGraphBid = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(110, 0, 0) }, StrokeThickness = 1, SnapsToDevicePixels = true };
-                tickGraphAsk.MouseDown += Polyline_MouseDown;
-                tickGraphBid.MouseDown += Polyline_MouseDown;
-                Canvas.SetZIndex(tickGraphAsk, 30);
-                Canvas.SetZIndex(tickGraphBid, 30);
-                movedCanvas2D.Children.Add(tickGraphAsk);
-                movedCanvas2D.Children.Add(tickGraphBid); 
+                TickGraphAsk = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(0, 0, 110) }, StrokeThickness = 1, SnapsToDevicePixels = true };
+                TickGraphBid = new Polyline { Stroke = new SolidColorBrush { Color = Color.FromRgb(110, 0, 0) }, StrokeThickness = 1, SnapsToDevicePixels = true };
+                TickGraphAsk.MouseDown += Polyline_MouseDown;
+                TickGraphBid.MouseDown += Polyline_MouseDown;
+                Panel.SetZIndex(TickGraphAsk, 30);
+                Panel.SetZIndex(TickGraphBid, 30);
+                MovedCanvas2D.Children.Add(TickGraphAsk);
+                MovedCanvas2D.Children.Add(TickGraphBid); 
             }
         }
 
-        void canvasgraph_SizeChanged(object sender, SizeChangedEventArgs e)
+        public void canvasgraph_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            movedCanvas2D.Height = (sender as Canvas).ActualHeight;
-            movedCanvas2D.Width = canvasgraph.ActualWidth - widthGlassValues;
-            movedCanvasGlass.Height = (sender as Canvas).ActualHeight;
-            movedCanvasGlass.Margin = new Thickness((sender as Canvas).ActualWidth - widthGlassValues, 0, 0, 0);
+            MovedCanvas2D.Height = ((Canvas) sender).ActualHeight;
+            MovedCanvas2D.Width = _canvasgraph.ActualWidth - _widthGlassValues;
+            MovedCanvasGlass.Height = ((Canvas) sender).ActualHeight;
+            MovedCanvasGlass.Margin = new Thickness(((Canvas) sender).ActualWidth - _widthGlassValues, 0, 0, 0);
         }
         public void Polyline_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -942,23 +944,23 @@ namespace MyMoney
             else
                 (sender as Polyline).StrokeThickness = 1;
         }
-        private Canvas movedcanvas2d = null, movedcanvasglass = null;
-        public Canvas movedCanvas2D { get { return movedcanvas2d; } set { movedcanvas2d = value; } }
-        public Canvas movedCanvasGlass { get { return movedcanvasglass; } set { movedcanvasglass = value; } }
 
-        private Polyline _tickgraphask, _tickgraphbid;
-        public Polyline tickGraphAsk { get { return _tickgraphask; } set { _tickgraphask = value; } }
-        public Polyline tickGraphBid { get { return _tickgraphbid; } set { _tickgraphbid = value; } }
-        public Polyline _indicatorGraphSumm { get; set; }
-        public Polyline _indicatorRefilling { get; set; }
+        public Canvas MovedCanvas2D { get; set; }
+        public Canvas MovedCanvasGlass { get; set; }
+
+        public Polyline TickGraphAsk { get; set; }
+        public Polyline TickGraphBid { get; set; }
+
+        //public Polyline _indicatorGraphSumm { get; set; }
+        //public Polyline _indicatorRefilling { get; set; }
         public Polyline _sma { get; set; }
 
         internal void ClearMovedCanvas()
         {
-            movedCanvas2D.Children.Clear();
-            movedCanvas2D.Children.Add(tickGraphBid);
-            movedCanvas2D.Children.Add(tickGraphAsk);
-            movedCanvasGlass.Children.Clear();
+            MovedCanvas2D.Children.Clear();
+            MovedCanvas2D.Children.Add(TickGraphBid);
+            MovedCanvas2D.Children.Add(TickGraphAsk);
+            MovedCanvasGlass.Children.Clear();
         }
 
         internal void AnimateElemntsToCenter(int _deltamove)
@@ -982,6 +984,7 @@ namespace MyMoney
     }
     public class AllTradesAtGraph
     {
+        public Dictionary<int, ClaimInfo> dicAllClaims = new Dictionary<int, ClaimInfo>();
         public void SignalIn(double _lastminask, double _lastmaxbid, double _indvalue)
         {
             //int signtrade = Math.Sign(_indvalue);
@@ -996,18 +999,8 @@ namespace MyMoney
         }
         public bool ExistActiveTrade()
         {
-            bool result = false;
-            foreach (ClaimInfo ci in dicAllClaims.Values)
-            {
-                if (ci.priceExit == 0)
-                {
-                    result = true;
-                    break;
-                }
-            }
-            return result;
+            return dicAllClaims.Values.Any(ci => ci.priceExit == 0);
         }
-        public Dictionary<int, ClaimInfo> dicAllClaims = new Dictionary<int, ClaimInfo>();
     }
     public class ResultOneTick
     {
@@ -1049,28 +1042,28 @@ namespace MyMoney
         internal ResultSpeedChangeGlass summChangeUp = new ResultSpeedChangeGlass();
         internal ResultSpeedChangeGlass summChangeDown = new ResultSpeedChangeGlass();
 
-        internal void CalcSummChangeSpeedInGlass(SortedDictionary<double, GlassItem> _glassvalues, double _ask, double _bid, double _stepglass)
+        internal void CalcSummChangeSpeedInGlass(SortedDictionary<int, GlassItem> glassValues, int ask, int bid, int stepGlass)
         {
             summChangeUp.Clear();
             summChangeDown.Clear();
 
-            for (int i = -49; i < 51; i++)
+            for (var i = -49; i < 51; i++)
             {
-                double _key = i < 1 ? _bid + i * _stepglass : _ask + (i - 1) * _stepglass;
-                if (!_glassvalues.ContainsKey(_key))
+                var key = i < 1 ? bid + i * stepGlass : ask + (i - 1) * stepGlass;
+                if (!glassValues.ContainsKey(key))
                     continue;
-                ResultSpeedChangeGlass _rchange = _glassvalues[_key].speedChangeGlass;
+                var rchange = glassValues[key].ResultSpeedChangeGlass;
                 //if (_rchange.IsZeroValue())
                 //    continue;
-                if (_key >= _ask)
+                if (key >= ask)
                 {
-                    summChangeUp.changeCountIn += _rchange.changeCountIn;
-                    summChangeUp.changeCountOut += _rchange.changeCountOut;
+                    summChangeUp.changeCountIn += rchange.changeCountIn;
+                    summChangeUp.changeCountOut += rchange.changeCountOut;
                 }
-                else if (_key <= _bid)
+                else if (key <= bid)
                 {
-                    summChangeDown.changeCountIn += _rchange.changeCountIn;
-                    summChangeDown.changeCountOut += _rchange.changeCountOut;
+                    summChangeDown.changeCountIn += rchange.changeCountIn;
+                    summChangeDown.changeCountOut += rchange.changeCountOut;
                 }
             }
         }
