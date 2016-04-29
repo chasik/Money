@@ -764,8 +764,8 @@ namespace MyMoney
                 }
 
                 // удаляем все, что за пределами видимости
-                if (VisualElementsList.Count > 1.5 * CanvasGraph.ActualWidth && CanvasGraph.ActualWidth > 0)
-                    VisualElementsList.RemoveRange(0, (int)(VisualElementsList.Count - 1.5 * CanvasGraph.ActualWidth));
+                if (VisualElementsList.Count > 5 * CanvasGraph.ActualWidth && CanvasGraph.ActualWidth > 0)
+                    VisualElementsList.RemoveRange(0, (int)(VisualElementsList.Count - 5 * CanvasGraph.ActualWidth));
 
                 var maxPrice = VisualElementsList.Count > 0 ? LastVisibleAsk : StepGlass;
                 var minPrice = VisualElementsList.Count > 0 ? LastVisibleBid : StepGlass;
