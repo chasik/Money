@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using SmartCOM3Lib;
-using System.IO;
 
 namespace MyMoney
 {
@@ -17,7 +12,6 @@ namespace MyMoney
 
         public bool Trading { get; set; } = false;
 
-        private const string PathLogs = @"c:\logssmartcom";
         private string _login;
         private string _password;
         public string workPortfolioName = "";
@@ -86,8 +80,8 @@ namespace MyMoney
         public void ConnectToDataSource()
         {
             scom = new StServerClass();
-            scom.ConfigureClient(@"logLevel=4;CalcPlannedPos=no;logFilePath=" + PathLogs);
-            scom.ConfigureServer(@"logLevel=4;pingTimeOut=20;logFilePath=" + PathLogs);
+            scom.ConfigureClient(@"logLevel=4;CalcPlannedPos=no;logFilePath=" + Properties.Settings.Default.LogSmartCom);
+            scom.ConfigureServer(@"logLevel=4;pingTimeOut=20;logFilePath=" + Properties.Settings.Default.LogSmartCom);
             scom.connect("mx.ittrade.ru", 8443, _login, _password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mx2.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";
             //scom.connect("mxr.ittrade.ru", 8443, login, password); workPortfolioName = "BP12800-RF-01";

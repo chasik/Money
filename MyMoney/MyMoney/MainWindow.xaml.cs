@@ -177,7 +177,7 @@ namespace MyMoney
                         switch (_element)
                         {
                             case InfoElement.logfile:
-                                var sw = File.AppendText(@"C:\logssmartcom\!!! temp text " + dtForLogFileName + ".txt");
+                                var sw = File.AppendText(Properties.Settings.Default.LogSmartCom + @"!!! temp text " + dtForLogFileName + ".txt");
                                 sw.WriteLine(_mess);
                                 sw.Close();
                                 break;
