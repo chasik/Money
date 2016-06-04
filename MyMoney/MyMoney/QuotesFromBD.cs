@@ -662,7 +662,7 @@ namespace MyMoney
                                         threadGlassVisual.VisualAllElements.CalcSummIndicatorValue(tempListForIndicatorAverage.ToArray(), r);
 
                                         if (!calculatedIndidcator.values.ContainsKey(dttemp))
-                                            calculatedIndidcator.values.Add(dttemp, r.valPresetHeight);
+                                            calculatedIndidcator.values.Add(dttemp, r.PresetHeight);
                                     }
                                 }
                                 else

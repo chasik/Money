@@ -54,11 +54,7 @@ namespace MyMoney
 
         public event AddTick OnAddTick;
 
-        SortedDictionary<double, double> glass = new SortedDictionary<double, double>();
-        List<int> tempListForIndicator = new List<int>();
-        List<int> tempListForIndicatorAverage = new List<int>();
-
-        ParametrsForTest _paramTh = new ParametrsForTest();
+        ParametrsForTest _paramTh;
         public ParametrsForTest paramTh {
             get { return _paramTh; }
             set {

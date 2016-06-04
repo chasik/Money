@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,19 +13,6 @@ using System.Windows.Threading;
 
 namespace MyMoney
 {
-    public enum ActionGlassItem
-    {
-        Zero = 0,
-        Sell = 1,
-        Buy = 2
-    };
-    public struct ChangeValuesItem
-    {
-        public DateTime DateTime;
-        public int Price;
-        public int OldValue;
-        public int NewValue;
-    }
     public class GlassGraph
     {
         public delegate void DoTradeLong();
@@ -118,7 +106,7 @@ namespace MyMoney
                     //if (GlassValues.ContainsKey((int)lb - i * StepGlass))
                     //    sumshort += (int)GlassValues[(int)lb - i * StepGlass].volume;
                     //int tempsum = (sumlong + sumshort) == 0 ? 1 : sumlong + sumshort;
-                    //atemp[i] = (int)(sumlong - sumshort) * 100 / (tempsum);
+                    //tempArray[i] = (int)(sumlong - sumshort) * 100 / (tempsum);
 
                     sumlongAverage += GlassValues.ContainsKey(la + i * StepGlass) && GlassValues[la + i * StepGlass].Volume < averageGlass * 3/*ParamForTest.averageValue*/ ? GlassValues[la + i * StepGlass].Volume : averageGlass * 3/*(int)ParamForTest.averageValue*/;
                     sumshortAverage += GlassValues.ContainsKey(lb - i * StepGlass) && GlassValues[lb - i * StepGlass].Volume < averageGlass * 3 /*ParamForTest.averageValue*/ ? GlassValues[lb - i * StepGlass].Volume : averageGlass * 3 /*(int)ParamForTest.averageValue*/;
@@ -232,15 +220,15 @@ namespace MyMoney
                 (ThreadStart)delegate()
                 {
                     var r = new ResultOneTick();
-                    r.resultChangeSpeed.CalcSummChangeSpeedInGlass(GlassValues, lastAsk, lastBid, StepGlass);
+                    r.ResultChangeSpeed.CalcSummChangeSpeedInGlass(GlassValues, lastAsk, lastBid, StepGlass);
                     var tmptick = new Tick(_dt, price, volume, _action);
                     if (VisualAllElements.AddTick(tmptick))
                         return;
                     VisualAllElements.AddData(atemp, r, tmptick);
 
-                    GlValues25 = r.valPresetHeight;
-                    GlValuesRefilling = r.valRefilling;
-                    GlValues = r.valMaxHeight;
+                    GlValues25 = r.PresetHeight;
+                    GlValuesRefilling = r.Refilling;
+                    GlValues = r.MaxHeight;
 
                     // вход
                     if (GlValues25 > 20)
@@ -248,7 +236,7 @@ namespace MyMoney
                     else if (GlValues25 < -20)
                         OnDoTradeShort?.Invoke();
 
-                    GlassValue25TextBlock.Text += "\r\n" + r.sumPresetHeight;
+                    GlassValue25TextBlock.Text += "\r\n" + r.SumPresetHeight;
                     GlassValueTextBlock.Text += "\r\nOpIn:" + summContractInGlass50;
 
                     // делаем рендеринг раз в минуту (1000ms)
@@ -604,8 +592,8 @@ namespace MyMoney
 
         internal void CalcSpeedChange(double canvasWidth, DateTime dateTime)
         {
-            ResultSpeedChangeGlass.changeCountIn = 0;
-            ResultSpeedChangeGlass.changeCountOut = 0;
+            ResultSpeedChangeGlass.ChangeCountIn = 0;
+            ResultSpeedChangeGlass.ChangeCountOut = 0;
             var tempChangeValuesItems = new List<ChangeValuesItem>();
             foreach (var v in ChangeValuesItems)
             {
@@ -613,10 +601,10 @@ namespace MyMoney
                 {
                     var deltaval = v.NewValue - v.OldValue;
                     if (deltaval < 0)
-                        ResultSpeedChangeGlass.changeCountOut += 1;
+                        ResultSpeedChangeGlass.ChangeCountOut += 1;
                     else if (deltaval > 0)
-                        ResultSpeedChangeGlass.changeCountIn += 1;
-                    ResultSpeedChangeGlass.changeVolume += Math.Abs(deltaval);
+                        ResultSpeedChangeGlass.ChangeCountIn += 1;
+                    ResultSpeedChangeGlass.ChangeVolume += Math.Abs(deltaval);
                 }
                 else
                     tempChangeValuesItems.Add(v);
@@ -629,8 +617,8 @@ namespace MyMoney
             if (ChangeValuesTextBlock == null)
                 return;
 
-            RectangleChangeVolumeOut.Width = Math.Abs(ResultSpeedChangeGlass.changeCountOut) * 1;
-            RectangleChangeVolumeIn.Width = Math.Abs(ResultSpeedChangeGlass.changeCountIn) * 1;
+            RectangleChangeVolumeOut.Width = Math.Abs(ResultSpeedChangeGlass.ChangeCountOut) * 1;
+            RectangleChangeVolumeIn.Width = Math.Abs(ResultSpeedChangeGlass.ChangeCountIn) * 1;
             Canvas.SetLeft(RectangleChangeVolumeIn, canvasWidth - RectangleChangeVolumeIn.Width - 17);
         }
     }
@@ -664,46 +652,48 @@ namespace MyMoney
 
     public class VisualOneElement
     {
-        internal int[] atempValues = {};
+        internal int[] AtempValues = {};
         internal ResultOneTick ResultOneTick;
     }
     public class VisualAllElemnts
     {
-        public void CalcSummIndicatorValue(int[] arrVal, ResultOneTick resonetick)
+        public void CalcSummIndicatorValue(int[] arrVal, ResultOneTick resultOneTick)
         {
             var sumnegative = 0;
             var sumpositive = 0;
             for (var j = LevelStartGlass; j < arrVal.Length; j++)
             {
                 if (arrVal[j] > 0)
-                {
                     sumpositive += arrVal[j];
-                }
                 else
-                {
                     sumnegative += arrVal[j];
-                }
+
                 if (j == LevelHeightGlass && sumnegative + sumpositive != 0)
                 {
-                    resonetick.valPresetHeight = (100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
-                    resonetick.sumPresetHeight = sumpositive + sumnegative;
+                    resultOneTick.PresetHeight = 100*Math.Max(sumpositive, Math.Abs(sumnegative))/
+                                                 (sumpositive + Math.Abs(sumnegative))*
+                                                 (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
+                    resultOneTick.SumPresetHeight = sumpositive + sumnegative;
                 }
                 else if (j == arrVal.Length - 1 && sumnegative + sumpositive != 0) // если последняя итерация
                 {
-                    resonetick.valMaxHeight = (100 * Math.Max(sumpositive, Math.Abs(sumnegative)) / (sumpositive + Math.Abs(sumnegative))) * (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
-                    resonetick.sumMaxHeight = sumpositive + Math.Abs(sumnegative);
+                    resultOneTick.MaxHeight = 100*Math.Max(sumpositive, Math.Abs(sumnegative))/
+                                              (sumpositive + Math.Abs(sumnegative))*
+                                              (sumpositive > Math.Abs(sumnegative) ? 1 : -1);
+                    resultOneTick.SumMaxHeight = sumpositive + Math.Abs(sumnegative);
                 }
             }
-            resonetick.valRefilling = resonetick.valPresetHeight;
-            if (Math.Abs(resonetick.sumPresetHeight) < LevelIgnoreValue)
-                resonetick.valPresetHeight = 0;
-            if (Math.Abs(resonetick.sumPresetHeight) < LevelRefillingValue)
-                resonetick.valRefilling = 0;
+            resultOneTick.Refilling = resultOneTick.PresetHeight;
+            if (Math.Abs(resultOneTick.SumPresetHeight) < LevelIgnoreValue)
+                resultOneTick.PresetHeight = 0;
+            if (Math.Abs(resultOneTick.SumPresetHeight) < LevelRefillingValue)
+                resultOneTick.Refilling = 0;
         }
-        public void AddData(int[] _atemp, ResultOneTick _r, Tick _tick)
+
+        public void AddData(int[] tempArray, ResultOneTick _r, Tick _tick)
         {
             // расчет индикатора по стакану
-            CalcSummIndicatorValue( _atemp, _r );
+            CalcSummIndicatorValue( tempArray, _r );
             
             // расчет простой скользящей средней
             double sumaskatperiod = 0;
@@ -712,9 +702,9 @@ namespace MyMoney
                 if (j < 0)
                     break;
                 //sumaskatperiod += visualElementsList[j].resultOneTick.valAsk;
-                sumaskatperiod += (VisualElementsList[j].ResultOneTick.valAsk + VisualElementsList[j].ResultOneTick.valBid) / 2;
+                sumaskatperiod += (VisualElementsList[j].ResultOneTick.Ask + VisualElementsList[j].ResultOneTick.Bid) / 2;
             }
-            _r.valSMA = sumaskatperiod / _periodsma;
+            _r.Sma = sumaskatperiod / _periodsma;
 
             // добавление ask и bid
             switch (_tick.Action)
@@ -727,12 +717,12 @@ namespace MyMoney
                     break;
             }
 
-            _r.valAsk = lastPriceAsk;
-            _r.valBid = lastPriceBid;
+            _r.Ask = lastPriceAsk;
+            _r.Bid = lastPriceBid;
 
             var tmpvis = new VisualOneElement {ResultOneTick = _r};
-            Array.Resize(ref tmpvis.atempValues, _atemp.Length); // будем хранить значения индикатора для возможного дальнейшего пересчета
-            _atemp.CopyTo(tmpvis.atempValues, 0);
+            Array.Resize(ref tmpvis.AtempValues, tempArray.Length); // будем хранить значения индикатора для возможного дальнейшего пересчета
+            tempArray.CopyTo(tmpvis.AtempValues, 0);
             VisualElementsList.Add(tmpvis);
             CountAddedWithNotShowData++;
         }
@@ -747,6 +737,7 @@ namespace MyMoney
             lastActionTick = tick.Action;
 
             return result;
+            //return false;
         }
         public void ShowData(bool rebuild = false, bool resize = false)
         {
@@ -759,7 +750,10 @@ namespace MyMoney
                 {
                     VisualElementsList.ForEach(visualElement =>
                     {
-                        CalcSummIndicatorValue(visualElement.atempValues, visualElement.ResultOneTick);
+                        Task.Run(() =>
+                        {
+                            CalcSummIndicatorValue(visualElement.AtempValues, visualElement.ResultOneTick);
+                        });
                     });
                 }
 
@@ -777,7 +771,7 @@ namespace MyMoney
                 if (maxInd == 0)
                     maxInd = Math.Max(maxInd, GetMaxMinVisibleValue("valrefilling").MaxValue);
                 var deltaIndicator = 2 * maxInd;
-                var onePixelIndicator = deltaIndicator / CanvasGraph.ActualHeight;
+                //var onePixelIndicator = deltaIndicator / CanvasGraph.ActualHeight;
 
                 //_indicatorGraphSumm.Points.Clear();
                 //_indicatorRefilling.Points.Clear();
@@ -787,13 +781,13 @@ namespace MyMoney
                 for (var i = (int)(c > CanvasGraph.ActualWidth ? c - CanvasGraph.ActualWidth : 0); i < c; i++)
                 {
                     var resultOneTick = VisualElementsList[i].ResultOneTick;
-                    var yAsk = (maxPrice - resultOneTick.valAsk) / pixelPrice;
-                    var yBid = (maxPrice - resultOneTick.valBid) / pixelPrice;
+                    var yAsk = (maxPrice - resultOneTick.Ask) / pixelPrice;
+                    var yBid = (maxPrice - resultOneTick.Bid) / pixelPrice;
                     var xAll = (double)i + (CanvasGraph.ActualWidth - c - _widthGlassValues);
-                    _sma.Points.Add(new Point(xAll, (maxPrice - resultOneTick.valSMA) / pixelPrice));
+                    _sma.Points.Add(new Point(xAll, (maxPrice - resultOneTick.Sma) / pixelPrice));
                     //_indicatorGraphSumm.Points.Add(new Point(xAll, (maxInd - rt.valPresetHeight) / onePixelIndicator));
                     //_indicatorRefilling.Points.Add(new Point(xAll, (maxInd - rt.valRefilling) / onePixelIndicator));
-                    GraphAreaForGlass.AddData((IndicatorCommand)Math.Sign(resultOneTick.valPresetHeight), xAll, yAsk, yBid);
+                    GraphAreaForGlass.AddData((IndicatorCommand)Math.Sign(resultOneTick.PresetHeight), xAll, yAsk, yBid);
                 }
                 GraphAreaForGlass.ShowAllBars(CanvasGraph);
                 if (resize)
@@ -808,12 +802,12 @@ namespace MyMoney
                 for (var x = resize ? 0 : VisualElementsList.Count - CountAddedWithNotShowData; x < VisualElementsList.Count; x++)
                 {
                     var rt = VisualElementsList[x].ResultOneTick;
-                    var yAsk = (maxPrice - rt.valAsk) / pixelPrice;
-                    var yBid = (maxPrice - rt.valBid) / pixelPrice;
+                    var yAsk = (maxPrice - rt.Ask) / pixelPrice;
+                    var yBid = (maxPrice - rt.Bid) / pixelPrice;
                     TickGraphAsk.Points.Add(new Point(x, yAsk));
                     TickGraphBid.Points.Add(new Point(x, yBid));
 
-                    ShowSpeedChange(MovedCanvas2D, rt.resultChangeSpeed, /*CanvasGraph.ActualWidth - visualElementsList.Count - widthGlassValues */ x);
+                    ShowSpeedChange(MovedCanvas2D, rt.ResultChangeSpeed, /*CanvasGraph.ActualWidth - visualElementsList.Count - widthGlassValues */ x);
                 }
                 CountAddedWithNotShowData = 0;
 
@@ -825,10 +819,10 @@ namespace MyMoney
         private void ShowSpeedChange(Canvas canvas, ResultSummSpeedChangeGlass resultChangeSpeed, double _xAll)
         {
             double ycenter = 100;
-            var l1 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - resultChangeSpeed.summChangeUp.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
-            var l2 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + resultChangeSpeed.summChangeDown.changeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
-            var l3 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - resultChangeSpeed.summChangeUp.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
-            var l4 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + resultChangeSpeed.summChangeDown.changeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
+            var l1 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - resultChangeSpeed.summChangeUp.ChangeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
+            var l2 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + resultChangeSpeed.summChangeDown.ChangeCountIn, Stroke = Brushes.Blue, StrokeThickness = 1, Opacity = 0.5 };
+            var l3 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter, Y2 = ycenter - resultChangeSpeed.summChangeUp.ChangeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
+            var l4 = new Line { X1 = _xAll, X2 = _xAll, Y1 = ycenter + 1, Y2 = ycenter + resultChangeSpeed.summChangeDown.ChangeCountOut, Stroke = Brushes.Red, StrokeThickness = 1, Opacity = 0.5 };
             Panel.SetZIndex(l1, 15);
             Panel.SetZIndex(l2, 15);
             Panel.SetZIndex(l3, 15);
@@ -848,12 +842,12 @@ namespace MyMoney
                 switch (p)
                 {
                     case "valpreseth":
-                        result.MaxValue = VisualElementsList[i].ResultOneTick.valPresetHeight > result.MaxValue ? (float)VisualElementsList[i].ResultOneTick.valPresetHeight : result.MaxValue;
-                        result.MinValue = VisualElementsList[i].ResultOneTick.valPresetHeight < result.MinValue ? (float)VisualElementsList[i].ResultOneTick.valPresetHeight : result.MinValue;
+                        result.MaxValue = VisualElementsList[i].ResultOneTick.PresetHeight > result.MaxValue ? (float)VisualElementsList[i].ResultOneTick.PresetHeight : result.MaxValue;
+                        result.MinValue = VisualElementsList[i].ResultOneTick.PresetHeight < result.MinValue ? (float)VisualElementsList[i].ResultOneTick.PresetHeight : result.MinValue;
                         break;
                     case "valrefilling":
-                        result.MaxValue = VisualElementsList[i].ResultOneTick.valRefilling > result.MaxValue ? (float)VisualElementsList[i].ResultOneTick.valRefilling : result.MaxValue;
-                        result.MinValue = VisualElementsList[i].ResultOneTick.valRefilling < result.MinValue ? (float)VisualElementsList[i].ResultOneTick.valRefilling : result.MinValue;
+                        result.MaxValue = VisualElementsList[i].ResultOneTick.Refilling > result.MaxValue ? (float)VisualElementsList[i].ResultOneTick.Refilling : result.MaxValue;
+                        result.MinValue = VisualElementsList[i].ResultOneTick.Refilling < result.MinValue ? (float)VisualElementsList[i].ResultOneTick.Refilling : result.MinValue;
                         break;
                     default: result.MaxValue = 0; result.MinValue = 0; break;
                 }
@@ -1004,36 +998,32 @@ namespace MyMoney
     }
     public class ResultOneTick
     {
-        public ResultOneTick() { }
-
-        internal ResultSummSpeedChangeGlass resultChangeSpeed = new ResultSummSpeedChangeGlass();
-        public double valAsk { get; set; }
-        public double valBid { get; set; }
-        public int valPresetHeight{ get; set; }
-        public int valMaxHeight{ get; set; }
-        public int sumPresetHeight{ get; set; }
-        public int sumMaxHeight{ get; set; }
-        public int valRefilling{ get; set; }
-        public double valSMA { get; set; }
+        internal ResultSummSpeedChangeGlass ResultChangeSpeed = new ResultSummSpeedChangeGlass();
+        public double Ask { get; set; }
+        public double Bid { get; set; }
+        public int PresetHeight{ get; set; }
+        public int MaxHeight{ get; set; }
+        public int SumPresetHeight{ get; set; }
+        public int SumMaxHeight{ get; set; }
+        public int Refilling{ get; set; }
+        public double Sma { get; set; }
     }
 
     internal class ResultSpeedChangeGlass
     {
-        internal double changeCountIn, changeCountOut;
-        internal double changeVolume;
+        internal double ChangeCountIn;
+        internal double ChangeCountOut;
+        internal double ChangeVolume;
         internal void Clear()
         {
-            changeCountIn = 0;
-            changeCountOut = 0;
-            changeVolume = 0;
+            ChangeCountIn = 0;
+            ChangeCountOut = 0;
+            ChangeVolume = 0;
         }
 
         internal bool IsZeroValue()
         {
-            if (changeCountIn == 0 && changeCountOut == 0)
-                return true;
-            else
-                return false;
+            return ChangeCountIn == 0 && ChangeCountOut == 0;
         }
     }
 
@@ -1057,15 +1047,29 @@ namespace MyMoney
                 //    continue;
                 if (key >= ask)
                 {
-                    summChangeUp.changeCountIn += rchange.changeCountIn;
-                    summChangeUp.changeCountOut += rchange.changeCountOut;
+                    summChangeUp.ChangeCountIn += rchange.ChangeCountIn;
+                    summChangeUp.ChangeCountOut += rchange.ChangeCountOut;
                 }
                 else if (key <= bid)
                 {
-                    summChangeDown.changeCountIn += rchange.changeCountIn;
-                    summChangeDown.changeCountOut += rchange.changeCountOut;
+                    summChangeDown.ChangeCountIn += rchange.ChangeCountIn;
+                    summChangeDown.ChangeCountOut += rchange.ChangeCountOut;
                 }
             }
         }
+    }
+
+    public enum ActionGlassItem
+    {
+        Zero = 0,
+        Sell = 1,
+        Buy = 2
+    }
+    public struct ChangeValuesItem
+    {
+        public DateTime DateTime;
+        public int Price;
+        public int OldValue;
+        public int NewValue;
     }
 }
